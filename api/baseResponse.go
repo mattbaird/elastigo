@@ -7,6 +7,8 @@ type BaseResponse struct {
 	Id      string      `json:"_id"`
 	Source  interface{} `json:"_source"` // depends on the schema you've defined
 	Version int         `json:"_version"`
+	Found   bool        `json:"found"`
+	Exists  bool        `json:"exists"`
 }
 
 func Pretty(pretty bool) string {
