@@ -7,5 +7,7 @@ import (
 // for testing
 func main() {
 	//	core.RunSearch(true, "questionscraper", "user:kimchy")
-	core.RunGet(true, "questionscraper", "question_holdingpen", "50760a78d23ea1e0f51d52de")
+	core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+	core.Get(true, "twitter", "tweet", "1")
+	core.Exists(true, "twitter", "tweet", "1")
 }
