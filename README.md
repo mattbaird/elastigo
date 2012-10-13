@@ -1,9 +1,11 @@
 elastigo
 ========
 
-golang based Elasticsearch client
+golang based Elasticsearch client. I will implement all APIs in the core, cluster and indices groups.
 
-clearly not ready for primetime yet.
+status
+======
+10/12/12, early in development, not ready for production yet.
 
 license
 =======
