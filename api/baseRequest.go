@@ -8,6 +8,7 @@ import (
 )
 
 func DoCommand(method string, url string, data interface{}) (string, error) {
+	log.Printf("request is %s", url)
 	var response map[string]interface{}
 	var body string
 	req, err := ElasticSearchRequest(method, url)
