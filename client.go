@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/mattbaird/elastigo/cluster"
 	"github.com/mattbaird/elastigo/core"
 	"github.com/mattbaird/elastigo/indices"
+
 	"log"
 )
 
@@ -22,5 +24,8 @@ func main() {
 	log.Printf("Delete OK: %b", response.Ok)
 	response, _ = core.Get(true, "twitter", "tweet", "1")
 	log.Printf("Get: %s", response.Exists)
+
+	healthResponse, _ := cluster.Health(true)
+	log.Printf("Health: %s", healthResponse.Status)
 
 }
