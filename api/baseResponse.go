@@ -18,3 +18,5 @@ func Pretty(pretty bool) string {
 	}
 	return prettyString
 }
+
+

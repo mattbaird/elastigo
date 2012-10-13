@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
+	"strings"
 )
 
 // Lists status details of all indices or the specified index.
@@ -13,11 +14,10 @@ func Status(pretty bool, indices ...string) (api.BaseResponse, error) {
 	var body string
 	var url string
 	if len(indices) > 0 {
-		//TODO, emit the indices csv style
+		url = fmt.Sprintf("/%s/_status?%s", strings.Join(indices, ","), api.Pretty(pretty))
 
-		url = "/" + indices[0] + "/_status?pretty=1"
 	} else {
-		url = "/_status?pretty=1"
+		url = fmt.Sprintf("/_status?%s", api.Pretty(pretty))
 	}
 	body, err := api.DoCommand("GET", url, nil)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 
 // Performs a very basic search on an index via the request URI API.
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func RunSearch(pretty bool, index string, searchValues ...string) {
+func Search(pretty bool, index string, searchValues ...string) {
 	query := searchValues[0]
 	values := url.Values{}
 	values.Set("q", query)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
+	"strings"
 )
 
 // The cluster health API allows to get a very simple status on the health of the cluster.
@@ -15,8 +16,7 @@ func Health(pretty bool, indices ...string) (ClusterHealthResponse, error) {
 	var url string
 	var retval ClusterHealthResponse
 	if len(indices) > 0 {
-		//TODO csv these indices
-		url = fmt.Sprintf("/_cluster/health/%s?%s", indices[0], api.Pretty(pretty))
+		url = fmt.Sprintf("/_cluster/health/%s?%s", strings.Join(indices, ","), api.Pretty(pretty))
 	} else {
 		url = fmt.Sprintf("/_cluster/health?%s", api.Pretty(pretty))
 	}
