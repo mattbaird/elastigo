@@ -4,7 +4,6 @@ import (
 	"github.com/mattbaird/elastigo/cluster"
 	"github.com/mattbaird/elastigo/core"
 	"github.com/mattbaird/elastigo/indices"
-
 	"log"
 )
 
@@ -27,5 +26,7 @@ func main() {
 
 	healthResponse, _ := cluster.Health(true)
 	log.Printf("Health: %s", healthResponse.Status)
+
+	cluster.State("transient", "discovery.zen.minimum_master_nodes", 2)
 
 }
