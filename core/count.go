@@ -7,14 +7,8 @@ import (
 )
 
 type CountResponse struct {
-	Count int    `json:"count"`
-	Shard Shards `json:"_shards"`
-}
-
-type Shards struct {
-	Total      int `json:"total"`
-	Successful int `json:"successful"`
-	Failed     int `json:"failed"`
+	Count int        `json:"count"`
+	Shard api.Status `json:"_shards"`
 }
 
 // The count API allows to easily execute a query and get the number of matches for that query. 

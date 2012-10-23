@@ -11,6 +11,12 @@ type BaseResponse struct {
 	Exists  bool        `json:"exists,omitifempty"`
 }
 
+type Status struct {
+	Total      int `json:"total"`
+	Successful int `json:"successful"`
+	Failed     int `json:"failed"`
+}
+
 func Pretty(pretty bool) string {
 	prettyString := ""
 	if pretty == true {

@@ -39,20 +39,10 @@ func buildQuery() string {
 }
 
 type DeleteByQueryResponse struct {
-	Status   bool       `json:"ok"`
-	Indicies []Indicies `json:"_indices"`
-}
-
-type Indicies struct {
-	Name Shards
+	Status   bool                   `json:"ok"`
+	Indicies map[string]IndexStatus `json:"_indices"`
 }
 
 type IndexStatus struct {
-	Shards ShardStatus `json:"_shards"`
-}
-
-type ShardStatus struct {
-	Total      int `json:"total"`
-	Successful int `json:"successful"`
-	Failed     int `json:"failed"`
+	Shards api.Status `json:"_shards"`
 }
