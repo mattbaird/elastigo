@@ -17,6 +17,30 @@ type Status struct {
 	Failed     int `json:"failed"`
 }
 
+type Query struct {
+	Query Term `json:"query"`
+}
+
+type Term struct {
+	Term string `json:"term"`
+}
+
+func (q Query) setQuery(query string) {
+	q.Query.Term = query
+}
+
+type Match struct {
+	OK           bool         `json:"ok"`
+	Matches      []string     `json:"matches"`
+	Explaination Explaination `json:"explaination,omitifempty"`
+}
+
+type Explaination struct {
+	Value       float32        `json:"value"`
+	Description string         `json:"description"`
+	Details     []Explaination `json:"details,omitifempty"`
+}
+
 func Pretty(pretty bool) string {
 	prettyString := ""
 	if pretty == true {

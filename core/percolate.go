@@ -12,7 +12,7 @@ import (
 // and then running queries. One sends queries, registers them, and then sends docs and finds out which queries
 // match that doc.
 // see http://www.elasticsearch.org/guide/reference/api/percolate.html
-func RegisterPercolate(pretty bool, index string, name string, query Query) (api.BaseResponse, error) {
+func RegisterPercolate(pretty bool, index string, name string, query api.Query) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
 	url = fmt.Sprintf("/_percolator/%s/%s?%s", index, name, api.Pretty(pretty))
@@ -31,17 +31,9 @@ func RegisterPercolate(pretty bool, index string, name string, query Query) (api
 	return retval, err
 }
 
-type Query struct {
-	Query Term `json:"query"`
-}
-
-type Term struct {
-	Term map[string]string `json:"term"`
-}
-
-func Percolate(pretty bool, index string, _type string, name string, doc string) (Match, error) {
+func Percolate(pretty bool, index string, _type string, name string, doc string) (api.Match, error) {
 	var url string
-	var retval Match
+	var retval api.Match
 	url = fmt.Sprintf("/%s/%s/_percolate?%s", index, _type, api.Pretty(pretty))
 	body, err := api.DoCommand("GET", url, doc)
 	if err != nil {
@@ -56,9 +48,4 @@ func Percolate(pretty bool, index string, _type string, name string, doc string)
 	}
 	fmt.Println(body)
 	return retval, err
-}
-
-type Match struct {
-	OK      bool     `json:"ok"`
-	Matches []string `json:"matches"`
 }
