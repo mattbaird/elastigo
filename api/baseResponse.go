@@ -17,18 +17,6 @@ type Status struct {
 	Failed     int `json:"failed"`
 }
 
-type Query struct {
-	Query Term `json:"query"`
-}
-
-type Term struct {
-	Term string `json:"term"`
-}
-
-func (q Query) setQuery(query string) {
-	q.Query.Term = query
-}
-
 type Match struct {
 	OK           bool         `json:"ok"`
 	Matches      []string     `json:"matches"`
