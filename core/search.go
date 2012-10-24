@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
+	"log"
 )
 
 // Performs a very basic search on an index via the request URI API.
@@ -17,6 +18,7 @@ func Search(pretty bool, index string, _type string, query string) (SearchResult
 		url = fmt.Sprintf("/%s/_search?%s", index, api.Pretty(pretty))
 	}
 	body, err := api.DoCommand("POST", url, query)
+	log.Printf("Search response body is: %s", body)
 	if err != nil {
 		return retval, err
 	}
