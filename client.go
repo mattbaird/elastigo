@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/mattbaird/elastigo/cluster"
 	"github.com/mattbaird/elastigo/core"
 	"github.com/mattbaird/elastigo/indices"
@@ -9,9 +10,18 @@ import (
 
 // for testing
 func main() {
-	//	core.RunSearch(true, "questionscraper", "user:kimchy")
 	response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+	indices.Flush()
 	log.Printf("Index OK: %b", response.Ok)
+	searchresponse, err := core.Search(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}")
+	if err != nil {
+		log.Println("error during search:" + err.Error())
+		log.Fatal(err)
+	}
+	// try marshalling to tweet type
+	var t Tweet
+	json.Unmarshal(searchresponse.Hits.Hits[0].Source, t)
+	log.Printf("Search Found: %s", t)
 	response, _ = core.Get(true, "twitter", "tweet", "1")
 	log.Printf("Get: %s", response.Exists)
 	response, _ = core.Exists(true, "twitter", "tweet", "1")

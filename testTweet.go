@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -13,4 +14,9 @@ type Tweet struct {
 
 func NewTweet(user string, message string) Tweet {
 	return Tweet{User: user, PostDate: time.Now(), Message: message}
+}
+
+func (t *Tweet) String() string {
+	b, _ := json.Marshal(t)
+	return string(b)
 }
