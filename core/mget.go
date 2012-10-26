@@ -44,8 +44,8 @@ type MGetRequest struct {
 	Index  string   `json:"_index"`
 	Type   string   `json:"_type"`
 	ID     string   `json:"_id"`
-	IDS    []string `json:"_ids,omitifempty"`
-	Fields []string `json:"fields,omitifempty"`
+	IDS    []string `json:"_ids,omitempty"`
+	Fields []string `json:"fields,omitempty"`
 }
 
 type MGetResponseContainer struct {

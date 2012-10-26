@@ -47,7 +47,7 @@ type Hits struct {
 }
 type Hit struct {
 	Index  string          `json:"_index"`
-	Type   string          `json:"_type,omitifempty"`
+	Type   string          `json:"_type,omitempty"`
 	Id     string          `json:"_id"`
 	Score  float32         `json:"score"`
 	Source json.RawMessage `json:"_source"` // marshalling left to consumer

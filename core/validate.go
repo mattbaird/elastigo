@@ -34,7 +34,7 @@ func Validate(pretty bool, index string, _type string, query string, explain boo
 type Validation struct {
 	Valid         bool           `json:"valid"`
 	Shards        api.Status     `json:"_shards"`
-	Explainations []Explaination `json:"explanations,omitifempty"`
+	Explainations []Explaination `json:"explanations,omitempty"`
 }
 
 type Explaination struct {

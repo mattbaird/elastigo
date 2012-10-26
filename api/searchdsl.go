@@ -1,10 +1,10 @@
 package api
 
 type SearchRequest struct {
-	From   int    `json:"from,omitifempty"`
-	Size   int    `json:"size,omitifempty"`
-	Query  Query  `json:"query,omitifempty"`
-	Filter Filter `json:"filter,omitifempty"`
+	From   int    `json:"from,omitempty"`
+	Size   int    `json:"size,omitempty"`
+	Query  Query  `json:"query,omitempty"`
+	Filter Filter `json:"filter,omitempty"`
 }
 
 type Filter struct {

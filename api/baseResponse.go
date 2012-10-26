@@ -2,13 +2,13 @@ package api
 
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
-	Index   string      `json:"_index,omitifempty"`
-	Type    string      `json:"_type,omitifempty"`
-	Id      string      `json:"_id,omitifempty"`
-	Source  interface{} `json:"_source,omitifempty"` // depends on the schema you've defined
-	Version int         `json:"_version,omitifempty"`
-	Found   bool        `json:"found,omitifempty"`
-	Exists  bool        `json:"exists,omitifempty"`
+	Index   string      `json:"_index,omitempty"`
+	Type    string      `json:"_type,omitempty"`
+	Id      string      `json:"_id,omitempty"`
+	Source  interface{} `json:"_source,omitempty"` // depends on the schema you've defined
+	Version int         `json:"_version,omitempty"`
+	Found   bool        `json:"found,omitempty"`
+	Exists  bool        `json:"exists,omitempty"`
 }
 
 type Status struct {
@@ -20,13 +20,13 @@ type Status struct {
 type Match struct {
 	OK           bool         `json:"ok"`
 	Matches      []string     `json:"matches"`
-	Explaination Explaination `json:"explaination,omitifempty"`
+	Explaination Explaination `json:"explaination,omitempty"`
 }
 
 type Explaination struct {
 	Value       float32        `json:"value"`
 	Description string         `json:"description"`
-	Details     []Explaination `json:"details,omitifempty"`
+	Details     []Explaination `json:"details,omitempty"`
 }
 
 func Pretty(pretty bool) string {
