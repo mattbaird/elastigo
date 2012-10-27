@@ -42,7 +42,8 @@ type SearchResult struct {
 
 type Hits struct {
 	Total    int     `json:"total"`
-	MaxScore float32 `json:"max_score,omitempty"`
+	MaxScore float32 `json:"max_score"`
+//	MaxScore float32 `json:"max_score"`
 	Hits     []Hit   `json:"hits"`
 }
 type Hit struct {
