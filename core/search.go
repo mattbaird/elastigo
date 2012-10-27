@@ -9,7 +9,7 @@ import (
 
 // Performs a very basic search on an index via the request URI API.
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func Search(pretty bool, index string, _type string, query string) (SearchResult, error) {
+func Search(pretty bool, index string, _type string, query interface{}) (SearchResult, error) {
 	log.Printf("query is: %s", query)
 	var url string
 	var retval SearchResult
