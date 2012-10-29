@@ -60,9 +60,15 @@ type SearchResult struct {
 }
 
 type Hits struct {
+	Total    int     `json:"total"`
+	MaxScore float32 `json:"max_score"`
+	Hits     []Hit   `json:"hits"`
 	Total int `json:"total"`
 	//	MaxScore float32 `json:"max_score"`
 	Hits []Hit `json:"hits"`
+	Total    int     `json:"total"`
+	MaxScore float32 `json:"max_score,omitempty"`
+	Hits     []Hit   `json:"hits"`
 }
 type Hit struct {
 	Index  string          `json:"_index"`
