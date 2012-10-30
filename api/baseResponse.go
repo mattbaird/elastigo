@@ -36,3 +36,11 @@ func Pretty(pretty bool) string {
 	}
 	return prettyString
 }
+
+func Scroll(duration string) string {
+    scrollString := ""
+    if duration != "" {
+        scrollString = "&scroll="+duration
+    }
+    return scrollString
+}
