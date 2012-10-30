@@ -8,18 +8,24 @@ import (
 )
 
 func DoCommand(method string, url string, data interface{}) (string, error) {
-	log.Printf("request is %s", url)
 	var response map[string]interface{}
 	var body string
 	req, err := ElasticSearchRequest(method, url)
 	if err != nil {
 		return body, err
 	}
+
 	if data != nil {
-		err = req.SetBodyJson(data)
-		if err != nil {
-			return body, err
+		switch v := data.(type) {
+		case string:
+			req.SetBodyString(v)
+		default:
+			err = req.SetBodyJson(v)
+			if err != nil {
+				return body, err
+			}
 		}
+
 	}
 	body, err = req.Do(&response)
 	if err != nil {
