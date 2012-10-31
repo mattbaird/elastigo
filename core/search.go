@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/mschoch/elastigo/api"
 )
 
 // Performs a very basic search on an index via the request URI API.
