@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mschoch/elastigo/api"
+	"github.com/mattbaird/elastigo/api"
 )
 
 // Performs a very basic search on an index via the request URI API.
@@ -51,25 +51,20 @@ func Scroll(pretty bool, scroll_id string, scroll string) (SearchResult, error) 
 }
 
 type SearchResult struct {
-	Took        int        `json:"took"`
-	TimedOut    bool       `json:"timed_out"`
-	ShardStatus api.Status `json:"_shards"`
-	Hits        Hits       `json:"hits"`
-	Facets      json.RawMessage     `json:"facets,omitempty"` // structure varies on query
-	ScrollId    string     `json:"_scroll_id,omitempty"`
+	Took        int             `json:"took"`
+	TimedOut    bool            `json:"timed_out"`
+	ShardStatus api.Status      `json:"_shards"`
+	Hits        Hits            `json:"hits"`
+	Facets      json.RawMessage `json:"facets,omitempty"` // structure varies on query
+	ScrollId    string          `json:"_scroll_id,omitempty"`
 }
 
 type Hits struct {
-	Total    int     `json:"total"`
-	MaxScore float32 `json:"max_score"`
-	Hits     []Hit   `json:"hits"`
 	Total int `json:"total"`
 	//	MaxScore float32 `json:"max_score"`
 	Hits []Hit `json:"hits"`
-	Total    int     `json:"total"`
-	MaxScore float32 `json:"max_score,omitempty"`
-	Hits     []Hit   `json:"hits"`
 }
+
 type Hit struct {
 	Index  string          `json:"_index"`
 	Type   string          `json:"_type,omitempty"`

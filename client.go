@@ -17,9 +17,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/mschoch/elastigo/cluster"
-	"github.com/mschoch/elastigo/core"
-	"github.com/mschoch/elastigo/indices"
+	"github.com/mattbaird/elastigo/cluster"
+	"github.com/mattbaird/elastigo/core"
+	"github.com/mattbaird/elastigo/indices"
 	"log"
 )
 

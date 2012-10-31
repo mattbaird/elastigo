@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mschoch/elastigo/api"
+	"github.com/mattbaird/elastigo/api"
 )
 
 // Multi GET API allows to get multiple documents based on an index, type (optional) and id (and possibly routing).

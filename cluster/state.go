@@ -1,7 +1,7 @@
 package cluster
 
 import (
-	"github.com/mschoch/elastigo/api"
+	"github.com/mattbaird/elastigo/api"
 )
 
 // http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html

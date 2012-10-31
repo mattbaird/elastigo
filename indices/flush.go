@@ -3,7 +3,7 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mschoch/elastigo/api"
+	"github.com/mattbaird/elastigo/api"
 )
 
 // The flush API allows to flush one or more indices through an API. The flush process of an index basically

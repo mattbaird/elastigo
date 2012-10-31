@@ -3,7 +3,7 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mschoch/elastigo/api"
+	"github.com/mattbaird/elastigo/api"
 	"strings"
 )
 
