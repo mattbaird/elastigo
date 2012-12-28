@@ -12,7 +12,14 @@ func Index(pretty bool, index string, _type string, id string, data interface{})
 	var url string
 	var retval api.BaseResponse
 	url = fmt.Sprintf("/%s/%s/%s?%s", index, _type, id, api.Pretty(pretty))
-	body, err := api.DoCommand("PUT", url, data)
+	var method string
+	if id == "" {
+		method = "POST"
+	} else {
+		method = "PUT"
+	}
+
+	body, err := api.DoCommand(method, url, data)
 	if err != nil {
 		return retval, err
 	}
