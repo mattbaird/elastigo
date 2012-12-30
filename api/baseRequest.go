@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,6 +21,8 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 		switch v := data.(type) {
 		case string:
 			req.SetBodyString(v)
+		case *bytes.Buffer:
+			req.SetBody(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {
@@ -34,11 +37,11 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 	}
 	if httpStatusCode > 304 {
 
-		jsonErr := json.Unmarshal(body, response)
+		jsonErr := json.Unmarshal(body, &response)
 		if jsonErr == nil {
 			if error, ok := response["error"]; ok {
 				status, _ := response["status"]
-				return body, errors.New(fmt.Sprintf("Error [%s] Status [%s]", error, status))
+				return body, errors.New(fmt.Sprintf("Error [%s] Status [%v]", error, status))
 			}
 		}
 		return body, jsonErr
