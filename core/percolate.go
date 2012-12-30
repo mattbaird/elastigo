@@ -22,7 +22,7 @@ func RegisterPercolate(pretty bool, index string, name string, query api.Query) 
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
@@ -41,7 +41,7 @@ func Percolate(pretty bool, index string, _type string, name string, doc string)
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}

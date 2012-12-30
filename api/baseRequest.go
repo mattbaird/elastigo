@@ -7,9 +7,9 @@ import (
 	"log"
 )
 
-func DoCommand(method string, url string, data interface{}) (string, error) {
+func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 	var response map[string]interface{}
-	var body string
+	var body []byte
 	req, err := ElasticSearchRequest(method, url)
 	if err != nil {
 		return body, err
@@ -43,7 +43,7 @@ func DoCommand(method string, url string, data interface{}) (string, error) {
 // returning nothing
 func Exists(pretty bool, index string, _type string, id string) (BaseResponse, error) {
 	var response map[string]interface{}
-	var body string
+	var body []byte
 	var url string
 	var retval BaseResponse
 
@@ -59,14 +59,15 @@ func Exists(pretty bool, index string, _type string, id string) (BaseResponse, e
 	body, err = req.Do(&response)
 	if error, ok := response["error"]; ok {
 		status, _ := response["status"]
-		log.Fatalf("Error: %v (%v)\n", error, status)
+		log.Println("Error: %v (%v)\n", error, status)
+
 	} else {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
-			log.Fatal(jsonErr)
+			log.Println(jsonErr)
 		}
 	}
-	fmt.Println(body)
+	//fmt.Println(string(body))
 	return retval, err
 }

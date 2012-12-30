@@ -26,7 +26,7 @@ func Update(pretty bool, index string, _type string, id string) (api.BaseRespons
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}

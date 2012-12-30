@@ -19,11 +19,11 @@ func Delete(pretty bool, index string, _type string, id string, version int, rou
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
+	//fmt.Println(body)
 	return retval, err
 }

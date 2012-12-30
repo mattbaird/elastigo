@@ -18,7 +18,7 @@ func MoreLikeThis(pretty bool, index string, _type string, id string, query More
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}

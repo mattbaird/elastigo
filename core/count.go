@@ -28,11 +28,11 @@ func Count(pretty bool, index string, _type string) (CountResponse, error) {
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
+	//fmt.Println(body)
 	return retval, err
 }

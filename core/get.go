@@ -25,12 +25,12 @@ func Get(pretty bool, index string, _type string, id string) (api.BaseResponse, 
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
+	//fmt.Println(body)
 	return retval, err
 }
 
@@ -51,11 +51,11 @@ func Exists(pretty bool, index string, _type string, id string) (api.BaseRespons
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
+	//fmt.Println(body)
 	return retval, err
 }
