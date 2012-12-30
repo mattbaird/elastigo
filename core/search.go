@@ -22,7 +22,7 @@ func Search(pretty bool, index string, _type string, query interface{}, scroll s
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
@@ -42,7 +42,7 @@ func Scroll(pretty bool, scroll_id string, scroll string) (SearchResult, error) 
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}

@@ -11,7 +11,6 @@ import (
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
 func Status(pretty bool, indices ...string) (api.BaseResponse, error) {
 	var retval api.BaseResponse
-	var body string
 	var url string
 	if len(indices) > 0 {
 		url = fmt.Sprintf("/%s/_status?%s", strings.Join(indices, ","), api.Pretty(pretty))
@@ -25,7 +24,7 @@ func Status(pretty bool, indices ...string) (api.BaseResponse, error) {
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
