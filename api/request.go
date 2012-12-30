@@ -81,7 +81,7 @@ func (r *Request) SetBody(body io.Reader) {
 	}
 }
 
-func (r *Request) Do(v interface{}) ([]byte, error) {
+func (r *Request) Do(v interface{}) (int, []byte, error) {
 	res, err := http.DefaultClient.Do((*http.Request)(r))
 	if err != nil {
 		return 0, nil, err
@@ -90,11 +90,11 @@ func (r *Request) Do(v interface{}) ([]byte, error) {
 	defer res.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 
-	if v != nil {
+	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return nil, err
+			return res.StatusCode, nil, err
 		}
 	}
-	return bodyBytes, nil
+	return res.StatusCode, bodyBytes, nil
 }
