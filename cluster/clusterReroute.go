@@ -26,7 +26,7 @@ func Reroute(pretty bool, dryRun bool, commands Commands) (ClusterHealthResponse
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
