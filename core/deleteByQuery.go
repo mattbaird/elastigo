@@ -25,7 +25,7 @@ func DeleteByQuery(pretty bool, indices []string, types []string, query interfac
 	}
 	if err == nil {
 		// marshall into json
-		jsonErr := json.Unmarshal([]byte(body), &retval)
+		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
 		}
