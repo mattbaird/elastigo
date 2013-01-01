@@ -15,6 +15,25 @@ func init() {
 	//DebugRequests = true
 }
 
+func TestSearchRequest(t *testing.T) {
+	qry := map[string]interface{}{
+		"query": map[string]interface{}{
+			"wildcard": map[string]string{"actor": "a*"},
+		},
+	}
+	out, err := SearchRequest(true, "github", "", qry, "")
+	//log.Println(out)
+	Assert(&out != nil && err == nil, t, "Should get docs")
+	Assert(out.Hits.Total == 584 && out.Hits.Len() == 10, t, "Should have 10 hits but was %v", out.Hits.Total)
+}
+
+func TestSearchRequestQueryString(t *testing.T) {
+	out, err := SearchUri("github", "", "actor:a*", "")
+	//log.Println(out)
+	Assert(&out != nil && err == nil, t, "Should get docs")
+	Assert(out.Hits.Total == 584, t, "Should have 120 hits but was %v", out.Hits.Total)
+}
+
 func TestSearchFacetOne(t *testing.T) {
 	/*
 		A faceted search for what "type" of events there are

@@ -1,10 +1,11 @@
 package api
 
 import (
-	"bytes"
+	//"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 )
 
@@ -13,6 +14,7 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 	var body []byte
 	var httpStatusCode int
 	req, err := ElasticSearchRequest(method, url)
+	//log.Println(req.URL)
 	if err != nil {
 		return body, err
 	}
@@ -21,8 +23,10 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 		switch v := data.(type) {
 		case string:
 			req.SetBodyString(v)
-		case *bytes.Buffer:
+		case io.Reader:
 			req.SetBody(v)
+		//case *bytes.Buffer:
+		//	req.SetBody(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {
@@ -32,6 +36,7 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 
 	}
 	httpStatusCode, body, err = req.Do(&response)
+
 	if err != nil {
 		return body, err
 	}

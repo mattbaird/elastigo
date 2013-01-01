@@ -3,9 +3,63 @@ elastigo
 
 golang based Elasticsearch client. I will implement all APIs in the core, cluster and indices groups.
 
-status
-======
-10/12/12, early in development, not ready for production yet.
+status updates
+========================
+
+* 2012-12-30, new bulk indexing and search dsl
+* 2012-10-12, early in development, not ready for production yet.
+
+Examples of Usage
+-------------------------
+
+
+A Faceted Search using the `Search DSL` :
+
+   out, err := Search("github").Size("1").Facet(
+      Facet().Fields("actor").Size("500"),
+   ).Query(
+      Query().Range(
+         Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+      ).Search("add"),
+   ).Result()
+   
+A Ranged Search using the `Search DSL` :
+   
+   out, err := Search("github").Type("Issues").Pretty().Query(
+      Query().Range(
+         Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+      ).Search("add"),
+   ).Result()
+   
+A Simple Search using the `Search DSL` :
+   
+   out, err := Search("github").Type("Issues").Size("100).Search("add").Result()
+
+
+A Direct Search using the api :
+   
+   qry := map[string]interface{}{
+      "query":map[string]interface{}{
+         "term":map[string]string{"user:"kimchy"},
+      },
+   }
+   core.SearchRequest(true, "github", "Issues", qry, "")
+
+A Direct Search using the query string Api :
+   
+   core.SearchUri("github", "Issues", "user:kimchy", "")
+
+Indexing Content:
+
+   response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+   
+   // you have bytes
+   bytesLine, err := json.Marshall(tw)
+   response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
+   
+   // Bulk Indexing groups together in the background
+   core.IndexBulk("twitter", "tweet", "3", &time.Now(), NewTweet("kimchy", "Search is now cooler"))
+
 
 license
 =======
