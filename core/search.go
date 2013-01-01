@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"log"
+	"net/url"
 	"strings"
+)
+
+var (
+	DebugRequests = false
 )
 
 // Performs a very basic search on an index via the request URI API.
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchRequest(pretty bool, index string, _type string, query interface{}, scroll, size string) (SearchResult, error) {
+func SearchRequest(pretty bool, index string, _type string, query interface{}, scroll string) (SearchResult, error) {
 	var url string
 	var retval SearchResult
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/_search?%s%s%s", index, _type, api.Pretty(pretty), api.Scroll(scroll), api.Size(size))
+		url = fmt.Sprintf("/%s/%s/_search?%s%s%s", index, _type, api.Pretty(pretty), api.Scroll(scroll))
 	} else {
-		url = fmt.Sprintf("/%s/_search?%s%s%s", index, api.Pretty(pretty), api.Scroll(scroll), api.Size(size))
+		url = fmt.Sprintf("/%s/_search?%s%s%s", index, api.Pretty(pretty), api.Scroll(scroll))
 	}
 	log.Println(url)
 	body, err := api.DoCommand("POST", url, query)
@@ -68,6 +73,10 @@ type Hits struct {
 	Hits []Hit `json:"hits"`
 }
 
+func (h *Hits) Len() int {
+	return len(h.Hits)
+}
+
 type Hit struct {
 	Index  string          `json:"_index"`
 	Type   string          `json:"_type,omitempty"`
@@ -77,17 +86,17 @@ type Hit struct {
 }
 
 func Search(index string) *SearchDsl {
-	return &SearchDsl{Index: index, args: make([]string, 0)}
+	return &SearchDsl{Index: index, args: url.Values{}}
 }
 
 type SearchDsl struct {
-	args      []string
-	FromVal   int       `json:"from,omitempty"`
-	SizeVal   int       `json:"size,omitempty"`
-	Index     string    `json:"-"`
-	IndexType string    `json:"-"`
-	FacetVal  *FacetDsl `json:"facets"`
-	QueryVal  *QueryDsl `json:"query,omitempty"`
+	args     url.Values
+	types    []string
+	FromVal  int       `json:"from,omitempty"`
+	SizeVal  int       `json:"size,omitempty"`
+	Index    string    `json:"-"`
+	FacetVal *FacetDsl `json:"facets,omitempty"`
+	QueryVal *QueryDsl `json:"query,omitempty"`
 	//FilterVal    FilterDsl `json:"filter,omitempty"`
 }
 
@@ -98,8 +107,11 @@ func (s *SearchDsl) Bytes() ([]byte, error) {
 
 func (s *SearchDsl) Result() (*SearchResult, error) {
 	var retval SearchResult
-	sb, _ := json.MarshalIndent(s, "  ", "  ")
-	log.Println(string(sb))
+	if DebugRequests {
+		sb, _ := json.MarshalIndent(s, "  ", "  ")
+		log.Println(s.url())
+		log.Println(string(sb))
+	}
 	body, err := s.Bytes()
 	if err != nil {
 		return nil, err
@@ -109,24 +121,39 @@ func (s *SearchDsl) Result() (*SearchResult, error) {
 }
 
 func (s *SearchDsl) url() string {
-	url := fmt.Sprintf("/%s%s/_search?%s", s.Index, s.IndexType, strings.Join(s.args, "&"))
-	log.Println(url)
+	url := fmt.Sprintf("/%s%s/_search?%s", s.Index, s.getType(), s.args.Encode())
 	return url
 }
 func (s *SearchDsl) Pretty() *SearchDsl {
-	s.args = append(s.args, "pretty=1")
+	s.args.Set("pretty", "1")
 	return s
 }
 func (s *SearchDsl) Type(indexType string) *SearchDsl {
-	s.IndexType = "/" + indexType
+	if len(s.types) == 0 {
+		s.types = make([]string, 0)
+	}
+	s.types = append(s.types, indexType)
 	return s
 }
+func (s *SearchDsl) getType() string {
+	if len(s.types) > 0 {
+		return "/" + strings.Join(s.types, ",")
+	}
+	return ""
+}
 func (s *SearchDsl) From(from string) *SearchDsl {
-	s.args = append(s.args, "from="+from)
+	s.args.Set("from", from)
+	return s
+}
+
+// This is a simple interfaceto search, doesn't have the power of query
+// but uses a simple query_string search
+func (s *SearchDsl) Search(srch string) *SearchDsl {
+	s.QueryVal = Query().Search(srch)
 	return s
 }
 func (s *SearchDsl) Size(size string) *SearchDsl {
-	s.args = append(s.args, "size="+size)
+	s.args.Set("size", size)
 	return s
 }
 func (s *SearchDsl) Facet(f *FacetDsl) *SearchDsl {
@@ -192,7 +219,7 @@ Three ways to serialize this query term
 	    "query_string": {
 	      "default_operator": "OR",
 	      "default_field": "_all",
-	      "query": " @fields.aid:\"10\"  AND @fields.PageType:\"*\""
+	      "query": " actor:\"bob\"  AND type:\"EventType\""
 	    }
 	  },
 	  "filter": {
