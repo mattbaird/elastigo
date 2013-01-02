@@ -154,11 +154,12 @@ func Search(index string) *SearchDsl {
 type SearchDsl struct {
 	args     url.Values
 	types    []string
-	FromVal  int       `json:"from,omitempty"`
-	SizeVal  int       `json:"size,omitempty"`
-	Index    string    `json:"-"`
-	FacetVal *FacetDsl `json:"facets,omitempty"`
-	QueryVal *QueryDsl `json:"query,omitempty"`
+	FromVal  int        `json:"from,omitempty"`
+	SizeVal  int        `json:"size,omitempty"`
+	Index    string     `json:"-"`
+	FacetVal *FacetDsl  `json:"facets,omitempty"`
+	QueryVal *QueryDsl  `json:"query,omitempty"`
+	SortBody []*SortDsl `json:"sort,omitempty"`
 	//FilterVal    FilterDsl `json:"filter,omitempty"`
 }
 
@@ -186,6 +187,7 @@ func (s *SearchDsl) url() string {
 	url := fmt.Sprintf("/%s%s/_search?%s", s.Index, s.getType(), s.args.Encode())
 	return url
 }
+
 func (s *SearchDsl) Pretty() *SearchDsl {
 	s.args.Set("pretty", "1")
 	return s
@@ -199,12 +201,14 @@ func (s *SearchDsl) Type(indexType string) *SearchDsl {
 	s.types = append(s.types, indexType)
 	return s
 }
+
 func (s *SearchDsl) getType() string {
 	if len(s.types) > 0 {
 		return "/" + strings.Join(s.types, ",")
 	}
 	return ""
 }
+
 func (s *SearchDsl) From(from string) *SearchDsl {
 	s.args.Set("from", from)
 	return s
@@ -216,21 +220,69 @@ func (s *SearchDsl) Search(srch string) *SearchDsl {
 	s.QueryVal = Query().Search(srch)
 	return s
 }
+
 func (s *SearchDsl) Size(size string) *SearchDsl {
 	s.args.Set("size", size)
 	return s
 }
+
 func (s *SearchDsl) Facet(f *FacetDsl) *SearchDsl {
 	s.FacetVal = f
 	return s
 }
+
 func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 	s.QueryVal = q
 	return s
 }
 
-func Facet() *FacetDsl {
-	return &FacetDsl{&FacetTerm{FacetTerms{nil, ""}}}
+func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
+	if s.SortBody == nil {
+		s.SortBody = make([]*SortDsl, 0)
+	}
+	s.SortBody = append(s.SortBody, sort...)
+	return s
+}
+
+/* 
+	Sorting accepts any number of Sort commands
+
+	Query().Sort(
+		Sort("last_name").Desc(),
+		Sort("age"),
+	)
+*/
+func Sort(field string) *SortDsl {
+	return &SortDsl{Name: field}
+}
+
+type SortBody []interface{}
+type SortDsl struct {
+	Name   string
+	IsDesc bool
+}
+
+func (s *SortDsl) Desc() *SortDsl {
+	s.IsDesc = true
+	return s
+}
+func (s *SortDsl) Asc() *SortDsl {
+	s.IsDesc = false
+	return s
+}
+func (s *SortDsl) MarshalJSON() ([]byte, error) {
+	log.Println("in marshall? ", s)
+	if s.IsDesc {
+		return json.Marshal(map[string]string{s.Name: "desc"})
+	}
+	if s.Name == "_score" {
+		return []byte(`"_score"`), nil
+	}
+	log.Println("returning default? ", s.Name)
+	return []byte(fmt.Sprintf(`"%s"`, s.Name)), nil // "user"  assuming default = asc?
+	// TODO
+	//    { "price" : {"missing" : "_last"} },
+	//    { "price" : {"ignore_unmapped" : true} },
 }
 
 /*
@@ -245,6 +297,10 @@ func Facet() *FacetDsl {
     }
 }
 */
+func Facet() *FacetDsl {
+	return &FacetDsl{&FacetTerm{FacetTerms{nil, ""}}}
+}
+
 type FacetDsl struct {
 	TermsVal *FacetTerm `json:"terms,omitempty"`
 }

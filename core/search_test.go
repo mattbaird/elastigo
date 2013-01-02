@@ -12,7 +12,7 @@ var (
 
 func init() {
 	InitTests(false)
-	//DebugRequests = true
+	DebugRequests = true
 }
 
 func TestSearchRequest(t *testing.T) {
@@ -193,4 +193,51 @@ func TestSearchRange(t *testing.T) {
 
 	Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
 	Assert(out.Hits.Total == 91, t, "Should have total=91 but was %v", out.Hits.Total)
+}
+
+func TestSearchSortOrder(t *testing.T) {
+
+	// ok, now lets try sorting by repository watchers descending
+	qry := Search("github").Pretty().Query(
+		Query().All(),
+	).Sort(
+		Sort("repository.watchers").Desc(),
+	)
+	out, _ := qry.Result()
+	//log.Println(out)
+	//log.Println(err)
+	// how many different docs used the word "add", during entire time range
+	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 7545, t, "Should have 7545 total= %v", out.Hits.Total)
+	h1 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	Assert(h1.Int("repository.watchers") == 41377, t, "Should have 41377 watchers= %v", h1.Int("repository.watchers"))
+
+	// ascending 
+	out, _ = Search("github").Pretty().Query(
+		Query().All(),
+	).Sort(
+		Sort("repository.watchers"),
+	).Result()
+	//log.Println(out)
+	//log.Println(err)
+	// how many different docs used the word "add", during entire time range
+	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 7545, t, "Should have 7545 total= %v", out.Hits.Total)
+	h2 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	Assert(h2.Int("repository.watchers") == 0, t, "Should have 0 watchers= %v", h2.Int("repository.watchers"))
+
+	// desceing with search 
+	out, _ = Search("github").Pretty().Size("5").Query(
+		Query().Search("python"),
+	).Sort(
+		Sort("repository.watchers").Desc(),
+	).Result()
+	//log.Println(out)
+	//log.Println(err)
+	// how many different docs used the word "add", during entire time range
+	Assert(out.Hits.Len() == 5, t, "Should have 5 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 708, t, "Should have 708 total= %v", out.Hits.Total)
+	h3 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	Assert(h3.Int("repository.watchers") == 8659, t, "Should have 8659 watchers= %v", h3.Int("repository.watchers"))
+
 }
