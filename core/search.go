@@ -152,15 +152,15 @@ func Search(index string) *SearchDsl {
 }
 
 type SearchDsl struct {
-	args     url.Values
-	types    []string
-	FromVal  int        `json:"from,omitempty"`
-	SizeVal  int        `json:"size,omitempty"`
-	Index    string     `json:"-"`
-	FacetVal *FacetDsl  `json:"facets,omitempty"`
-	QueryVal *QueryDsl  `json:"query,omitempty"`
-	SortBody []*SortDsl `json:"sort,omitempty"`
-	//FilterVal    FilterDsl `json:"filter,omitempty"`
+	args      url.Values
+	types     []string
+	FromVal   int        `json:"from,omitempty"`
+	SizeVal   int        `json:"size,omitempty"`
+	Index     string     `json:"-"`
+	FacetVal  *FacetDsl  `json:"facets,omitempty"`
+	QueryVal  *QueryDsl  `json:"query,omitempty"`
+	SortBody  []*SortDsl `json:"sort,omitempty"`
+	FilterVal *FilterOp  `json:"filter,omitempty"`
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
@@ -235,6 +235,10 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 	s.QueryVal = q
 	return s
 }
+func (s *SearchDsl) Filter(f *FilterOp) *SearchDsl {
+	s.FilterVal = f
+	return s
+}
 
 func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
 	if s.SortBody == nil {
@@ -271,14 +275,12 @@ func (s *SortDsl) Asc() *SortDsl {
 	return s
 }
 func (s *SortDsl) MarshalJSON() ([]byte, error) {
-	log.Println("in marshall? ", s)
 	if s.IsDesc {
 		return json.Marshal(map[string]string{s.Name: "desc"})
 	}
 	if s.Name == "_score" {
 		return []byte(`"_score"`), nil
 	}
-	log.Println("returning default? ", s.Name)
 	return []byte(fmt.Sprintf(`"%s"`, s.Name)), nil // "user"  assuming default = asc?
 	// TODO
 	//    { "price" : {"missing" : "_last"} },
@@ -298,19 +300,11 @@ func (s *SortDsl) MarshalJSON() ([]byte, error) {
 }
 */
 func Facet() *FacetDsl {
-	return &FacetDsl{&FacetTerm{FacetTerms{nil, ""}}}
+	return &FacetDsl{&Term{Terms{nil, ""}}}
 }
 
 type FacetDsl struct {
-	TermsVal *FacetTerm `json:"terms,omitempty"`
-}
-type FacetTerm struct {
-	Terms FacetTerms `json:"terms,omitempty"`
-}
-
-type FacetTerms struct {
-	Fields []string `json:"field,omitempty"`
-	Size   string   `json:"size,omitempty"`
+	TermsVal *Term `json:"terms,omitempty"`
 }
 
 func (f *FacetDsl) Size(size string) *FacetDsl {
@@ -324,6 +318,16 @@ func (f *FacetDsl) Fields(fields ...string) *FacetDsl {
 	}
 	f.TermsVal.Terms.Fields = flds
 	return f
+}
+
+// Generic Term based (used in query, facet, filter)
+type Term struct {
+	Terms Terms `json:"terms,omitempty"`
+}
+
+type Terms struct {
+	Fields []string `json:"field,omitempty"`
+	Size   string   `json:"size,omitempty"`
 }
 
 func Query() *QueryDsl {
@@ -364,9 +368,24 @@ Three ways to serialize this query term
 type QueryDsl struct {
 	Filter   *Filtered         `json:"filtered,omitempty"`
 	MatchAll *MatchAll         `json:"match_all,omitempty"`
-	Term     map[string]string `json:"term,omitempty"`
+	Terms    map[string]string `json:"term,omitempty"`
+	Qs       *QueryString      `json:"query_string,omitempty"`
+	//Exist    string            `json:"_exists_,omitempty"`
 }
 
+// Custom marshalling
+func (s *QueryDsl) MarshalJSON() ([]byte, error) {
+	if s.IsDesc {
+		return json.Marshal(map[string]string{s.Name: "desc"})
+	}
+	if s.Name == "_score" {
+		return []byte(`"_score"`), nil
+	}
+	return []byte(fmt.Sprintf(`"%s"`, s.Name)), nil // "user"  assuming default = asc?
+	// TODO
+	//    { "price" : {"missing" : "_last"} },
+	//    { "price" : {"ignore_unmapped" : true} },
+}
 func (q *QueryDsl) All() *QueryDsl {
 	q.MatchAll = &MatchAll{""}
 	return q
@@ -378,11 +397,42 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 	q.Filter.Filter = fop
 	return q
 }
-func (q *QueryDsl) Search(qs string) *QueryDsl {
-	if q.Filter == nil {
-		q.Filter = &Filtered{nil, nil}
+
+// Add a term search for a specific field 
+//    Term("user","kimchy")
+func (q *QueryDsl) Term(name, value string) *QueryDsl {
+	if len(q.Terms) == 0 {
+		q.Terms = make(map[string]string)
 	}
-	q.Filter.Query = &FilterQueryWrap{FilterQuery{"", "", qs}}
+	q.Terms[name] = value
+	return q
+}
+func (q *QueryDsl) Search(searchFor string) *QueryDsl {
+	//I don't think this is right, it is not a filter.query, it should be q query?
+	qs := NewQueryString()
+	q.Qs = &qs
+	q.Qs.Query = searchFor
+	return q
+}
+
+// Fields in query_string search
+//     Fields("fieldname","search_for","","")
+//     
+//     Fields("fieldname,field2,field3","search_for","","")
+//
+//     Fields("fieldname,field2,field3","search_for","field_exists","")
+func (q *QueryDsl) Fields(fields, search, exists, missing string) *QueryDsl {
+	fieldList := strings.Split(fields, ",")
+	qs := NewQueryString()
+	q.Qs = &qs
+	q.Qs.Query = search
+	if len(fieldList) == 1 {
+		q.Qs.DefaultField = fields
+	} else {
+		q.Qs.Fields = fieldList
+	}
+	q.Qs.Exists = exists
+	q.Qs.Missing = missing
 	return q
 }
 
@@ -391,16 +441,38 @@ type MatchAll struct {
 }
 
 type Filtered struct {
-	Query  *FilterQueryWrap `json:"query,omitempty"`
-	Filter *FilterOp        `json:"filter,omitempty"`
+	Query  *QueryWrap `json:"query,omitempty"`
+	Filter *FilterOp  `json:"filter,omitempty"`
 }
-type FilterQueryWrap struct {
-	Query FilterQuery `json:"query_string,omitempty"`
+
+// should we reuse QueryDsl here?
+type QueryWrap struct {
+	Qs QueryString `json:"query_string,omitempty"`
 }
-type FilterQuery struct {
-	DefaultOperator string `json:"default_operator,omitempty"`
-	DefaultField    string `json:"default_field,omitempty"`
-	Query           string `json:"query,omitempty"`
+
+/*
+type ExistsString string
+
+func (e *ExistsString) MarshallJSON() ([]byte, error) {
+	if len(e) == 0 {
+		return nil, nil
+	}
+	return []byte(e), nil
+}
+*/
+func NewQueryString() QueryString {
+	return QueryString{"", "", "", "", "", nil}
+}
+
+type QueryString struct {
+	DefaultOperator string   `json:"default_operator,omitempty"`
+	DefaultField    string   `json:"default_field,omitempty"`
+	Query           string   `json:"query,omitempty"`
+	Exists          string   `json:"_exists_,omitempty"`
+	Missing         string   `json:"_missing_,omitempty"`
+	Fields          []string `json:"fields,omitempty"`
+	//_exists_:field1,
+	//_missing_:field1,
 }
 
 /*
@@ -412,10 +484,23 @@ type FilterQuery struct {
 	  }
 	}
 }
+"filter": {
+    "missing": {
+        "field": "repository.name"
+    }
+}
+
 */
+
+func Filter() *FilterOp {
+	return &FilterOp{}
+}
+
 type FilterOp struct {
-	curField string
-	Range    map[string]map[string]string `json:"range,omitempty"`
+	curField    string
+	Range       map[string]map[string]string `json:"range,omitempty"`
+	Exist       map[string]string            `json:"exists,omitempty"`
+	MisssingVal map[string]string            `json:"missing,omitempty"`
 }
 
 func Range() *FilterOp {
@@ -436,5 +521,13 @@ func (f *FilterOp) From(from string) *FilterOp {
 }
 func (f *FilterOp) To(to string) *FilterOp {
 	f.Range[f.curField]["to"] = to
+	return f
+}
+func (f *FilterOp) Exists(name string) *FilterOp {
+	f.Exist = map[string]string{"field": name}
+	return f
+}
+func (f *FilterOp) Missing(name string) *FilterOp {
+	f.MisssingVal = map[string]string{"field": name}
 	return f
 }

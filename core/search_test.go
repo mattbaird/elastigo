@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/araddon/gou"
 	"log"
 	"testing"
@@ -168,6 +169,48 @@ func TestSearchFacetRange(t *testing.T) {
 
 }
 
+func TestSearchTerm(t *testing.T) {
+
+	// ok, now lets try searching with term query (specific field/term)
+	qry := Search("github").Query(
+		Query().Term("repository.name", "jasmine"),
+	)
+	out, _ := qry.Result()
+	// how many different docs have jasmine in repository.name?
+	Assert(out.Hits.Len() == 3, t, "Should have 3 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 3, t, "Should have 3 total= %v", out.Hits.Total)
+
+}
+
+func TestSearchFields(t *testing.T) {
+	// same as terms, search using fields:
+	//    how many different docs have jasmine in repository.name?
+	qry := Search("github").Query(
+		Query().Fields("repository.name", "jasmine", "", ""),
+	)
+	out, _ := qry.Result()
+
+	Assert(out.Hits.Len() == 3, t, "Should have 3 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 3, t, "Should have 3 total= %v", out.Hits.Total)
+}
+
+func TestSearchMissingExists(t *testing.T) {
+	// search for docs that are missing repository.name
+	qry := Search("github").Filter(
+		Filter().Exists("repository.name"),
+	)
+	out, _ := qry.Result()
+	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 7241, t, "Should have 7241 total= %v", out.Hits.Total)
+
+	qry = Search("github").Filter(
+		Filter().Missing("repository.name"),
+	)
+	out, _ = qry.Result()
+	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 304, t, "Should have 304 total= %v", out.Hits.Total)
+}
+
 func TestSearchRange(t *testing.T) {
 
 	// ok, now lets try searching without faceting
@@ -185,14 +228,66 @@ func TestSearchRange(t *testing.T) {
 	Assert(out.Hits.Total == 478, t, "Should have 478 total= %v", out.Hits.Total)
 
 	// now lets filter by just small amount of time
+
+	// THIS DOES NOT PASS
 	out, _ = Search("github").Size("25").Query(
 		Query().Range(
 			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
 		).Search("add"),
 	).Result()
+	fmt.Println(out)
+	if out == nil || &out.Hits == nil {
+		t.Fail()
+		return
+	}
 
 	Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
 	Assert(out.Hits.Total == 91, t, "Should have total=91 but was %v", out.Hits.Total)
+	/*
+			currently outputting, 
+
+			"query": {
+		      "filtered": {
+		        "filter": {
+		          "range": {
+		            "created_at": {
+		              "from": "2012-12-10T15:00:00-08:00",
+		              "to": "2012-12-10T15:10:00-08:00"
+		            }
+		          }
+		        }
+		      },
+		      "query_string": {
+		        "query": "add"
+		      }
+		    }
+		  }
+
+
+			should be
+
+			{
+			    "query": {
+			      "filtered": {
+			        "query":   {
+			          "query_string": {
+			            "query": "add"
+			          }
+			        },
+			        "filter": {
+			          "range": {
+			            "created_at": {
+			              "from": "2012-12-10T15:00:00-08:00",
+			              "to": "2012-12-10T15:10:00-08:00"
+			            }
+			          }
+			        }
+			      }
+			    }
+		  }
+
+
+	*/
 }
 
 func TestSearchSortOrder(t *testing.T) {
