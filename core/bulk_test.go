@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
-	"flag"
-	"github.com/mattbaird/elastigo/api"
 	"log"
 	"strconv"
 	"testing"
@@ -16,60 +14,20 @@ import (
 //  go test -bench="Bulk" 
 
 var (
-	buffers                = make([]*bytes.Buffer, 0)
-	eshost         *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
+	buffers        = make([]*bytes.Buffer, 0)
 	totalBytesSent int
 	messageSets    int
 )
 
-func init() {
-	flag.Parse()
-	log.SetFlags(log.Ltime | log.Lshortfile)
-	BulkDelaySeconds = 1
-	api.Domain = *eshost
+func TestBulk(t *testing.T) {
+	InitTests(true)
 	BulkSendor = func(buf *bytes.Buffer) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
 		BulkSend(buf)
 	}
-	BulkIndexorRun(100, make(chan bool))
-}
 
-// dumb simple assert for testing, printing
-//    Assert(len(items) == 9, t, "Should be 9 but was %d", len(items))
-func Assert(is bool, t *testing.T, format string, args ...interface{}) {
-	if is == false {
-		log.Printf(format, args...)
-		t.Fail()
-	}
-}
-
-// Wait for condition (defined by func) to be true, a utility to create a ticker 
-// checking every 100 ms to see if something (the supplied check func) is done
-//
-//   WaitFor(func() bool {
-//      return ctr.Ct == 0
-//   },10)
-// 
-// @timeout (in seconds) is the last arg
-func WaitFor(check func() bool, timeoutSecs int) {
-	timer := time.NewTicker(100 * time.Millisecond)
-	tryct := 0
-	for _ = range timer.C {
-		if check() {
-			timer.Stop()
-			break
-		}
-		if tryct >= timeoutSecs*10 {
-			timer.Stop()
-			break
-		}
-		tryct++
-	}
-}
-
-func TestBulk(t *testing.T) {
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
 	err := IndexBulk("users", "user", "1", &date, data)
@@ -77,19 +35,22 @@ func TestBulk(t *testing.T) {
 	WaitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
+	// part of request is url, so lets factor that in
+	totalBytesSent = totalBytesSent - len(*eshost)
 	Assert(len(buffers) == 1, t, "Should have sent one operation")
 	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
-	Assert(totalBytesSent == 140, t, "Should have sent 140 bytes but was %v", totalBytesSent)
+	Assert(totalBytesSent == 135, t, "Should have sent 135 bytes but was %v", totalBytesSent)
 
 	err = IndexBulk("users", "user", "2", nil, data)
 
 	WaitFor(func() bool {
 		return len(buffers) > 1
 	}, 5)
+	totalBytesSent = totalBytesSent - len(*eshost)
 	Assert(len(buffers) == 2, t, "Should have nil error, and another buffer")
 
 	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
-	Assert(totalBytesSent == 251, t, "Should have sent 251 bytes but was %v", totalBytesSent)
+	Assert(totalBytesSent == 241, t, "Should have sent 241 bytes but was %v", totalBytesSent)
 }
 
 /*
@@ -101,6 +62,7 @@ BenchmarkBulkSend	18:33:00 bulk_test.go:131: Sent 1 messages in 0 sets totaling 
 
 */
 func BenchmarkBulkSend(b *testing.B) {
+	InitTests(true)
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
@@ -132,6 +94,7 @@ BenchmarkBulkSendBytes	18:33:05 bulk_test.go:169: Sent 1 messages in 0 sets tota
 
 */
 func BenchmarkBulkSendBytes(b *testing.B) {
+	InitTests(true)
 	about := make([]byte, 1000)
 	rand.Read(about)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0), "about": about}

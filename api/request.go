@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"runtime"
 	"strings"
@@ -36,6 +37,7 @@ const (
 )
 
 var (
+	_               = log.Ldate
 	Protocol string = DefaultProtocol
 	Domain   string = DefaultDomain
 	Port     string = DefaultPort
