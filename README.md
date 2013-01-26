@@ -1,19 +1,19 @@
 elastigo
 ========
 
-golang based Elasticsearch client. I will implement all APIs in the core, cluster and indices groups.
+Golang based Elasticsearch client, implements core api for Indexing and searching.
 
 status updates
 ========================
 
+* 2013-1-26, expansion of search dsl for greater coverage
 * 2012-12-30, new bulk indexing and search dsl
 * 2012-10-12, early in development, not ready for production yet.
 
-Examples of Usage
+Search Examples
 -------------------------
 
-
-A Faceted Search using the `Search DSL` :
+A Faceted, ranged Search using the `Search DSL` :
 
     out, err := Search("github").Size("1").Facet(
       Facet().Fields("actor").Size("500"),
@@ -49,16 +49,26 @@ A Direct Search using the query string Api :
    
     core.SearchUri("github", "Issues", "user:kimchy", "")
 
+A Filtered search `Search DSL` :
+   
+    out, err := Search("github").Filter(
+      Filter().Exists("repository.name"),
+    ).Result()
 
-Indexing Content:
 
+Adding content to Elasticsearch
+----------------------------------------------
+
+examples:
+    
+    // add single go struct entity
     response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
 
     // you have bytes
     bytesLine, err := json.Marshall(tw)
     response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
 
-    // Bulk Indexing groups together in the background
+    // Bulk Indexing 
     core.IndexBulk("twitter", "tweet", "3", &time.Now(), NewTweet("kimchy", "Search is now cooler"))
 
 

@@ -18,41 +18,9 @@ import (
 
 /*
 
-This loads test data into elasticsearch for testing
-IT should not get compiled into package (hopefully, because the test_load.go name?)
-
 usage:
 
 	test -v -host eshost -loaddata 
-
-https://api.github.com/events
-
-	{
-		"created_at":"2012-04-11T15:09:50Z",
-		"payload":{
-			"ref":"refs/heads/master",
-			"commits":[{"message":"almost done","sha":"c680f05d6bcce30b72a98d001ec5717c6dff26b4","distinct":true,"url":"https://api.github.com/repos/hydna/hydna-ruby/commits/c680f05d6bcce30b72a98d001ec5717c6dff26b4","author":{"name":"Isak Wiström","email":"isak.wistrom@gmail.com"}}],
-			"push_id":72207903,
-			"size":1,
-			"head":"c680f05d6bcce30b72a98d001ec5717c6dff26b4"
-		},
-		"repo":{
-			"url":"https://api.github.dev/repos/hydna/hydna-ruby","name":"hydna/hydna-ruby","id":3993348
-		},
-		"type":"PushEvent",
-		"public":true,
-		"org":{
-			"gravatar_id":"b91d9862d1e1bc8c1089bf4bf93dd51f",
-			"url":"https://api.github.dev/orgs/hydna","login":"hydna","avatar_url":"https://secure.gravatar.com/avatar/b91d9862d1e1bc8c1089bf4bf93dd51f?d=http://github.dev%2Fimages%2Fgravatars%2Fgravatar-org-420.png","id":194557},
-		"actor":{
-				"gravatar_id":"216d18469ecac1eda15368471754d2ab",
-				"url":"https://api.github.dev/users/Skaggivara",
-				"login":"Skaggivara",
-				"avatar_url":"https://secure.gravatar.com/avatar/216d18469ecac1eda15368471754d2ab?d=http://github.dev%2Fimages%2Fgravatars%2Fgravatar-user-420.png",
-				"id":194565
-		},
-		"id":"1540149912"
-	}
 
 */
 

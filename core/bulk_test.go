@@ -35,19 +35,22 @@ func TestBulk(t *testing.T) {
 	WaitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
+	// part of request is url, so lets factor that in
+	totalBytesSent = totalBytesSent - len(*eshost)
 	Assert(len(buffers) == 1, t, "Should have sent one operation")
 	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
-	Assert(totalBytesSent == 140, t, "Should have sent 140 bytes but was %v", totalBytesSent)
+	Assert(totalBytesSent == 135, t, "Should have sent 135 bytes but was %v", totalBytesSent)
 
 	err = IndexBulk("users", "user", "2", nil, data)
 
 	WaitFor(func() bool {
 		return len(buffers) > 1
 	}, 5)
+	totalBytesSent = totalBytesSent - len(*eshost)
 	Assert(len(buffers) == 2, t, "Should have nil error, and another buffer")
 
 	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
-	Assert(totalBytesSent == 251, t, "Should have sent 251 bytes but was %v", totalBytesSent)
+	Assert(totalBytesSent == 241, t, "Should have sent 241 bytes but was %v", totalBytesSent)
 }
 
 /*
