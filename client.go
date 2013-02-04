@@ -37,7 +37,7 @@ func main() {
 	response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
 	indices.Flush()
 	log.Printf("Index OK: %v", response.Ok)
-	searchresponse, err := core.Search(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}", "")
+	searchresponse, err := core.SearchRequest(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}", "")
 	if err != nil {
 		log.Println("error during search:" + err.Error())
 		log.Fatal(err)
