@@ -24,7 +24,7 @@ var (
 	BulkErrorCt uint64
 	// We are creating a variable defining the func responsible for sending
 	// to allow a mock sendor for test purposes
-	BulkSendor func(*bytes.Buffer)
+	BulkSendor func(*bytes.Buffer) error
 )
 
 // Start up goroutines, channels to start buffering and sending bulk index operations
@@ -134,12 +134,14 @@ func (b *BulkIndexor) send(buf *bytes.Buffer) {
 
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
-func BulkSend(buf *bytes.Buffer) {
+func BulkSend(buf *bytes.Buffer) error {
 	_, err := api.DoCommand("POST", "/_bulk", buf)
 	if err != nil {
 		log.Println(err)
 		BulkErrorCt += 1
+		return err
 	}
+	return nil
 }
 
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable. 
