@@ -59,7 +59,10 @@ func (s *SearchDsl) Result() (*core.SearchResult, error) {
 		Logf(ERROR, "%v", err)
 		return nil, err
 	}
-	jsonErr := json.Unmarshal([]byte(body), &retval)
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		Logf(ERROR, "%v \n\t%s", jsonErr, string(body))
+	}
 	return &retval, jsonErr
 }
 
