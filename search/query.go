@@ -91,6 +91,7 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 		q.FilterVal = fop
 		return q
 	}
+	// TODO:  this is not valid, refactor
 	q.FilterVal.Add(fop)
 	return q
 }

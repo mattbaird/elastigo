@@ -8,6 +8,12 @@ import (
 	"log"
 	"net/url"
 	"strings"
+
+	. "github.com/araddon/gou"
+)
+
+var (
+	_ = DEBUG
 )
 
 // This is the entry point to the SearchDsl, it is a chainable set of utilities
@@ -28,17 +34,16 @@ func Search(index string) *SearchDsl {
 type SearchDsl struct {
 	args      url.Values
 	types     []string
-	FromVal   int        `json:"from,omitempty"`
-	SizeVal   int        `json:"size,omitempty"`
-	Index     string     `json:"-"`
-	FacetVal  *FacetDsl  `json:"facets,omitempty"`
-	QueryVal  *QueryDsl  `json:"query,omitempty"`
-	SortBody  []*SortDsl `json:"sort,omitempty"`
-	FilterVal *FilterOp  `json:"filter,omitempty"`
+	FromVal   int         `json:"from,omitempty"`
+	SizeVal   int         `json:"size,omitempty"`
+	Index     string      `json:"-"`
+	FacetVal  *FacetDsl   `json:"facets,omitempty"`
+	QueryVal  *QueryDsl   `json:"query,omitempty"`
+	SortBody  []*SortDsl  `json:"sort,omitempty"`
+	FilterVal *FilterWrap `json:"filter,omitempty"`
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
-
 	return api.DoCommand("POST", s.url(), s)
 }
 
@@ -51,6 +56,7 @@ func (s *SearchDsl) Result() (*core.SearchResult, error) {
 	}
 	body, err := s.Bytes()
 	if err != nil {
+		Logf(ERROR, "%v", err)
 		return nil, err
 	}
 	jsonErr := json.Unmarshal([]byte(body), &retval)
@@ -109,8 +115,30 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 	s.QueryVal = q
 	return s
 }
-func (s *SearchDsl) Filter(f *FilterOp) *SearchDsl {
-	s.FilterVal = f
+
+// Add Filter Clause with optional Boolean Clause.  This accepts n number of
+// filter clauses.  If more than one, and missing Boolean Clause it assumes "and"
+//
+//     qry := Search("github").Filter(
+//         Filter().Exists("repository.name"),
+//     )
+//
+//     qry := Search("github").Filter(
+//         "or",
+//         Filter().Exists("repository.name"),
+//         Filter().Terms("actor_attributes.location", "portland"),
+//     )
+//
+//     qry := Search("github").Filter(
+//         Filter().Exists("repository.name"),
+//         Filter().Terms("repository.has_wiki", true)
+//     )
+func (s *SearchDsl) Filter(fl ...interface{}) *SearchDsl {
+	if s.FilterVal == nil {
+		s.FilterVal = NewFilterWrap()
+	}
+
+	s.FilterVal.addFilters(fl)
 	return s
 }
 
@@ -120,43 +148,4 @@ func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
 	}
 	s.SortBody = append(s.SortBody, sort...)
 	return s
-}
-
-/* 
-	Sorting accepts any number of Sort commands
-
-	Query().Sort(
-		Sort("last_name").Desc(),
-		Sort("age"),
-	)
-*/
-func Sort(field string) *SortDsl {
-	return &SortDsl{Name: field}
-}
-
-type SortBody []interface{}
-type SortDsl struct {
-	Name   string
-	IsDesc bool
-}
-
-func (s *SortDsl) Desc() *SortDsl {
-	s.IsDesc = true
-	return s
-}
-func (s *SortDsl) Asc() *SortDsl {
-	s.IsDesc = false
-	return s
-}
-func (s *SortDsl) MarshalJSON() ([]byte, error) {
-	if s.IsDesc {
-		return json.Marshal(map[string]string{s.Name: "desc"})
-	}
-	if s.Name == "_score" {
-		return []byte(`"_score"`), nil
-	}
-	return []byte(fmt.Sprintf(`"%s"`, s.Name)), nil // "user"  assuming default = asc?
-	// TODO
-	//    { "price" : {"missing" : "_last"} },
-	//    { "price" : {"ignore_unmapped" : true} },
 }
