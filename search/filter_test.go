@@ -68,3 +68,18 @@ func TestFilters(t *testing.T) {
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
 	Assert(out.Hits.Total == 6290, t, "Should have 6290 total= %v", out.Hits.Total)
 }
+
+func TestFilterRange(t *testing.T) {
+
+	// now lets filter range for repositories with more than 100 forks
+	out, _ := Search("github").Size("25").Filter(
+		Range().Field("repository.forks").From("100"),
+	).Result()
+	if out == nil || &out.Hits == nil {
+		t.Fail()
+		return
+	}
+
+	Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
+	Assert(out.Hits.Total == 678, t, "Should have total=92 but was %v", out.Hits.Total)
+}

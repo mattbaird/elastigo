@@ -175,4 +175,23 @@ type Term struct {
 type Terms struct {
 	Fields []string `json:"field,omitempty"`
 	Size   string   `json:"size,omitempty"`
+	Regex  string   `json:"regex,omitempty"`
+}
+
+// Custom marshalling
+func (t *Terms) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+	// TODO:  this isn't getting called!?
+	if len(t.Fields) == 1 {
+		m["field"] = t.Fields[0]
+	} else if len(t.Fields) > 1 {
+		m["fields"] = t.Fields
+	}
+	if len(t.Regex) > 0 {
+		m["regex"] = t.Regex
+	}
+	if len(t.Size) > 0 {
+		m["size"] = t.Size
+	}
+	return json.Marshal(m)
 }

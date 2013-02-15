@@ -125,7 +125,7 @@ type FilterOp struct {
 
 // A range is a special type of Filter operation
 //
-//    Filter().Exists("repository.name")
+//    Range().Exists("repository.name")
 func Range() *FilterOp {
 	return &FilterOp{Range: make(map[string]map[string]string)}
 }
@@ -145,6 +145,7 @@ func (f *FilterOp) Field(fld string) *FilterOp {
 //    
 //   // we use variadics to allow n arguments, first is the "field" rest are values
 //   Filter().Terms("user", "kimchy", "elasticsearch")
+//
 func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
 	if len(f.TermsMap) == 0 {
 		f.TermsMap = make(map[string][]interface{})
