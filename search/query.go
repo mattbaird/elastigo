@@ -109,9 +109,15 @@ func (q *QueryDsl) Term(name, value string) *QueryDsl {
 // The raw search strings (lucene valid)
 func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 	//I don't think this is right, it is not a filter.query, it should be q query?
-	qs := NewQueryString()
-	q.Qs = &qs
-	q.Qs.Query = searchFor
+	qs := NewQueryString("", "")
+	q.QueryEmbed.Qs = &qs
+	q.QueryEmbed.Qs.Query = searchFor
+	return q
+}
+
+// Querystring operations
+func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
+	q.QueryEmbed.Qs = qs
 	return q
 }
 
@@ -123,16 +129,16 @@ func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 //     Fields("fieldname,field2,field3","search_for","field_exists","")
 func (q *QueryDsl) Fields(fields, search, exists, missing string) *QueryDsl {
 	fieldList := strings.Split(fields, ",")
-	qs := NewQueryString()
-	q.Qs = &qs
-	q.Qs.Query = search
+	qs := NewQueryString("", "")
+	q.QueryEmbed.Qs = &qs
+	q.QueryEmbed.Qs.Query = search
 	if len(fieldList) == 1 {
-		q.Qs.DefaultField = fields
+		q.QueryEmbed.Qs.DefaultField = fields
 	} else {
-		q.Qs.Fields = fieldList
+		q.QueryEmbed.Qs.Fields = fieldList
 	}
-	q.Qs.Exists = exists
-	q.Qs.Missing = missing
+	q.QueryEmbed.Qs.Exists = exists
+	q.QueryEmbed.Qs.Missing = missing
 	return q
 }
 
@@ -152,8 +158,8 @@ type QueryWrap struct {
 }
 
 // QueryString based search 
-func NewQueryString() QueryString {
-	return QueryString{"", "", "", "", "", nil}
+func NewQueryString(field, query string) QueryString {
+	return QueryString{"", field, query, "", "", nil}
 }
 
 type QueryString struct {
