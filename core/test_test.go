@@ -104,9 +104,9 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	docCt := 0
-	BulkSendor = func(buf *bytes.Buffer) {
+	BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
-		BulkSend(buf)
+		return BulkSend(buf)
 	}
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
 	defer resp.Body.Close()
