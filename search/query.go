@@ -91,6 +91,7 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 		q.FilterVal = fop
 		return q
 	}
+	// TODO:  this is not valid, refactor
 	q.FilterVal.Add(fop)
 	return q
 }
@@ -108,9 +109,15 @@ func (q *QueryDsl) Term(name, value string) *QueryDsl {
 // The raw search strings (lucene valid)
 func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 	//I don't think this is right, it is not a filter.query, it should be q query?
-	qs := NewQueryString()
-	q.Qs = &qs
-	q.Qs.Query = searchFor
+	qs := NewQueryString("", "")
+	q.QueryEmbed.Qs = &qs
+	q.QueryEmbed.Qs.Query = searchFor
+	return q
+}
+
+// Querystring operations
+func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
+	q.QueryEmbed.Qs = qs
 	return q
 }
 
@@ -122,16 +129,16 @@ func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 //     Fields("fieldname,field2,field3","search_for","field_exists","")
 func (q *QueryDsl) Fields(fields, search, exists, missing string) *QueryDsl {
 	fieldList := strings.Split(fields, ",")
-	qs := NewQueryString()
-	q.Qs = &qs
-	q.Qs.Query = search
+	qs := NewQueryString("", "")
+	q.QueryEmbed.Qs = &qs
+	q.QueryEmbed.Qs.Query = search
 	if len(fieldList) == 1 {
-		q.Qs.DefaultField = fields
+		q.QueryEmbed.Qs.DefaultField = fields
 	} else {
-		q.Qs.Fields = fieldList
+		q.QueryEmbed.Qs.Fields = fieldList
 	}
-	q.Qs.Exists = exists
-	q.Qs.Missing = missing
+	q.QueryEmbed.Qs.Exists = exists
+	q.QueryEmbed.Qs.Missing = missing
 	return q
 }
 
@@ -151,8 +158,8 @@ type QueryWrap struct {
 }
 
 // QueryString based search 
-func NewQueryString() QueryString {
-	return QueryString{"", "", "", "", "", nil}
+func NewQueryString(field, query string) QueryString {
+	return QueryString{"", field, query, "", "", nil}
 }
 
 type QueryString struct {
@@ -174,4 +181,23 @@ type Term struct {
 type Terms struct {
 	Fields []string `json:"field,omitempty"`
 	Size   string   `json:"size,omitempty"`
+	Regex  string   `json:"regex,omitempty"`
+}
+
+// Custom marshalling
+func (t *Terms) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+	// TODO:  this isn't getting called!?
+	if len(t.Fields) == 1 {
+		m["field"] = t.Fields[0]
+	} else if len(t.Fields) > 1 {
+		m["fields"] = t.Fields
+	}
+	if len(t.Regex) > 0 {
+		m["regex"] = t.Regex
+	}
+	if len(t.Size) > 0 {
+		m["size"] = t.Size
+	}
+	return json.Marshal(m)
 }

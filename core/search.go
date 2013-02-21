@@ -6,6 +6,7 @@ import (
 	"github.com/mattbaird/elastigo/api"
 	"log"
 	"net/url"
+	"strconv"
 )
 
 var (
@@ -131,6 +132,27 @@ type Hit struct {
 	Index  string          `json:"_index"`
 	Type   string          `json:"_type,omitempty"`
 	Id     string          `json:"_id"`
-	Score  float32         `json:"_score"`
-	Source json.RawMessage `json:"_source"` // marshalling left to consumer
+	Score  Float32Nullable `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
+	Source json.RawMessage `json:"_source"`          // marshalling left to consumer
+}
+
+// Elasticsearch returns some invalid (according to go) json, with floats having...
+// 
+// json: cannot unmarshal null into Go value of type float32 (see last field.)
+//
+// "hits":{"total":6808,"max_score":null,
+//    "hits":[{"_index":"10user","_type":"user","_id":"751820","_score":null, 
+type Float32Nullable float32
+
+func (i *Float32Nullable) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
+
+	if in, err := strconv.ParseFloat(string(data), 32); err != nil {
+		return err
+	} else {
+		*i = Float32Nullable(in)
+	}
+	return nil
 }

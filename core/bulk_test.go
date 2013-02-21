@@ -21,11 +21,11 @@ var (
 
 func TestBulk(t *testing.T) {
 	InitTests(true)
-	BulkSendor = func(buf *bytes.Buffer) {
+	BulkSendor = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		BulkSend(buf)
+		return BulkSend(buf)
 	}
 
 	date := time.Unix(1257894000, 0)
@@ -66,11 +66,11 @@ func BenchmarkBulkSend(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	BulkSendor = func(buf *bytes.Buffer) {
+	BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		//log.Println("got bulk")
-		BulkSend(buf)
+		return BulkSend(buf)
 	}
 	for i := 0; i < b.N; i++ {
 		about := make([]byte, 1000)
@@ -102,10 +102,10 @@ func BenchmarkBulkSendBytes(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	BulkSendor = func(buf *bytes.Buffer) {
+	BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
-		BulkSend(buf)
+		return BulkSend(buf)
 	}
 	for i := 0; i < b.N; i++ {
 		IndexBulk("users", "user", strconv.Itoa(i), nil, body)
