@@ -49,7 +49,7 @@ func InitTests(startIndexor bool) {
 		BulkDelaySeconds = 1
 		bulkStarted = true
 		log.Println("start bulk indexor")
-		BulkIndexorRun(100, make(chan bool))
+		BulkIndexorGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
 			log.Println("load test data ")
 			hasLoadedData = true
@@ -104,11 +104,14 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	docCt := 0
-	BulkSendor = func(buf *bytes.Buffer) error {
+	bulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		return BulkSend(buf)
 	}
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
+	if err != nil || resp == nil {
+		panic("Could not download data")
+	}
 	defer resp.Body.Close()
 	if err != nil {
 		log.Println(err)
@@ -124,6 +127,7 @@ func LoadTestData() {
 	for {
 		line, err := r.ReadBytes('\n')
 		if err != nil {
+			bulkIndexor.Flush()
 			break
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
@@ -139,4 +143,6 @@ func LoadTestData() {
 		}
 
 	}
+	// lets wait a bit to ensure that elasticsearch finishes?
+	time.Sleep(time.Second * 5)
 }
