@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
+	"flag"
 	u "github.com/araddon/gou"
+	"github.com/mattbaird/elastigo/api"
 	"log"
 	"strconv"
 	"testing"
@@ -20,6 +22,12 @@ var (
 	messageSets    int
 )
 
+func init() {
+	flag.Parse()
+	if testing.Verbose() {
+		u.SetupLogging("debug")
+	}
+}
 func TestBulk(t *testing.T) {
 	InitTests(true)
 	indexor := NewBulkIndexor(10)
@@ -56,6 +64,33 @@ func TestBulk(t *testing.T) {
 
 	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
 	Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
+}
+
+func TestBulkErrors(t *testing.T) {
+	// lets set a bad port, and hope we get a connection refused error?
+	api.Port = "27845"
+	defer func() {
+		api.Port = "9200"
+	}()
+	BulkDelaySeconds = 1
+	indexor := NewBulkIndexorErrors(10, 1)
+	done := make(chan bool)
+	indexor.Run(done)
+
+	errorCt := 0
+	go func() {
+		for i := 0; i < 20; i++ {
+			date := time.Unix(1257894000, 0)
+			data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
+			indexor.Index("users", "user", strconv.Itoa(i), &date, data)
+		}
+	}()
+	for errBuf := range indexor.ErrorChannel {
+		errorCt++
+		u.Debug(errBuf.Err)
+		break
+	}
+	u.Assert(errorCt > 0, t, "ErrorCt should be > 0 %d", errorCt)
 }
 
 /*

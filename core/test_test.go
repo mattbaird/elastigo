@@ -20,7 +20,7 @@ import (
 
 usage:
 
-	test -v -host eshost -loaddata 
+	test -v -host eshost -loaddata
 
 */
 
@@ -40,8 +40,6 @@ func InitTests(startIndexor bool) {
 	if !hasStartedTesting {
 		flag.Parse()
 		hasStartedTesting = true
-
-		flag.Parse()
 		log.SetFlags(log.Ltime | log.Lshortfile)
 		api.Domain = *eshost
 	}
@@ -67,13 +65,13 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 	}
 }
 
-// Wait for condition (defined by func) to be true, a utility to create a ticker 
+// Wait for condition (defined by func) to be true, a utility to create a ticker
 // checking every 100 ms to see if something (the supplied check func) is done
 //
 //   WaitFor(func() bool {
 //      return ctr.Ct == 0
 //   },10)
-// 
+//
 // @timeout (in seconds) is the last arg
 func WaitFor(check func() bool, timeoutSecs int) {
 	timer := time.NewTicker(100 * time.Millisecond)

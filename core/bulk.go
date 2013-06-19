@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/json"
+	u "github.com/araddon/gou"
 	"github.com/mattbaird/elastigo/api"
 	"io"
 	"log"
@@ -167,7 +168,7 @@ func (b *BulkIndexor) startHttpSendor() {
 // start a timer for checking back and forcing flush ever BulkDelaySeconds seconds
 // even if we haven't hit max messages/size
 func (b *BulkIndexor) startTimer() {
-	log.Println("Starting timer with delay = ", BulkDelaySeconds)
+	u.Debug("Starting Bulk timer with delay = ", BulkDelaySeconds)
 	ticker := time.NewTicker(time.Second * time.Duration(BulkDelaySeconds))
 	go func() {
 		for _ = range ticker.C {
@@ -217,6 +218,7 @@ func (b *BulkIndexor) Index(index string, _type string, id string, date *time.Ti
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	by, err := IndexBulkBytes(index, _type, id, date, data)
 	if err != nil {
+		u.Error(err)
 		return err
 	}
 	b.bulkChannel <- by
