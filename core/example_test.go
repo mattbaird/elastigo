@@ -3,6 +3,7 @@ package core_test
 import (
 	"fmt"
 	"github.com/mattbaird/elastigo/core"
+	"strconv"
 	"time"
 )
 
@@ -11,6 +12,8 @@ func ExampleBulkIndexor_simple() {
 	indexor := core.NewBulkIndexorErrors(10, 60)
 	done := make(chan bool)
 	indexor.Run(done)
+
+	indexor.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`)
 
 	<-done // wait forever
 }
@@ -21,10 +24,16 @@ func ExampleBulkIndexor_errorchannel() {
 	done := make(chan bool)
 	indexor.Run(done)
 
-	for errBuf := range indexor.ErrorChannel {
-		// just blissfully print errors forever
-		fmt.Println(errBuf.Err)
+	go func() {
+		for errBuf := range indexor.ErrorChannel {
+			// just blissfully print errors forever
+			fmt.Println(errBuf.Err)
+		}
+	}()
+	for i := 0; i < 20; i++ {
+		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
 	}
+	<-done
 }
 
 // The simplest usage of background bulk indexing with error channel
@@ -47,9 +56,16 @@ func ExampleBulkIndexor_errorsmarter() {
 			}
 		}
 	}()
-	for errBuf := range indexor.ErrorChannel {
-		errorCt++
-		fmt.Println(errBuf.Err)
-		// log to disk?  db?   ????  Panic
+
+	go func() {
+		for errBuf := range indexor.ErrorChannel {
+			errorCt++
+			fmt.Println(errBuf.Err)
+			// log to disk?  db?   ????  Panic
+		}
+	}()
+	for i := 0; i < 20; i++ {
+		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
 	}
+	<-done
 }

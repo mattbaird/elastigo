@@ -17,11 +17,11 @@ var (
 )
 
 // This is the entry point to the SearchDsl, it is a chainable set of utilities
-// to create searches.   
+// to create searches.
 //
 // params
 //    @index = elasticsearch index to search
-// 
+//
 //    out, err := Search("github").Type("Issues").Pretty().Query(
 //    Query().Range(
 //         Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
@@ -109,6 +109,15 @@ func (s *SearchDsl) Size(size string) *SearchDsl {
 	return s
 }
 
+// Pass a Query expression to this search
+//
+//		qry := Search("github").Size("0").Facet(
+//					Facet().Regex("repository.name", "no.*").Size("8"),
+//				)
+//
+//		qry := Search("github").Pretty().Facet(
+//					Facet().Fields("type").Size("25"),
+//				)
 func (s *SearchDsl) Facet(f *FacetDsl) *SearchDsl {
 	s.FacetVal = f
 	return s

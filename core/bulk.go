@@ -214,9 +214,9 @@ func (b *BulkIndexor) send(buf *bytes.Buffer) {
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func (b *BulkIndexor) Index(index string, _type string, id string, date *time.Time, data interface{}) error {
+func (b *BulkIndexor) Index(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := IndexBulkBytes(index, _type, id, "", date, data)
+	by, err := IndexBulkBytes(index, _type, id, ttl, date, data)
 	if err != nil {
 		u.Error(err)
 		return err
