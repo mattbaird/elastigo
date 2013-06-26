@@ -23,7 +23,7 @@ var (
 	BulkErrorCt uint64
 
 	// There is one Global Bulk Indexor for convenience
-	bulkIndexor *BulkIndexor
+	GlobalBulkIndexor *BulkIndexor
 )
 
 type ErrorBuffer struct {
@@ -40,9 +40,9 @@ type ErrorBuffer struct {
 //   done := make(chan bool)
 //   BulkIndexorGlobalRun(100, done)
 func BulkIndexorGlobalRun(maxConns int, done chan bool) {
-	if bulkIndexor == nil {
-		bulkIndexor = NewBulkIndexor(maxConns)
-		bulkIndexor.Run(done)
+	if GlobalBulkIndexor == nil {
+		GlobalBulkIndexor = NewBulkIndexor(maxConns)
+		GlobalBulkIndexor.Run(done)
 	}
 }
 
@@ -71,18 +71,29 @@ type BulkIndexor struct {
 	// buffers
 	sendBuf chan *bytes.Buffer
 	buf     *bytes.Buffer
+	// Buffer for Max number of time before forcing flush
+	BufferDelayMax time.Duration
+	// Max buffer size in bytes before flushing to elasticsearch
+	BulkMaxBuffer int // 1048576
+	// Max number of Docs to hold in buffer before forcing flush
+	BulkMaxDocs int // 100
+
 	// Number of documents we have send through so far on this session
 	docCt int
 	// Max number of http connections in flight at one time
 	maxConns int
-	// Was the last send induced by time?  or if not, by max docs/size?
-	lastSendorByTime bool
-	mu               sync.Mutex
+	// If we are indexing enough docs per bufferdelaymax, we won't need to do time
+	// based eviction, else we do.
+	needsTimeBasedFlush bool
+	mu                  sync.Mutex
 }
 
 func NewBulkIndexor(maxConns int) *BulkIndexor {
 	b := BulkIndexor{sendBuf: make(chan *bytes.Buffer, maxConns)}
-	b.lastSendorByTime = true
+	b.needsTimeBasedFlush = true
+	b.BulkMaxBuffer = BulkMaxBuffer
+	b.BulkMaxDocs = BulkMaxDocs
+	b.BufferDelayMax = time.Duration(BulkDelaySeconds) * time.Second
 	b.buf = new(bytes.Buffer)
 	b.maxConns = maxConns
 	b.bulkChannel = make(chan []byte, 100)
@@ -97,9 +108,12 @@ func NewBulkIndexor(maxConns int) *BulkIndexor {
 //   BulkIndexorGlobalRun(100, done)
 func NewBulkIndexorErrors(maxConns, retrySeconds int) *BulkIndexor {
 	b := BulkIndexor{sendBuf: make(chan *bytes.Buffer, maxConns)}
-	b.lastSendorByTime = true
+	b.needsTimeBasedFlush = true
 	b.buf = new(bytes.Buffer)
 	b.maxConns = maxConns
+	b.BulkMaxBuffer = BulkMaxBuffer
+	b.BulkMaxDocs = BulkMaxDocs
+	b.BufferDelayMax = time.Duration(BulkDelaySeconds) * time.Second
 	b.RetryForSeconds = retrySeconds
 	b.bulkChannel = make(chan []byte, 100)
 	b.ErrorChannel = make(chan *ErrorBuffer, 20)
@@ -168,17 +182,19 @@ func (b *BulkIndexor) startHttpSendor() {
 // start a timer for checking back and forcing flush ever BulkDelaySeconds seconds
 // even if we haven't hit max messages/size
 func (b *BulkIndexor) startTimer() {
-	u.Debug("Starting Bulk timer with delay = ", BulkDelaySeconds)
 	ticker := time.NewTicker(time.Second * time.Duration(BulkDelaySeconds))
+	log.Println("Starting timer with delay = ", b.BufferDelayMax)
 	go func() {
 		for _ = range ticker.C {
 			b.mu.Lock()
 			// don't send unless last sendor was the time,
 			// otherwise an indication of other thresholds being hit
 			// where time isn't needed
-			if b.buf.Len() > 0 && b.lastSendorByTime {
-				b.lastSendorByTime = true
+			if b.buf.Len() > 0 && b.needsTimeBasedFlush {
+				b.needsTimeBasedFlush = true
 				b.send(b.buf)
+			} else if b.buf.Len() > 0 {
+				b.needsTimeBasedFlush = true
 			}
 			b.mu.Unlock()
 
@@ -194,8 +210,8 @@ func (b *BulkIndexor) startDocChannel() {
 			b.mu.Lock()
 			b.docCt += 1
 			b.buf.Write(docBytes)
-			if b.buf.Len() >= BulkMaxBuffer || b.docCt >= BulkMaxDocs {
-				b.lastSendorByTime = false
+			if b.buf.Len() >= b.BulkMaxBuffer || b.docCt >= b.BulkMaxDocs {
+				b.needsTimeBasedFlush = false
 				//log.Printf("Send due to size:  docs=%d  bufsize=%d", b.docCt, b.buf.Len())
 				b.send(b.buf)
 			}
@@ -279,32 +295,40 @@ func IndexBulkBytes(index string, _type string, id, ttl string, date *time.Time,
 
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
+//
+// This uses the one Global Bulk Indexor, you can also create your own non-global indexors and use the
+// Index functions of that
+//
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
 func IndexBulk(index string, _type string, id string, date *time.Time, data interface{}) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if bulkIndexor == nil {
+	if GlobalBulkIndexor == nil {
 		panic("Must have Global Bulk Indexor to use this Func")
 	}
 	by, err := IndexBulkBytes(index, _type, id, "", date, data)
 	if err != nil {
 		return err
 	}
-	bulkIndexor.bulkChannel <- by
+	GlobalBulkIndexor.bulkChannel <- by
 	return nil
 }
 
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
-// it operates by buffering requests, and ocassionally flushing to elasticsearch
+// it operates by buffering requests, and ocassionally flushing to elasticsearch.
+//
+// This uses the one Global Bulk Indexor, you can also create your own non-global indexors and use the
+// IndexTtl functions of that
+//
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
 func IndexBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if bulkIndexor == nil {
+	if GlobalBulkIndexor == nil {
 		panic("Must have Global Bulk Indexor to use this Func")
 	}
 	by, err := IndexBulkBytes(index, _type, id, ttl, date, data)
 	if err != nil {
 		return err
 	}
-	bulkIndexor.bulkChannel <- by
+	GlobalBulkIndexor.bulkChannel <- by
 	return nil
 }

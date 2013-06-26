@@ -30,12 +30,12 @@ func init() {
 }
 func TestBulk(t *testing.T) {
 	InitTests(true)
-	indexor := NewBulkIndexor(10)
+	indexor := NewBulkIndexor(3)
 	indexor.BulkSendor = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		log.Println(string(buf.Bytes()))
+		u.Debug(string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
@@ -43,27 +43,55 @@ func TestBulk(t *testing.T) {
 
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
-	err := indexor.Index("users", "user", "1", &date, data)
+	err := indexor.Index("users", "user", "1", "", &date, data)
 
 	WaitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
-	Assert(len(buffers) == 1, t, "Should have sent one operation but was %d", len(buffers))
-	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
-	Assert(totalBytesSent == 145, t, "Should have sent 135 bytes but was %v", totalBytesSent)
+	u.Assert(len(buffers) == 1, t, "Should have sent one operation but was %d", len(buffers))
+	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
+	u.Assert(totalBytesSent == 145, t, "Should have sent 135 bytes but was %v", totalBytesSent)
 
-	err = indexor.Index("users", "user", "2", nil, data)
+	err = indexor.Index("users", "user", "2", "", nil, data)
 
 	WaitFor(func() bool {
 		return len(buffers) > 1
 	}, 5)
 	totalBytesSent = totalBytesSent - len(*eshost)
-	Assert(len(buffers) == 2, t, "Should have nil error, and another buffer")
+	u.Assert(len(buffers) == 2, t, "Should have nil error, and another buffer")
 
-	Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
-	Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
+	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
+	u.Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
+
+}
+func TestBulkSmallBatch(t *testing.T) {
+	InitTests(true)
+
+	done := make(chan bool)
+
+	date := time.Unix(1257894000, 0)
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
+
+	// Now tests small batches
+	indexorsm := NewBulkIndexor(1)
+	indexorsm.BufferDelayMax = 100 * time.Millisecond
+	indexorsm.BulkMaxDocs = 2
+	messageSets = 0
+	indexorsm.BulkSendor = func(buf *bytes.Buffer) error {
+		messageSets += 1
+		return BulkSend(buf)
+	}
+	indexorsm.Run(done)
+	<-time.After(time.Millisecond * 20)
+
+	indexorsm.Index("users", "user", "2", "", &date, data)
+	indexorsm.Index("users", "user", "3", "", &date, data)
+	indexorsm.Index("users", "user", "4", "", &date, data)
+	<-time.After(time.Millisecond * 200)
+	Assert(messageSets == 2, t, "Should have sent 2 message sets %d", messageSets)
+
 }
 
 func TestBulkErrors(t *testing.T) {
@@ -82,7 +110,7 @@ func TestBulkErrors(t *testing.T) {
 		for i := 0; i < 20; i++ {
 			date := time.Unix(1257894000, 0)
 			data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
-			indexor.Index("users", "user", strconv.Itoa(i), &date, data)
+			indexor.Index("users", "user", strconv.Itoa(i), "", &date, data)
 		}
 	}()
 	for errBuf := range indexor.ErrorChannel {
@@ -91,6 +119,7 @@ func TestBulkErrors(t *testing.T) {
 		break
 	}
 	u.Assert(errorCt > 0, t, "ErrorCt should be > 0 %d", errorCt)
+
 }
 
 /*
@@ -106,7 +135,7 @@ func BenchmarkBulkSend(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	bulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		//log.Println("got bulk")
@@ -142,7 +171,7 @@ func BenchmarkBulkSendBytes(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	bulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		return BulkSend(buf)
