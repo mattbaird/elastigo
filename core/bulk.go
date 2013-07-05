@@ -182,7 +182,7 @@ func (b *BulkIndexor) startHttpSendor() {
 // start a timer for checking back and forcing flush ever BulkDelaySeconds seconds
 // even if we haven't hit max messages/size
 func (b *BulkIndexor) startTimer() {
-	ticker := time.NewTicker(time.Second * time.Duration(BulkDelaySeconds))
+	ticker := time.NewTicker(b.BufferDelayMax)
 	log.Println("Starting timer with delay = ", b.BufferDelayMax)
 	go func() {
 		for _ = range ticker.C {

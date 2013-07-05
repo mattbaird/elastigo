@@ -107,6 +107,8 @@ func LoadTestData() {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		return BulkSend(buf)
 	}
+	done := make(chan bool)
+	indexor.Run(done)
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
 	if err != nil || resp == nil {
 		panic("Could not download data")
@@ -135,7 +137,7 @@ func LoadTestData() {
 			id := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(ge.Url))), 10)
 			indexor.Index("github", ge.Type, id, "", &ge.Created, line)
 			docCt++
-			//log.Println(string(line))
+			//log.Println(docCt, " ", string(line))
 			//os.Exit(1)
 		} else {
 			log.Println("ERROR? ", string(line))
