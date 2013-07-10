@@ -6,6 +6,8 @@ Golang based Elasticsearch client, implements core api for Indexing and searchin
 status updates
 ========================
 
+* 2013-7-10:  Improvments/changes to bulk indexor (includes breaking changes to support TTL)
+              Search api supports And/Or/Not
 * 2013-1-26, expansion of search dsl for greater coverage
 * 2012-12-30, new bulk indexing and search dsl
 * 2012-10-12, early in development, not ready for production yet.
