@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"strings"
 
-	. "github.com/araddon/gou"
+	u "github.com/araddon/gou"
 )
 
 var (
-	_ = DEBUG
+	_ = u.DEBUG
 )
 
 // This is the entry point to the SearchDsl, it is a chainable set of utilities
@@ -56,13 +56,14 @@ func (s *SearchDsl) Result() (*core.SearchResult, error) {
 	}
 	body, err := s.Bytes()
 	if err != nil {
-		Logf(ERROR, "%v", err)
+		u.Errorf("%v", err)
 		return nil, err
 	}
 	jsonErr := json.Unmarshal(body, &retval)
 	if jsonErr != nil {
-		Logf(ERROR, "%v \n\t%s", jsonErr, string(body))
+		u.Errorf("%v \n\t%s", jsonErr, string(body))
 	}
+	//Debug(string(body))
 	return &retval, jsonErr
 }
 

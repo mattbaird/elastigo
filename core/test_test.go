@@ -4,14 +4,16 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"hash/crc32"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -46,7 +48,7 @@ func InitTests(startIndexor bool) {
 	if startIndexor && !bulkStarted {
 		BulkDelaySeconds = 1
 		bulkStarted = true
-		log.Println("start bulk indexor")
+		log.Println("start global test bulk indexor")
 		BulkIndexorGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
 			log.Println("load test data ")
@@ -102,10 +104,27 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	docCt := 0
+	errCt := 0
 	indexor := NewBulkIndexor(20)
 	indexor.BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
-		return BulkSend(buf)
+		req, err := api.ElasticSearchRequest("POST", "/_bulk")
+		if err != nil {
+			errCt += 1
+			log.Println("ERROR: ", err)
+			return err
+		}
+		req.SetBody(buf)
+		res, err := http.DefaultClient.Do((*http.Request)(req))
+		if err != nil {
+			errCt += 1
+			log.Println("ERROR: ", err)
+			return err
+		}
+		if res.StatusCode != 200 {
+			log.Printf("Not 200! %d \n", res.StatusCode)
+		}
+		return err
 	}
 	done := make(chan bool)
 	indexor.Run(done)
@@ -125,16 +144,24 @@ func LoadTestData() {
 	}
 	r := bufio.NewReader(gzReader)
 	var ge GithubEvent
+	docsm := make(map[string]bool)
+	h := md5.New()
+
 	for {
 		line, err := r.ReadBytes('\n')
-		if err != nil {
+		if err != nil && err != io.EOF {
+			log.Println("FATAL:  could not read line? ", err)
+		} else if err != nil {
 			indexor.Flush()
 			break
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
-			// obviously there is some chance of collision here so only useful for testing
-			// plus, i don't even know if the url is unique?
-			id := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(ge.Url))), 10)
+			// create an "ID"
+			id := base64.StdEncoding.EncodeToString(h.Sum(line))
+			if _, ok := docsm[id]; ok {
+				log.Println("HM, already exists? ", ge.Url)
+			}
+			docsm[id] = true
 			indexor.Index("github", ge.Type, id, "", &ge.Created, line)
 			docCt++
 			//log.Println(docCt, " ", string(line))
@@ -144,6 +171,12 @@ func LoadTestData() {
 		}
 
 	}
+	if errCt != 0 {
+		log.Println("FATAL, could not load ", errCt)
+	}
 	// lets wait a bit to ensure that elasticsearch finishes?
 	time.Sleep(time.Second * 5)
+	if len(docsm) != docCt {
+		panic(fmt.Sprintf("Docs didn't match?   %d:%d", len(docsm), docCt))
+	}
 }
