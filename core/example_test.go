@@ -69,3 +69,25 @@ func ExampleBulkIndexor_errorsmarter() {
 	}
 	<-done
 }
+
+// The inspecting the response
+func ExampleBulkIndexor_responses() {
+	indexor := core.NewBulkIndexor(10)
+	// Create a custom Sendor Func, to allow inspection of response/error
+	indexor.BulkSendor = func(buf *bytes.Buffer) error {
+		// @buf is the buffer of docs about to be written
+		respJson, err := api.DoCommand("POST", "/_bulk", buf)
+		if err != nil {
+			// handle it better than this
+			fmt.Println(string(respJson))
+		}
+		return err
+	}
+	done := make(chan bool)
+	indexor.Run(done)
+
+	for i := 0; i < 20; i++ {
+		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+	}
+	<-done
+}
