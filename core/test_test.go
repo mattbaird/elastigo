@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/md5"
-	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -146,7 +145,6 @@ func LoadTestData() {
 	var ge GithubEvent
 	docsm := make(map[string]bool)
 	h := md5.New()
-
 	for {
 		line, err := r.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -157,7 +155,8 @@ func LoadTestData() {
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
 			// create an "ID"
-			id := base64.StdEncoding.EncodeToString(h.Sum(line))
+			h.Write(line)
+			id := fmt.Sprintf("%x", h.Sum(nil))
 			if _, ok := docsm[id]; ok {
 				log.Println("HM, already exists? ", ge.Url)
 			}

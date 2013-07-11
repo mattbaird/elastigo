@@ -66,7 +66,7 @@ func TestFilters(t *testing.T) {
 	out, err = qry.Result()
 	Assert(err == nil, t, "should not have error")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 6674, t, "Should have 6674 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 6676, t, "Should have 6676 total= %v", out.Hits.Total)
 }
 
 func TestFilterRange(t *testing.T) {
