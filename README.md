@@ -1,14 +1,21 @@
 elastigo
 ========
 
-Golang based Elasticsearch client, implements core api for Indexing and searching.
+Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 status updates
 ========================
 
-* 2013-1-26, expansion of search dsl for greater coverage
-* 2012-12-30, new bulk indexing and search dsl
-* 2012-10-12, early in development, not ready for production yet.
+* *2013-7-10* Improvments/changes to bulk indexor (includes breaking changes to support TTL), 
+         Search dsl supports And/Or/Not   
+    * *SearchDsl* should still be considered beta at this 
+         point, there will be minor breaking changes as more of the 
+         elasticsearch feature set is implemented.
+* *2013-1-26* expansion of search dsl for greater coverage
+* *2012-12-30* new bulk indexing and search dsl
+* *2012-10-12* early in development, not ready for production yet.
+
+
 
 Search Examples
 -------------------------
