@@ -102,10 +102,13 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	docCt := 0
-	bulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
+	indexor := NewBulkIndexor(20)
+	indexor.BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		return BulkSend(buf)
 	}
+	done := make(chan bool)
+	indexor.Run(done)
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
 	if err != nil || resp == nil {
 		panic("Could not download data")
@@ -125,16 +128,16 @@ func LoadTestData() {
 	for {
 		line, err := r.ReadBytes('\n')
 		if err != nil {
-			bulkIndexor.Flush()
+			indexor.Flush()
 			break
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
 			// obviously there is some chance of collision here so only useful for testing
 			// plus, i don't even know if the url is unique?
 			id := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(ge.Url))), 10)
-			IndexBulk("github", ge.Type, id, &ge.Created, line)
+			indexor.Index("github", ge.Type, id, "", &ge.Created, line)
 			docCt++
-			//log.Println(string(line))
+			//log.Println(docCt, " ", string(line))
 			//os.Exit(1)
 		} else {
 			log.Println("ERROR? ", string(line))

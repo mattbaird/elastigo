@@ -7,6 +7,7 @@ import (
 	"github.com/mattbaird/elastigo/core"
 	"log"
 	"os"
+	"testing"
 )
 
 var (
@@ -20,13 +21,15 @@ var (
 
 usage:
 
-	test -v -host eshost 
+	test -v -host eshost
 
 */
 
 func init() {
 	InitTests(false)
-	core.DebugRequests = true
+	if testing.Verbose() {
+		core.DebugRequests = true
+	}
 }
 
 func InitTests(startIndexor bool) {
