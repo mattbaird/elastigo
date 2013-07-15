@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"log"
 	"net/url"
 	"strconv"
 )
@@ -19,7 +18,7 @@ var (
 //   @pretty:  bool for pretty reply or not, a parameter to elasticsearch
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
-//   @query:  this can be one of 3 types:   
+//   @query:  this can be one of 3 types:
 //              1)  string value that is valid elasticsearch
 //              2)  io.Reader that can be set in body (also valid elasticsearch string syntax..)
 //              3)  other type marshalable to json (also valid elasticsearch json)
@@ -35,7 +34,6 @@ func SearchRequest(pretty bool, index string, _type string, query interface{}, s
 	} else {
 		uriVal = fmt.Sprintf("/%s/_search?%s%s", index, api.Pretty(pretty), api.Scroll(scroll))
 	}
-	log.Println(uriVal)
 	body, err := api.DoCommand("POST", uriVal, query)
 	if err != nil {
 		return retval, err
@@ -137,11 +135,11 @@ type Hit struct {
 }
 
 // Elasticsearch returns some invalid (according to go) json, with floats having...
-// 
+//
 // json: cannot unmarshal null into Go value of type float32 (see last field.)
 //
 // "hits":{"total":6808,"max_score":null,
-//    "hits":[{"_index":"10user","_type":"user","_id":"751820","_score":null, 
+//    "hits":[{"_index":"10user","_type":"user","_id":"751820","_score":null,
 type Float32Nullable float32
 
 func (i *Float32Nullable) UnmarshalJSON(data []byte) error {

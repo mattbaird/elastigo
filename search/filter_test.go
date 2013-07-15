@@ -14,14 +14,14 @@ func TestFilters(t *testing.T) {
 	out, err := qry.Result()
 	Assert(err == nil, t, "should not have error")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 7241, t, "Should have 7241 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 7695, t, "Should have 7695 total= %v", out.Hits.Total)
 
 	qry = Search("github").Filter(
 		Filter().Missing("repository.name"),
 	)
 	out, _ = qry.Result()
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 304, t, "Should have 304 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 389, t, "Should have 389 total= %v", out.Hits.Total)
 
 	//actor_attributes: {type: "User",
 	qry = Search("github").Filter(
@@ -30,7 +30,7 @@ func TestFilters(t *testing.T) {
 	out, _ = qry.Result()
 	Debug(out)
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 65, t, "Should have 65 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 71, t, "Should have 71 total= %v", out.Hits.Total)
 
 	/*
 		Should this be an AND by default?
@@ -43,7 +43,7 @@ func TestFilters(t *testing.T) {
 	Debug(out)
 	Assert(err == nil, t, "should not have error")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 43, t, "Should have 43 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 44, t, "Should have 44 total= %v", out.Hits.Total)
 
 	// NOW, lets try with two query calls instead of one
 	qry = Search("github").Filter(
@@ -56,7 +56,7 @@ func TestFilters(t *testing.T) {
 	Debug(out)
 	Assert(err == nil, t, "should not have error")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 43, t, "Should have 43 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 44, t, "Should have 44 total= %v", out.Hits.Total)
 
 	qry = Search("github").Filter(
 		"or",
@@ -66,7 +66,7 @@ func TestFilters(t *testing.T) {
 	out, err = qry.Result()
 	Assert(err == nil, t, "should not have error")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 6290, t, "Should have 6290 total= %v", out.Hits.Total)
+	Assert(out.Hits.Total == 6676, t, "Should have 6676 total= %v", out.Hits.Total)
 }
 
 func TestFilterRange(t *testing.T) {
@@ -81,5 +81,5 @@ func TestFilterRange(t *testing.T) {
 	}
 
 	Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 678, t, "Should have total=92 but was %v", out.Hits.Total)
+	Assert(out.Hits.Total == 725, t, "Should have total=725 but was %v", out.Hits.Total)
 }

@@ -35,7 +35,7 @@ func ExampleBulkIndexor_errorchannel() {
 	for i := 0; i < 20; i++ {
 		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
 	}
-	<-done
+	done <- true
 }
 
 // The simplest usage of background bulk indexing with error channel
@@ -69,7 +69,7 @@ func ExampleBulkIndexor_errorsmarter() {
 	for i := 0; i < 20; i++ {
 		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
 	}
-	<-done
+	done <- true // send shutdown signal
 }
 
 // The inspecting the response
@@ -91,5 +91,5 @@ func ExampleBulkIndexor_responses() {
 	for i := 0; i < 20; i++ {
 		indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
 	}
-	<-done
+	done <- true // send shutdown signal
 }
