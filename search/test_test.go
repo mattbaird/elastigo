@@ -7,14 +7,14 @@ import (
 	"github.com/mattbaird/elastigo/core"
 	"log"
 	"os"
-	"testing"
+	//"testing"
 )
 
 var (
 	_                 = log.Ldate
 	hasStartedTesting bool
 	eshost            *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
-	logLevel          *string = flag.String("logging", "debug", "Which log level: [debug,info,warn,error,fatal]")
+	logLevel          *string = flag.String("logging", "info", "Which log level: [debug,info,warn,error,fatal]")
 )
 
 /*
@@ -27,7 +27,8 @@ usage:
 
 func init() {
 	InitTests(false)
-	if testing.Verbose() {
+	if *logLevel == "debug" {
+		//*logLevel = "debug"
 		core.DebugRequests = true
 	}
 }

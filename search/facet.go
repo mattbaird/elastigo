@@ -3,11 +3,11 @@ package search
 import (
 	"encoding/json"
 
-	. "github.com/araddon/gou"
+	u "github.com/araddon/gou"
 )
 
 var (
-	_ = DEBUG
+	_ = u.DEBUG
 )
 
 /*
@@ -35,7 +35,7 @@ func Facet() *FacetDsl {
 
 type FacetDsl struct {
 	size  string
-	Terms map[string]Term `json:"terms,omitempty"`
+	Terms map[string]*Term `json:"terms,omitempty"`
 }
 
 func (m *FacetDsl) Size(size string) *FacetDsl {
@@ -45,9 +45,9 @@ func (m *FacetDsl) Size(size string) *FacetDsl {
 
 func (m *FacetDsl) Regex(field, match string) *FacetDsl {
 	if len(m.Terms) == 0 {
-		m.Terms = make(map[string]Term)
+		m.Terms = make(map[string]*Term)
 	}
-	m.Terms[field] = Term{Terms{Fields: []string{field}, Regex: match}}
+	m.Terms[field] = &Term{Terms{Fields: []string{field}, Regex: match}}
 	return m
 }
 
@@ -56,14 +56,13 @@ func (m *FacetDsl) Fields(fields ...string) *FacetDsl {
 		return m
 	}
 	if len(m.Terms) == 0 {
-		m.Terms = make(map[string]Term)
+		m.Terms = make(map[string]*Term)
 	}
-	m.Terms[fields[0]] = Term{Terms{Fields: fields}}
+	m.Terms[fields[0]] = &Term{Terms{Fields: fields}}
 	return m
 }
 
 func (m *FacetDsl) MarshalJSON() ([]byte, error) {
-	// Custom marshall
 	for _, t := range m.Terms {
 		t.Terms.Size = m.size
 	}

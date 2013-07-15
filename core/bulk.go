@@ -133,6 +133,7 @@ func (b *BulkIndexor) Run(done chan bool) {
 		b.startDocChannel()
 		b.startTimer()
 		<-b.shutdownChan
+		b.Flush()
 	}()
 }
 
