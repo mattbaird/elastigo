@@ -31,6 +31,5 @@ func Refresh(indices ...string) (api.BaseResponse, error) {
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
