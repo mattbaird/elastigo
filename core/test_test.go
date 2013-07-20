@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/meanpath/elastigo/api"
 	"io"
 	"log"
 	"net/http"

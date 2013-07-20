@@ -18,10 +18,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/cluster"
-	"github.com/mattbaird/elastigo/core"
-	"github.com/mattbaird/elastigo/indices"
+	"github.com/meanpath/elastigo/api"
+	"github.com/meanpath/elastigo/cluster"
+	"github.com/meanpath/elastigo/core"
+	"github.com/meanpath/elastigo/indices"
 	"log"
 )
 
@@ -37,7 +37,7 @@ func main() {
 	response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
 	indices.Flush()
 	log.Printf("Index OK: %v", response.Ok)
-	searchresponse, err := core.SearchRequest(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}", "")
+	searchresponse, err := core.SearchRequest(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}", "",0)
 	if err != nil {
 		log.Println("error during search:" + err.Error())
 		log.Fatal(err)
@@ -48,8 +48,8 @@ func main() {
 	log.Printf("Search Found: %s", t)
 	response, _ = core.Get(true, "twitter", "tweet", "1")
 	log.Printf("Get: %v", response.Exists)
-	response, _ = core.Exists(true, "twitter", "tweet", "1")
-	log.Printf("Exists: %v", response.Exists)
+	exists, _ := core.Exists(true, "twitter", "tweet", "1")
+	log.Printf("Exists: %v", exists)
 	indices.Flush()
 	countResponse, _ := core.Count(true, "twitter", "tweet")
 	log.Printf("Count: %v", countResponse.Count)

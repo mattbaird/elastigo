@@ -2,7 +2,7 @@ package search
 
 import (
 	u "github.com/araddon/gou"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/meanpath/elastigo/core"
 	"log"
 	"testing"
 )
@@ -17,7 +17,7 @@ func TestSearchRequest(t *testing.T) {
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := core.SearchRequest(true, "github", "", qry, "")
+	out, err := core.SearchRequest(true, "github", "", qry, "", 0)
 	//log.Println(out)
 	u.Assert(&out != nil && err == nil, t, "Should get docs")
 	u.Assert(out.Hits.Total == 616 && out.Hits.Len() == 10, t, "Should have 616 hits but was %v", out.Hits.Total)
@@ -41,7 +41,7 @@ func TestSearchSimple(t *testing.T) {
 }
 
 func TestSearchRequestQueryString(t *testing.T) {
-	out, err := core.SearchUri("github", "", "actor:a*", "")
+	out, err := core.SearchUri("github", "", "actor:a*", "", 0)
 	//log.Println(out)
 	u.Assert(&out != nil && err == nil, t, "Should get docs")
 	u.Assert(out.Hits.Total == 616, t, "Should have 616 hits but was %v", out.Hits.Total)
