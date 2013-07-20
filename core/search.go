@@ -132,6 +132,7 @@ type Hit struct {
 	Id     string          `json:"_id"`
 	Score  Float32Nullable `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
 	Source json.RawMessage `json:"_source"`          // marshalling left to consumer
+	Fields json.RawMessage `json:"fields"`          // when a field arg is passed to ES, instead of _source it returns fields
 }
 
 // Elasticsearch returns some invalid (according to go) json, with floats having...
