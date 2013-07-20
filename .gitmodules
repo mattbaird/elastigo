@@ -9,4 +9,4 @@
 	url = https://github.com/opscode-cookbooks/apt.git
 [submodule "cookbooks/elasticsearch"]
 	path = cookbooks/elasticsearch
-	url = https://github.com/mattbaird/elasticsearch-chef.git
+	url = https://github.com/meanpath/elasticsearch-chef.git

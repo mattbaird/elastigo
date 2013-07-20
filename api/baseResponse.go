@@ -1,5 +1,9 @@
 package api
 
+import (
+  "fmt"
+) 
+
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
 	Index   string      `json:"_index,omitempty"`
@@ -35,6 +39,17 @@ func Pretty(pretty bool) string {
 		prettyString = "pretty=1"
 	}
 	return prettyString
+}
+
+
+// http://www.elasticsearch.org/guide/reference/api/search/search-type/
+
+func Scan(scan int) string {
+    scanString := ""
+    if scan > 0 {
+      scanString = fmt.Sprintf("&search_type=scan&size=%v",scan)
+    }
+    return scanString
 }
 
 func Scroll(duration string) string {

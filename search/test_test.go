@@ -3,8 +3,8 @@ package search
 import (
 	"flag"
 	"github.com/araddon/gou"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/meanpath/elastigo/api"
+	"github.com/meanpath/elastigo/core"
 	"log"
 	"os"
 	//"testing"

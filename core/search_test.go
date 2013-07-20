@@ -11,7 +11,7 @@ func TestSearchRequest(t *testing.T) {
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := SearchRequest(true, "github", "", qry, "")
+	out, err := SearchRequest(true, "github", "", qry, "",0)
 	//log.Println(out)
 	Assert(&out != nil && err == nil, t, "Should get docs")
 	Assert(out.Hits.Len() == 10, t, "Should have 10 docs but was %v", out.Hits.Len())

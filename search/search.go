@@ -3,8 +3,8 @@ package search
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/meanpath/elastigo/api"
+	"github.com/meanpath/elastigo/core"
 	"log"
 	"net/url"
 	"strings"

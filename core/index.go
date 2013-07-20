@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/meanpath/elastigo/api"
 )
 
 // The index API adds or updates a typed JSON document in a specific index, making it searchable. 

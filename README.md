@@ -1,7 +1,9 @@
 elastigo
 ========
 
-Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
+This fork fixes the Exists method and implements Scan support for SearchRequest and SearchUri.
+
+Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/meanpath/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so: 
 
@@ -56,11 +58,11 @@ A Direct Search using the api :
          "term":map[string]string{"user:"kimchy"},
       },
     }
-    core.SearchRequest(true, "github", "Issues", qry, "")
+    core.SearchRequest(true, "github", "Issues", qry, "", 0)
 
 A Direct Search using the query string Api :
    
-    core.SearchUri("github", "Issues", "user:kimchy", "")
+    core.SearchUri("github", "Issues", "user:kimchy", "", 0)
 
 A Filtered search `Search DSL` :
    
