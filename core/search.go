@@ -23,16 +23,16 @@ var (
 //              2)  io.Reader that can be set in body (also valid elasticsearch string syntax..)
 //              3)  other type marshalable to json (also valid elasticsearch json)
 //
-//   out, err := SearchRequest(true, "github","",qryType ,"")
+//   out, err := SearchRequest(true, "github","",qryType ,"", 0)
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchRequest(pretty bool, index string, _type string, query interface{}, scroll string) (SearchResult, error) {
+func SearchRequest(pretty bool, index string, _type string, query interface{}, scroll string, scan int) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
 	if len(_type) > 0 && _type != "*" {
-		uriVal = fmt.Sprintf("/%s/%s/_search?%s%s", index, _type, api.Pretty(pretty), api.Scroll(scroll))
+		uriVal = fmt.Sprintf("/%s/%s/_search?%s%s%s", index, _type, api.Pretty(pretty), api.Scroll(scroll), api.Scan(scan))
 	} else {
-		uriVal = fmt.Sprintf("/%s/_search?%s%s", index, api.Pretty(pretty), api.Scroll(scroll))
+		uriVal = fmt.Sprintf("/%s/_search?%s%s%s", index, api.Pretty(pretty), api.Scroll(scroll), api.Scan(scan))
 	}
 	body, err := api.DoCommand("POST", uriVal, query)
 	if err != nil {
@@ -54,19 +54,19 @@ func SearchRequest(pretty bool, index string, _type string, query interface{}, s
 //   @_type:  optional ("" if not used) search specific type in this index
 //   @query:  valid string lucene search syntax
 //
-//   out, err := SearchUri("github","",`user:kimchy` ,"")
+//   out, err := SearchUri("github","",`user:kimchy` ,"", 0)
 //
 // produces a request like this:    host:9200/github/_search?q=user:kimchy"
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchUri(index, _type string, query, scroll string) (SearchResult, error) {
+func SearchUri(index, _type string, query, scroll string,scan int) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
 	query = url.QueryEscape(query)
 	if len(_type) > 0 && _type != "*" {
-		uriVal = fmt.Sprintf("/%s/%s/_search?q=%s%s", index, _type, query, api.Scroll(scroll))
+		uriVal = fmt.Sprintf("/%s/%s/_search?q=%s%s%s", index, _type, query, api.Scroll(scroll), api.Scan(scan))
 	} else {
-		uriVal = fmt.Sprintf("/%s/_search?q=%s%s", index, query, api.Scroll(scroll))
+		uriVal = fmt.Sprintf("/%s/_search?q=%s%s%s", index, query, api.Scroll(scroll), api.Scan(scan))
 	}
 	//log.Println(uriVal)
 	body, err := api.DoCommand("GET", uriVal, nil)
@@ -132,6 +132,7 @@ type Hit struct {
 	Id     string          `json:"_id"`
 	Score  Float32Nullable `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
 	Source json.RawMessage `json:"_source"`          // marshalling left to consumer
+	Fields json.RawMessage `json:"fields"`          // when a field arg is passed to ES, instead of _source it returns fields
 }
 
 // Elasticsearch returns some invalid (according to go) json, with floats having...
