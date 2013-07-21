@@ -5,6 +5,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "lucid64"
   config.vm.box_url = "http://files.vagrantup.com/lucid64.box"
   config.vm.network :forwarded_port, guest: 9300, host: 9300, auto_correct: true
+  config.vm.provision :shell, :inline => "gem install chef --version 10.26.0 --no-rdoc --no-ri --conservative"
 
   config.vm.provider :virtualbox do |vb|
     vb.gui = false
