@@ -1,1 +1,0 @@
-include_recipe "golang::#{node['golang']['install_method']}"
