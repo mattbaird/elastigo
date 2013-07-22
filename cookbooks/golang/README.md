@@ -2,7 +2,7 @@
 
 This is an OpsCode Chef cookbook for [Go, the programming language](http://golang.org).
 
-It uses the ["Go Language Gophers" Ubuntu PPA](https://launchpad.net/~gophers/+archive/go)
+It uses the ["Todd Vierling" Ubuntu PPA](https://launchpad.net/~duh/+archive/golang)
 and allows you to tweak version using Chef node attributes.
 
 It is released under the [Apache Public License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
@@ -11,12 +11,6 @@ It is released under the [Apache Public License 2.0](http://www.apache.org/licen
 ## Recipes
 
 Main recipe is `golang::default`.
-
-
-## Attributes
-
-* `[:golang][:version]` (default: "stable"): Go version to install, either `stable` or `tip` (the bleeding edge)
-
 
 ## Supported OSes
 
@@ -30,6 +24,6 @@ None.
 
 ## Copyright & License
 
-Michael S. Klishin, Travis CI Development Team, 2012.
+Matthew Baird, 2013.
 
 Released under the [Apache Public License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).

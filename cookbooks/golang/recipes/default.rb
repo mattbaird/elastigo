@@ -26,6 +26,7 @@ bash "Export ENV Vars" do
     mkdir -p /home/vagrant/code/go/
     chown vagrant /home/vagrant/code/go/
     echo 'export GOPATH=/home/vagrant/code/go/' >> /home/vagrant/.bash_golang
+    echo 'export GOROOT=/usr/lib/go/' >> /home/vagrant/.bash_golang
     echo 'export PATH=$PATH:$GOBIN' >> /home/vagrant/.bash_golang
     echo 'source /home/vagrant/.bash_golang' >> /home/vagrant/.bashrc
     source /home/vagrant/.bashrc
