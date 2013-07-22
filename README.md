@@ -1,8 +1,6 @@
 elastigo
 ========
 
-This fork fixes the Exists method and implements Scan support for SearchRequest and SearchUri.
-
 Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so: 
