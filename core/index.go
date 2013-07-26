@@ -6,7 +6,7 @@ import (
 	"github.com/mattbaird/elastigo/api"
 )
 
-// The index API adds or updates a typed JSON document in a specific index, making it searchable. 
+// The index API adds or updates a typed JSON document in a specific index, making it searchable.
 // http://www.elasticsearch.org/guide/reference/api/index_.html
 func Index(pretty bool, index string, _type string, id string, data interface{}) (api.BaseResponse, error) {
 	var url string
