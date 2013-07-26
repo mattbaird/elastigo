@@ -1,7 +1,7 @@
 elastigo
 ========
 
-Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
+A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so::
     
