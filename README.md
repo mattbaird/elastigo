@@ -3,11 +3,11 @@ elastigo
 
 Golang based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
-To get the Chef based Vagrantfile working, be sure to pull like so: 
+To get the Chef based Vagrantfile working, be sure to pull like so::
+    
+    # This will pull submodules.
+    git clone --recursive git@github.com:mattbaird/elastigo.git
 
-git clone --recursive git@github.com:mattbaird/elastigo.git
-
-This will pull submodules.
 
 status updates
 ========================
@@ -22,11 +22,34 @@ status updates
 * *2012-10-12* early in development, not ready for production yet.
 
 
+Adding content to Elasticsearch
+----------------------------------------------
+
+examples:
+  
+    // Set the Elasticsearch Host to Connect to
+    api.Domain = "localhost" 
+    // api.Port = "9300"
+
+    // add single go struct entity
+    response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+
+    // you have bytes
+    bytesLine, err := json.Marshall(tw)
+    response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
+
+    // Bulk Indexing 
+    core.IndexBulk("twitter", "tweet", "3", &time.Now(), NewTweet("kimchy", "Search is now cooler"))
+
 
 Search Examples
 -------------------------
 
 A Faceted, ranged Search using the `Search DSL` :
+
+    // Set the Elasticsearch Host to Connect to
+    api.Domain = "localhost" 
+    // api.Port = "9300"
 
     out, err := Search("github").Size("1").Facet(
       Facet().Fields("actor").Size("500"),
@@ -69,21 +92,29 @@ A Filtered search `Search DSL` :
     ).Result()
 
 
-Adding content to Elasticsearch
+Adding content to Elasticsearch in Bulk
 ----------------------------------------------
 
-examples:
-    
-    // add single go struct entity
-    response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+example:
+  
+    // Set the Elasticsearch Host to Connect to
+    api.Domain = "localhost" 
+    // api.Port = "9300"
 
-    // you have bytes
-    bytesLine, err := json.Marshall(tw)
-    response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
+    indexor := core.NewBulkIndexorErrors(10, 60)
+    done := make(chan bool)
+    indexor.Run(done)
 
-    // Bulk Indexing 
-    core.IndexBulk("twitter", "tweet", "3", &time.Now(), NewTweet("kimchy", "Search is now cooler"))
-
+    go func() {
+      for errBuf := range indexor.ErrorChannel {
+        // just blissfully print errors forever
+        fmt.Println(errBuf.Err)
+      }
+    }()
+    for i := 0; i < 20; i++ {
+      indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+    }
+    done <- true
 
 license
 =======
