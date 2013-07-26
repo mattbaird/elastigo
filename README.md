@@ -26,26 +26,49 @@ Adding content to Elasticsearch
 ----------------------------------------------
 
 examples:
-  
+
+    import "github.com/mattbaird/elastigo/api"
+    import "github.com/mattbaird/elastigo/core"
+
+    type Tweet struct {
+      User     string    `json:"user"`
+      Message  string    `json:"message"`
+    }
+
     // Set the Elasticsearch Host to Connect to
     api.Domain = "localhost" 
     // api.Port = "9300"
 
     // add single go struct entity
-    response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+    response, _ := core.Index(true, "twitter", "tweet", "1", Tweet{"kimchy", "Search is cool"})
 
     // you have bytes
+    tw := Tweet{"kimchy", "Search is cool part 2"}
     bytesLine, err := json.Marshall(tw)
     response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
 
     // Bulk Indexing 
-    core.IndexBulk("twitter", "tweet", "3", &time.Now(), NewTweet("kimchy", "Search is now cooler"))
+    core.IndexBulk("twitter", "tweet", "3", &time.Now(), Tweet{"kimchy", "Search is now cooler"})
+
+    // Search Using Raw json String
+    searchJson := `{
+        "query" : {
+            "term" : { "user" : "kimchy" }
+        }
+    }`
+    out, err := core.SearchRequest(true, "twitter", "tweet", searchJson, "")
+    if len(out.Hits.Hits) == 1 {
+      fmt.Println(string(out.Hits.Hits[0].Source))
+    }
 
 
-Search Examples
+Search DSL Examples
 -------------------------
 
 A Faceted, ranged Search using the `Search DSL` :
+
+    import "github.com/mattbaird/elastigo/api"
+    import "github.com/mattbaird/elastigo/core"
 
     // Set the Elasticsearch Host to Connect to
     api.Domain = "localhost" 
@@ -97,6 +120,9 @@ Adding content to Elasticsearch in Bulk
 
 example:
   
+    import "github.com/mattbaird/elastigo/api"
+    import "github.com/mattbaird/elastigo/core"
+
     // Set the Elasticsearch Host to Connect to
     api.Domain = "localhost" 
     // api.Port = "9300"
