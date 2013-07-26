@@ -71,7 +71,7 @@ func Exists(pretty bool, index string, _type string, id string) (BaseResponse, e
 	}
 	req, err := ElasticSearchRequest("HEAD", url)
 	if err != nil {
-		// some sort of generic error handler		
+		// some sort of generic error handler
 	}
 	httpStatusCode, body, err = req.Do(&response)
 	if httpStatusCode > 304 {
