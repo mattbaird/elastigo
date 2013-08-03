@@ -28,7 +28,7 @@ func init() {
 		u.SetupLogging("debug")
 	}
 }
-func TestBulk(t *testing.T) {
+func TestBulkIndexorBasic(t *testing.T) {
 	InitTests(true)
 	indexor := NewBulkIndexor(3)
 	indexor.BulkSendor = func(buf *bytes.Buffer) error {
@@ -55,14 +55,14 @@ func TestBulk(t *testing.T) {
 	u.Assert(totalBytesSent == 145, t, "Should have sent 135 bytes but was %v", totalBytesSent)
 
 	err = indexor.Index("users", "user", "2", "", nil, data)
-
-	WaitFor(func() bool {
-		return len(buffers) > 1
-	}, 5)
+	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
+	// this will test to ensure that Flush actually catches a doc
+	indexor.Flush()
 	totalBytesSent = totalBytesSent - len(*eshost)
-	u.Assert(len(buffers) == 2, t, "Should have nil error, and another buffer")
+	u.Assert(err == nil, t, "Should have nil error  =%v", err)
+	u.Assert(len(buffers) == 2, t, "Should have another buffer ct=%d", len(buffers))
 
-	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors")
+	u.Assert(BulkErrorCt == 0, t, "Should not have any errors %d", BulkErrorCt)
 	u.Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
 
 }
