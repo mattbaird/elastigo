@@ -190,8 +190,7 @@ func (b *BulkIndexor) startHttpSendor() {
 						time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
 						err = b.BulkSendor(buf)
 						if err == nil {
-							// at this point we are Abandoning the documents, which is not
-							// TODO:   some better retry mechanisms
+							// Successfully re-sent with no error
 							b.sendWg.Done()
 							continue
 						}
