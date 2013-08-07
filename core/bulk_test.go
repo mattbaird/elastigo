@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-	"github.com/mattbaird/elastigo/core"
 )
 
 //  go test -bench=".*"
@@ -88,7 +87,7 @@ func TestBulkUpdate(t *testing.T) {
 	}
 
 	// Lets make sure the data is in the index ...
-	_, err := core.Index(true, "users", "user", "5", user)
+	_, err := Index(true, "users", "user", "5", user)
 
 	// script and params
 	data := map[string]interface{}{
