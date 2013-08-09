@@ -23,6 +23,7 @@ import (
 	"github.com/mattbaird/elastigo/core"
 	"github.com/mattbaird/elastigo/indices"
 	"log"
+	"time"
 )
 
 var (
@@ -63,4 +64,20 @@ func main() {
 
 	cluster.State("transient", "discovery.zen.minimum_master_nodes", 2)
 
+}
+
+// used in test suite, chosen to be similar to the documentation
+type Tweet struct {
+	User     string    `json:"user"`
+	PostDate time.Time `json:"postDate"`
+	Message  string    `json:"message"`
+}
+
+func NewTweet(user string, message string) Tweet {
+	return Tweet{User: user, PostDate: time.Now(), Message: message}
+}
+
+func (t *Tweet) String() string {
+	b, _ := json.Marshal(t)
+	return string(b)
 }
