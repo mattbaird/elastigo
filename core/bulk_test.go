@@ -66,6 +66,52 @@ func TestBulkIndexorBasic(t *testing.T) {
 	u.Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
 
 }
+
+func TestBulkUpdate(t *testing.T) {
+	InitTests(true)
+	api.Port = "9200"
+	indexor := NewBulkIndexor(3)
+	indexor.BulkSendor = func(buf *bytes.Buffer) error {
+		messageSets += 1
+		totalBytesSent += buf.Len()
+		buffers = append(buffers, buf)
+		u.Debug(string(buf.Bytes()))
+		return BulkSend(buf)
+	}
+	done := make(chan bool)
+	indexor.Run(done)
+
+	date := time.Unix(1257894000, 0)
+	user := map[string]interface{}{
+		"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0), "count": 1,
+	}
+
+	// Lets make sure the data is in the index ...
+	_, err := Index(true, "users", "user", "5", user)
+
+	// script and params
+	data := map[string]interface{}{
+		"script": "ctx._source.count += 2",
+	}
+	err = indexor.Update("users", "user", "5", "", &date, data)
+	// So here's the deal. Flushing does seem to work, you just have to give the
+	// channel a moment to recieve the message ...
+//	<- time.After(time.Millisecond * 20)
+//	indexor.Flush()
+	done <- true
+
+	WaitFor(func() bool {
+			return len(buffers) > 0
+		}, 5)
+
+	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
+
+	response, err := Get(true, "users", "user", "5")
+	u.Assert(err == nil, t, "Should not have any errors  %v", err)
+	newCount := response.Source.(map[string]interface {})["count"]
+	u.Assert( newCount.(float64) == 3, t, "Should have update count: %#v ... %#v", response.Source.(map[string]interface {})["count"], response)
+}
+
 func TestBulkSmallBatch(t *testing.T) {
 	InitTests(true)
 
@@ -90,6 +136,8 @@ func TestBulkSmallBatch(t *testing.T) {
 	indexorsm.Index("users", "user", "3", "", &date, data)
 	indexorsm.Index("users", "user", "4", "", &date, data)
 	<-time.After(time.Millisecond * 200)
+//	indexorsm.Flush()
+	done <- true
 	Assert(messageSets == 2, t, "Should have sent 2 message sets %d", messageSets)
 
 }
