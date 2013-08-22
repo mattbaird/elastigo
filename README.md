@@ -92,7 +92,7 @@ A Ranged Search using the `Search DSL` :
    
 A Simple Search using the `Search DSL` :
 
-    out, err := Search("github").Type("Issues").Size("100).Search("add").Result()
+    out, err := Search("github").Type("Issues").Size("100").Search("add").Result()
 
 
 A Direct Search using the api :
