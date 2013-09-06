@@ -37,10 +37,10 @@ func main() {
 	// Search Using Raw json String
 	searchJson := `{
 	    "query" : {
-	        "term" : { "name" : "wanda" }
+	        "term" : { "Name" : "wanda" }
 	    }
 	}`
-	out, err := core.SearchRequest(true, "testindex", "user", searchJson, "")
+	out, err := core.SearchRequest(true, "testindex", "user", searchJson, "", 0)
 	if len(out.Hits.Hits) == 1 {
 		fmt.Println(string(out.Hits.Hits[0].Source))
 	}
