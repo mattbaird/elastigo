@@ -6,6 +6,8 @@
 # Folders
 _obj
 _test
+.DS_Store
+.vagrant
 
 # Architecture specific extensions/prefixes
 *.[568vq]

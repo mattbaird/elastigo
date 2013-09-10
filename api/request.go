@@ -1,18 +1,16 @@
-/**
-   Copyright 2012 Matthew Baird
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-**/
+// Copyright 2012 Matthew Baird
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package api
 
 import (
@@ -84,9 +82,14 @@ func (r *Request) SetBody(body io.Reader) {
 }
 
 func (r *Request) Do(v interface{}) (int, []byte, error) {
+	response, bodyBytes, e := r.DoResponse(v)
+	return response.StatusCode, bodyBytes, e
+}
+
+func (r *Request) DoResponse(v interface{}) (http.Response, []byte, error) {
 	res, err := http.DefaultClient.Do((*http.Request)(r))
 	if err != nil {
-		return 0, nil, err
+		return *res, nil, err
 	}
 
 	defer res.Body.Close()
@@ -95,8 +98,8 @@ func (r *Request) Do(v interface{}) (int, []byte, error) {
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return res.StatusCode, nil, err
+			return *res, nil, err
 		}
 	}
-	return res.StatusCode, bodyBytes, nil
+	return *res, bodyBytes, err
 }
