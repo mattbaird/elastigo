@@ -82,14 +82,17 @@ func (r *Request) SetBody(body io.Reader) {
 }
 
 func (r *Request) Do(v interface{}) (int, []byte, error) {
-	response, bodyBytes, e := r.DoResponse(v)
-	return response.StatusCode, bodyBytes, e
+	response, bodyBytes, err := r.DoResponse(v)
+	if err != nil {
+		return -1, nil, err
+	}
+	return response.StatusCode, bodyBytes, err
 }
 
-func (r *Request) DoResponse(v interface{}) (http.Response, []byte, error) {
+func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	res, err := http.DefaultClient.Do((*http.Request)(r))
 	if err != nil {
-		return *res, nil, err
+		return nil, nil, err
 	}
 
 	defer res.Body.Close()
@@ -98,8 +101,8 @@ func (r *Request) DoResponse(v interface{}) (http.Response, []byte, error) {
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return *res, nil, err
+			return nil, nil, err
 		}
 	}
-	return *res, bodyBytes, err
+	return res, bodyBytes, err
 }
