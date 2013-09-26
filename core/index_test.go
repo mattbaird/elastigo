@@ -40,6 +40,14 @@ func TestUrlGenerationNoId(t *testing.T) {
 	Assert(url == expectedUrl, t, fmt.Sprintf("TestUrlGenerationNoId Should get %s, instead got %s", expectedUrl, url))
 }
 
+// if Id is blank, op_type should default to create
+func TestUrlGenerationNoIdAndOpTypeNotCreate(t *testing.T) {
+	expectedUrl := "/Index/Type?op_type=create&parent=Parent&percolate=Percolate&routing=Routing&timeout=Timeout&timestamp=TimeStamp&ttl=10&version=1"
+	url, err := GetIndexUrl("Index", "Type", "", "Parent", 1, "notcreate", "Routing", "TimeStamp", 10, "Percolate", "Timeout")
+	Assert(err == nil, t, "err was not nil")
+	Assert(url == expectedUrl, t, fmt.Sprintf("TestUrlGenerationNoId Should get %s, instead got %s", expectedUrl, url))
+}
+
 func TestUrlGenerationNoParent(t *testing.T) {
 	expectedUrl := "/Index/Type/Id?op_type=create&percolate=Percolate&routing=Routing&timeout=Timeout&timestamp=TimeStamp&ttl=10&version=1"
 	url, err := GetIndexUrl("Index", "Type", "Id", "", 1, "create", "Routing", "TimeStamp", 10, "Percolate", "Timeout")
