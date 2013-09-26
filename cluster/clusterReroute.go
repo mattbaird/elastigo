@@ -1,16 +1,14 @@
-// Copyright 2012 Matthew Baird
-//
+// Copyright 2013 Matthew Baird
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
 //     http://www.apache.org/licenses/LICENSE-2.0
-//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package cluster
 
 import (
@@ -23,7 +21,7 @@ import (
 // The cluster health API allows to get a very simple status on the health of the cluster.
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
 // TODO: implement wait_for_status, timeout, wait_for_relocating_shards, wait_for_nodes
-// TODO: implement level (Can be one of cluster, indices or shards. Controls the details level of the health 
+// TODO: implement level (Can be one of cluster, indices or shards. Controls the details level of the health
 // information returned. Defaults to cluster.)
 func Reroute(pretty bool, dryRun bool, commands Commands) (ClusterHealthResponse, error) {
 	var url string

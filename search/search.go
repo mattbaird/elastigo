@@ -1,16 +1,14 @@
-// Copyright 2012 Matthew Baird
-//
+// Copyright 2013 Matthew Baird
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
 //     http://www.apache.org/licenses/LICENSE-2.0
-//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package search
 
 import (
@@ -29,7 +27,7 @@ var (
 	_ = u.DEBUG
 )
 
-// This is the entry point to the SearchDsl, it is a chainable set of utilities
+// Search is the entry point to the SearchDsl, it is a chainable set of utilities
 // to create searches.
 //
 // params
@@ -90,7 +88,7 @@ func (s *SearchDsl) Pretty() *SearchDsl {
 	return s
 }
 
-// this is the elasticsearch *Type* within a specific index
+// Type is the elasticsearch *Type* within a specific index
 func (s *SearchDsl) Type(indexType string) *SearchDsl {
 	if len(s.types) == 0 {
 		s.types = make([]string, 0)
@@ -111,7 +109,7 @@ func (s *SearchDsl) From(from string) *SearchDsl {
 	return s
 }
 
-// This is a simple interfaceto search, doesn't have the power of query
+// Search is a simple interface to search, doesn't have the power of query
 // but uses a simple query_string search
 func (s *SearchDsl) Search(srch string) *SearchDsl {
 	s.QueryVal = Query().Search(srch)
@@ -123,7 +121,7 @@ func (s *SearchDsl) Size(size string) *SearchDsl {
 	return s
 }
 
-// Pass a Query expression to this search
+// Facet passes a Query expression to this search
 //
 //		qry := Search("github").Size("0").Facet(
 //					Facet().Regex("repository.name", "no.*").Size("8"),
@@ -142,7 +140,7 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 	return s
 }
 
-// Add Filter Clause with optional Boolean Clause.  This accepts n number of
+// Filter adds a Filter Clause with optional Boolean Clause.  This accepts n number of
 // filter clauses.  If more than one, and missing Boolean Clause it assumes "and"
 //
 //     qry := Search("github").Filter(

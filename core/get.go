@@ -1,16 +1,14 @@
-// Copyright 2012 Matthew Baird
-//
+// Copyright 2013 Matthew Baird
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
 //     http://www.apache.org/licenses/LICENSE-2.0
-//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package core
 
 import (
@@ -19,7 +17,7 @@ import (
 	"github.com/mattbaird/elastigo/api"
 )
 
-// The get API allows to get a typed JSON document from the index based on its id.
+// Get allows caller to get a typed JSON document from the index based on its id.
 // GET - retrieves the doc
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
@@ -47,13 +45,12 @@ func Get(pretty bool, index string, _type string, id string) (api.BaseResponse, 
 	return retval, err
 }
 
-// The API also allows to check for the existance of a document using HEAD
-
+// Exists allows caller to check for the existance of a document using HEAD
 func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 
 	var url string
 
-  var response map[string]interface{}
+	var response map[string]interface{}
 
 	if len(_type) > 0 {
 		url = fmt.Sprintf("/%s/%s/%s?fields=_id%s", index, _type, id, api.Pretty(pretty))
@@ -61,20 +58,20 @@ func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 		url = fmt.Sprintf("/%s/%s?fields=_id%s", index, id, api.Pretty(pretty))
 	}
 
-  req, err := api.ElasticSearchRequest("HEAD", url)
+	req, err := api.ElasticSearchRequest("HEAD", url)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-  httpStatusCode, _, err := req.Do(&response)
+	httpStatusCode, _, err := req.Do(&response)
 
 	if err != nil {
 		return false, err
 	}
-  if httpStatusCode == 404 {
-    return false, err
-  } else {
-    return true, err
-  }
+	if httpStatusCode == 404 {
+		return false, err
+	} else {
+		return true, err
+	}
 }
