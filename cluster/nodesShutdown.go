@@ -10,3 +10,29 @@
 // limitations under the License.
 
 package cluster
+
+import (
+	"fmt"
+	"github.com/mattbaird/elastigo/api"
+	"net/url"
+	"strconv"
+	"strings"
+)
+
+// NodesShutdown allows the caller to shutdown between one and all nodes in the cluster
+// delay is a integer representing number of seconds
+// passing "" or "_all" for the nodes parameter will shut down all nodes
+// see http://www.elasticsearch.org/guide/reference/api/admin-cluster-nodes-shutdown/
+func NodesShutdown(delay int, nodes ...string) error {
+	shutdownUrl := fmt.Sprintf("/_cluster/nodes/%s/_shutdown", strings.Join(nodes, ","))
+	if delay > 0 {
+		var values url.Values = url.Values{}
+		values.Add("delay", strconv.Itoa(delay))
+		shutdownUrl += "?" + values.Encode()
+	}
+	_, err := api.DoCommand("POST", shutdownUrl, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
