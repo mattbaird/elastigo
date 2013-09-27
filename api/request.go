@@ -26,17 +26,18 @@ import (
 type Request http.Request
 
 const (
-	Version         = "0.0.1"
+	Version         = "0.0.2"
 	DefaultProtocol = "http"
 	DefaultDomain   = "localhost"
 	DefaultPort     = "9200"
 )
 
 var (
-	_               = log.Ldate
-	Protocol string = DefaultProtocol
-	Domain   string = DefaultDomain
-	Port     string = DefaultPort
+	_                        = log.Ldate
+	Protocol       string    = DefaultProtocol
+	Domain         string    = DefaultDomain
+	ClusterDomains [1]string = [1]string{DefaultDomain}
+	Port           string    = DefaultPort
 )
 
 func ElasticSearchRequest(method, path string) (*Request, error) {
