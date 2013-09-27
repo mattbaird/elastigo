@@ -10,3 +10,28 @@
 // limitations under the License.
 
 package indices
+
+import (
+	"fmt"
+	"github.com/mattbaird/elastigo/api"
+	"strings"
+)
+
+// IndicesExists checks for the existance of indices. uses http 404 if it does not exist, and 200 if it does
+// see http://www.elasticsearch.org/guide/reference/api/admin-indices-indices-exists/
+func IndicesExists(indices ...string) (bool, error) {
+	var url string
+	if len(indices) > 0 {
+		url = fmt.Sprintf("/%s", strings.Join(indices, ","))
+	}
+	_, err := api.DoCommand("HEAD", url, nil)
+	if err != nil {
+		eserror := err.(api.ESError)
+		if eserror.Code == 404 {
+			return false, err
+		} else {
+			return eserror.Code == 200, err
+		}
+	}
+	return true, nil
+}

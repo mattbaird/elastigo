@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
+	"strings"
 )
 
 // Flush flushes one or more indices through an API. The flush process of an index basically
@@ -23,11 +24,11 @@ import (
 // as required in order to clear memory.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-flush.html
 // TODO: add Shards to response
-func Flush(index ...string) (api.BaseResponse, error) {
+func Flush(indices ...string) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	if len(index) > 0 {
-		url = fmt.Sprintf("/%s/_flush", index)
+	if len(indices) > 0 {
+		url = fmt.Sprintf("/%s/_flush", strings.Join(indices, ","))
 	} else {
 		url = "/_flush"
 	}

@@ -14,10 +14,10 @@ package api
 import (
 	//"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
+	"time"
 )
 
 func DoCommand(method string, url string, data interface{}) ([]byte, error) {
@@ -57,12 +57,23 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 		if jsonErr == nil {
 			if error, ok := response["error"]; ok {
 				status, _ := response["status"]
-				return body, errors.New(fmt.Sprintf("Error [%s] Status [%v]", error, status))
+				return body, ESError{time.Now(), fmt.Sprintf("Error [%s] Status [%v]", error, status), httpStatusCode}
 			}
 		}
 		return body, jsonErr
 	}
 	return body, nil
+}
+
+// ESError is an error implementation that includes a time, message, and code.
+type ESError struct {
+	When time.Time
+	What string
+	Code int
+}
+
+func (e ESError) Error() string {
+	return fmt.Sprintf("%v: %v [%v]", e.When, e.What, e.Code)
 }
 
 // Exists allows the caller to check for the existance of a document using HEAD
