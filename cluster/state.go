@@ -12,16 +12,56 @@
 package cluster
 
 import (
+	"encoding/json"
 	"github.com/mattbaird/elastigo/api"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
-// http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html
-func State(settingType string, key string, value int) error {
-	url := "/_cluster/settings"
-	m := map[string]map[string]int{settingType: map[string]int{key: value}}
-	_, err := api.DoCommand("PUT", url, m)
+// State gets the comprehensive state information for the whole cluster
+// see http://www.elasticsearch.org/guide/reference/api/admin-cluster-state/
+func State(filter_nodes bool, filter_routing_table bool, filter_metadata bool, filter_blocks bool,
+	filter_indices ...string) (ClusterStateResponse, error) {
+	url := getStateUrl(false, false, false, false, filter_indices...)
+	var retval ClusterStateResponse
+	body, err := api.DoCommand("GET", url, nil)
 	if err != nil {
-		return err
+		return retval, err
 	}
-	return nil
+	if err == nil {
+		// marshall into json
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	return retval, err
+}
+
+func getStateUrl(filter_nodes bool, filter_routing_table bool, filter_metadata bool, filter_blocks bool,
+	filter_indices ...string) (retval string) {
+	var partialURL string
+	var values url.Values = url.Values{}
+	partialURL = "/_cluster/state"
+	if filter_nodes {
+		values.Add("filter_nodes", strconv.FormatBool(filter_nodes))
+	}
+	if filter_routing_table {
+		values.Add("filter_routing_table", strconv.FormatBool(filter_routing_table))
+	}
+	if filter_metadata {
+		values.Add("filter_metadata", strconv.FormatBool(filter_metadata))
+	}
+	if filter_blocks {
+		values.Add("filter_blocks", strconv.FormatBool(filter_blocks))
+	}
+	if len(filter_indices) > 0 {
+		values.Add("filter_indices", strings.Join(filter_indices, ","))
+	}
+
+	return partialURL + "?" + values.Encode()
+}
+
+type ClusterStateResponse struct {
 }

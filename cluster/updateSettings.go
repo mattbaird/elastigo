@@ -10,3 +10,39 @@
 // limitations under the License.
 
 package cluster
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/mattbaird/elastigo/api"
+)
+
+// UpdateSettings allows to update cluster wide specific settings. Defaults to Transient setting
+// Settings updated can either be persistent (applied cross restarts) or transient (will not survive a full cluster restart).
+// http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html
+func UpdateSettings(settingType string, key string, value int) (ClusterSettingsResponse, error) {
+	var retval ClusterSettingsResponse
+	if settingType != "transient" && settingType != "persistent" {
+		return retval, errors.New(fmt.Sprintf("settingType must be one of transient or persistent, you passed %s", settingType))
+	}
+	var url string = "/_cluster/state"
+	m := map[string]map[string]int{settingType: map[string]int{key: value}}
+	body, err := api.DoCommand("PUT", url, m)
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		// marshall into json
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	return retval, err
+}
+
+type ClusterSettingsResponse struct {
+	Transient  map[string]int `json:"transient"`
+	Persistent map[string]int `json:"persistent"`
+}

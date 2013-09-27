@@ -60,7 +60,7 @@ func main() {
 	healthResponse, _ := cluster.Health(true)
 	log.Printf("Health: %v", healthResponse.Status)
 
-	cluster.State("transient", "discovery.zen.minimum_master_nodes", 2)
+	cluster.UpdateSettings("transient", "discovery.zen.minimum_master_nodes", 2)
 
 }
 
