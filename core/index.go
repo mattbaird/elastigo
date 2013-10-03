@@ -34,15 +34,15 @@ import (
 // timeout is optional
 // http://www.elasticsearch.org/guide/reference/api/index_.html
 func Index(pretty bool, index string, _type string, id string, data interface{}) (api.BaseResponse, error) {
-	return IndexWithParameters(pretty, index, _type, id, "", 0, "", "", "", 0, "", "", data)
+	return IndexWithParameters(pretty, index, _type, id, "", 0, "", "", "", 0, "", "", false, data)
 }
 
 // IndexWithParameters takes all the potential parameters available
 func IndexWithParameters(pretty bool, index string, _type string, id string, parentId string, version int, op_type string,
-	routing string, timestamp string, ttl int, percolate string, timeout string, data interface{}) (api.BaseResponse, error) {
+	routing string, timestamp string, ttl int, percolate string, timeout string, refresh bool, data interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	url, err := GetIndexUrl(index, _type, id, parentId, version, op_type, routing, timestamp, ttl, percolate, timeout)
+	url, err := GetIndexUrl(index, _type, id, parentId, version, op_type, routing, timestamp, ttl, percolate, timeout, refresh)
 	if err != nil {
 		return retval, err
 	}
@@ -68,7 +68,7 @@ func IndexWithParameters(pretty bool, index string, _type string, id string, par
 }
 
 func GetIndexUrl(index string, _type string, id string, parentId string, version int, op_type string,
-	routing string, timestamp string, ttl int, percolate string, timeout string) (retval string, e error) {
+	routing string, timestamp string, ttl int, percolate string, timeout string, refresh bool) (retval string, e error) {
 
 	if len(index) == 0 {
 		return "", errors.New("index can not be blank")
@@ -118,6 +118,11 @@ func GetIndexUrl(index string, _type string, id string, parentId string, version
 	if len(timeout) > 0 {
 		values.Add("timeout", timeout)
 	}
+
+	if refresh {
+		values.Add("refresh", "true")
+	}
+
 	partialURL += "?" + values.Encode()
 	return partialURL, nil
 }
