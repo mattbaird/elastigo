@@ -45,6 +45,17 @@ func Get(pretty bool, index string, _type string, id string) (api.BaseResponse, 
 	return retval, err
 }
 
+// GetSource retrieves the document by id and converts it to provided interface
+func GetSource(index string, _type string, id string, source interface{}) error {
+  url := fmt.Sprintf("/%s/%s/%s/_source", index, _type, id)
+	body, err := api.DoCommand("GET", url, nil)
+	if err == nil {
+		err = json.Unmarshal(body, &source)
+	}
+	//fmt.Println(body)
+  return err
+}
+
 // Exists allows caller to check for the existance of a document using HEAD
 func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 
