@@ -318,8 +318,10 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 	buf.WriteString(index)
 	buf.WriteString(`","_type":"`)
 	buf.WriteString(_type)
-	buf.WriteString(`","_id":"`)
-	buf.WriteString(id)
+	if len(id) > 0 {
+		buf.WriteString(`","_id":"`)
+		buf.WriteString(id)
+	}
 
 	if op == "update"  {
 		buf.WriteString(`","retry_on_conflict":"3`)
