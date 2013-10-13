@@ -103,5 +103,5 @@ func TestUrlGenerationNoRefresh(t *testing.T) {
 	expectedUrl := "/Index/Type/Id?op_type=create&parent=Parent&percolate=Percolate&routing=Routing&timeout=Timeout&timestamp=TimeStamp&ttl=10&version=1"
 	url, err := GetIndexUrl("Index", "Type", "Id", "Parent", 1, "create", "Routing", "TimeStamp", 10, "Percolate", "Timeout", false)
 	u.Assert(err == nil, t, "err was not nil")
-	u.Assert(url == expectedUrl, t, fmt.Sprintf("TestUrlGeneration Should get %s, instead got %s", expectedUrl, url))
+	u.Assert(url == expectedUrl, t, fmt.Sprintf("TestUrlGenerationNoRefresh Should get %s, instead got %s", expectedUrl, url))
 }
