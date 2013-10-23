@@ -96,11 +96,15 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 
 	defer res.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(res.Body)
-
+	
+	if err != nil {
+		return nil, nil, err
+	}
+	
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return nil, nil, err
+			return nil, nil, jsonErr
 		}
 	}
 	return res, bodyBytes, err
