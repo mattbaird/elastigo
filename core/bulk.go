@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	u "github.com/araddon/gou"
 	"github.com/mattbaird/elastigo/api"
 	"io"
 	"log"
@@ -82,6 +81,12 @@ type BulkIndexor struct {
 
 	// shutdown channel
 	shutdownChan chan bool
+	// Channel to shutdown http send go-routines
+	httpDoneChan chan bool
+	// channel to shutdown timer
+	timerDoneChan chan bool
+	// channel to shutdown doc go-routines
+	docDoneChan chan bool
 
 	// Channel to send a complete byte.Buffer to the http sendor
 	sendBuf chan *bytes.Buffer
@@ -117,6 +122,9 @@ func NewBulkIndexor(maxConns int) *BulkIndexor {
 	b.BufferDelayMax = time.Duration(BulkDelaySeconds) * time.Second
 	b.bulkChannel = make(chan []byte, 100)
 	b.sendWg = new(sync.WaitGroup)
+	b.docDoneChan = make(chan bool)
+	b.timerDoneChan = make(chan bool)
+	b.httpDoneChan = make(chan bool)
 	return &b
 }
 
@@ -147,6 +155,7 @@ func (b *BulkIndexor) Run(done chan bool) {
 		b.startTimer()
 		<-b.shutdownChan
 		b.Flush()
+		b.shutdown()
 	}()
 }
 
@@ -171,11 +180,11 @@ func (b *BulkIndexor) Flush() {
 		select {
 		case <-wgChan(b.sendWg):
 			// done
-			u.Info("Normal Wait Group Shutdown")
+			log.Println("BulkIndexor Wait Group Shutdown")
 			return
 		case <-time.After(time.Second * time.Duration(MAX_SHUTDOWN_SECS)):
 			// timeout!
-			u.Error("Timeout in Shutdown!")
+			log.Println("BulkIndexor Timeout in Shutdown!")
 			return
 		}
 	}
@@ -190,30 +199,36 @@ func (b *BulkIndexor) startHttpSendor() {
 	for i := 0; i < b.maxConns; i++ {
 		go func() {
 			for {
-				buf := <-b.sendBuf
-				b.sendWg.Add(1)
-				err := b.BulkSendor(buf)
+				select {
+				case buf := <-b.sendBuf:
+					b.sendWg.Add(1)
+					err := b.BulkSendor(buf)
 
-				// Perhaps a b.FailureStrategy(err)  ??  with different types of strategies
-				//  1.  Retry, then panic
-				//  2.  Retry then return error and let runner decide
-				//  3.  Retry, then log to disk?   retry later?
-				if err != nil {
-					if b.RetryForSeconds > 0 {
-						time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
-						err = b.BulkSendor(buf)
-						if err == nil {
-							// Successfully re-sent with no error
-							b.sendWg.Done()
-							continue
+					// Perhaps a b.FailureStrategy(err)  ??  with different types of strategies
+					//  1.  Retry, then panic
+					//  2.  Retry then return error and let runner decide
+					//  3.  Retry, then log to disk?   retry later?
+					if err != nil {
+						if b.RetryForSeconds > 0 {
+							time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
+							err = b.BulkSendor(buf)
+							if err == nil {
+								// Successfully re-sent with no error
+								b.sendWg.Done()
+								continue
+							}
+						}
+						if b.ErrorChannel != nil {
+							log.Println(err)
+							b.ErrorChannel <- &ErrorBuffer{err, buf}
 						}
 					}
-					if b.ErrorChannel != nil {
-						log.Println(err)
-						b.ErrorChannel <- &ErrorBuffer{err, buf}
-					}
+					b.sendWg.Done()
+				case <-b.httpDoneChan:
+					// shutdown this go routine
+					return
 				}
-				b.sendWg.Done()
+
 			}
 		}()
 	}
@@ -225,18 +240,24 @@ func (b *BulkIndexor) startTimer() {
 	ticker := time.NewTicker(b.BufferDelayMax)
 	log.Println("Starting timer with delay = ", b.BufferDelayMax)
 	go func() {
-		for _ = range ticker.C {
-			b.mu.Lock()
-			// don't send unless last sendor was the time,
-			// otherwise an indication of other thresholds being hit
-			// where time isn't needed
-			if b.buf.Len() > 0 && b.needsTimeBasedFlush {
-				b.needsTimeBasedFlush = true
-				b.send(b.buf)
-			} else if b.buf.Len() > 0 {
-				b.needsTimeBasedFlush = true
+		for {
+			select {
+			case <-ticker.C:
+				b.mu.Lock()
+				// don't send unless last sendor was the time,
+				// otherwise an indication of other thresholds being hit
+				// where time isn't needed
+				if b.buf.Len() > 0 && b.needsTimeBasedFlush {
+					b.needsTimeBasedFlush = true
+					b.send(b.buf)
+				} else if b.buf.Len() > 0 {
+					b.needsTimeBasedFlush = true
+				}
+				b.mu.Unlock()
+			case <-b.timerDoneChan:
+				// shutdown this go routine
+				return
 			}
-			b.mu.Unlock()
 
 		}
 	}()
@@ -246,16 +267,22 @@ func (b *BulkIndexor) startDocChannel() {
 	// This goroutine accepts incoming byte arrays from the IndexBulk function and
 	// writes to buffer
 	go func() {
-		for docBytes := range b.bulkChannel {
-			b.mu.Lock()
-			b.docCt += 1
-			b.buf.Write(docBytes)
-			if b.buf.Len() >= b.BulkMaxBuffer || b.docCt >= b.BulkMaxDocs {
-				b.needsTimeBasedFlush = false
-				//log.Printf("Send due to size:  docs=%d  bufsize=%d", b.docCt, b.buf.Len())
-				b.send(b.buf)
+		for {
+			select {
+			case docBytes := <-b.bulkChannel:
+				b.mu.Lock()
+				b.docCt += 1
+				b.buf.Write(docBytes)
+				if b.buf.Len() >= b.BulkMaxBuffer || b.docCt >= b.BulkMaxDocs {
+					b.needsTimeBasedFlush = false
+					//log.Printf("Send due to size:  docs=%d  bufsize=%d", b.docCt, b.buf.Len())
+					b.send(b.buf)
+				}
+				b.mu.Unlock()
+			case <-b.docDoneChan:
+				// shutdown this go routine
+				return
 			}
-			b.mu.Unlock()
 		}
 	}()
 }
@@ -267,6 +294,16 @@ func (b *BulkIndexor) send(buf *bytes.Buffer) {
 	b.docCt = 0
 }
 
+func (b *BulkIndexor) shutdown() {
+	// This must be called After flush
+	b.docDoneChan <- true
+	log.Println("Just sent to doc chan done")
+	b.timerDoneChan <- true
+	for i := 0; i < b.maxConns; i++ {
+		b.httpDoneChan <- true
+	}
+}
+
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
@@ -274,7 +311,7 @@ func (b *BulkIndexor) Index(index string, _type string, id, ttl string, date *ti
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data)
 	if err != nil {
-		u.Error(err)
+		log.Println(err)
 		return err
 	}
 	b.bulkChannel <- by
@@ -285,7 +322,7 @@ func (b *BulkIndexor) Update(index string, _type string, id, ttl string, date *t
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data)
 	if err != nil {
-		u.Error(err)
+		log.Println(err)
 		return err
 	}
 	b.bulkChannel <- by

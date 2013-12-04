@@ -76,6 +76,7 @@ func TestBulkIndexorBasic(t *testing.T) {
 	u.Assert(BulkErrorCt == 0, t, "Should not have any errors %d", BulkErrorCt)
 	u.Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
 
+	done <- true
 }
 
 func TestBulkUpdate(t *testing.T) {
@@ -178,7 +179,7 @@ func TestBulkErrors(t *testing.T) {
 		break
 	}
 	u.Assert(errorCt > 0, t, "ErrorCt should be > 0 %d", errorCt)
-
+	done <- true
 }
 
 /*
