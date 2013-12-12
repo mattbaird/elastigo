@@ -39,10 +39,10 @@ func init() {
 		u.SetupLogging("debug")
 	}
 }
-func TestBulkIndexorBasic(t *testing.T) {
+func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
-	indexor := NewBulkIndexor(3)
-	indexor.BulkSendor = func(buf *bytes.Buffer) error {
+	indexer := NewBulkIndexer(3)
+	indexer.BulkSendor = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
@@ -50,11 +50,11 @@ func TestBulkIndexorBasic(t *testing.T) {
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
-	indexor.Run(done)
+	indexer.Run(done)
 
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
-	err := indexor.Index("users", "user", "1", "", &date, data)
+	err := indexer.Index("users", "user", "1", "", &date, data)
 
 	WaitFor(func() bool {
 		return len(buffers) > 0
@@ -65,10 +65,10 @@ func TestBulkIndexorBasic(t *testing.T) {
 	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
 	u.Assert(totalBytesSent == 145, t, "Should have sent 135 bytes but was %v", totalBytesSent)
 
-	err = indexor.Index("users", "user", "2", "", nil, data)
+	err = indexer.Index("users", "user", "2", "", nil, data)
 	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
 	// this will test to ensure that Flush actually catches a doc
-	indexor.Flush()
+	indexer.Flush()
 	totalBytesSent = totalBytesSent - len(*eshost)
 	u.Assert(err == nil, t, "Should have nil error  =%v", err)
 	u.Assert(len(buffers) == 2, t, "Should have another buffer ct=%d", len(buffers))
@@ -81,8 +81,8 @@ func TestBulkIndexorBasic(t *testing.T) {
 func TestBulkUpdate(t *testing.T) {
 	InitTests(true)
 	api.Port = "9200"
-	indexor := NewBulkIndexor(3)
-	indexor.BulkSendor = func(buf *bytes.Buffer) error {
+	indexer := NewBulkIndexer(3)
+	indexer.BulkSendor = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
@@ -90,7 +90,7 @@ func TestBulkUpdate(t *testing.T) {
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
-	indexor.Run(done)
+	indexer.Run(done)
 
 	date := time.Unix(1257894000, 0)
 	user := map[string]interface{}{
@@ -104,11 +104,11 @@ func TestBulkUpdate(t *testing.T) {
 	data := map[string]interface{}{
 		"script": "ctx._source.count += 2",
 	}
-	err = indexor.Update("users", "user", "5", "", &date, data)
+	err = indexer.Update("users", "user", "5", "", &date, data)
 	// So here's the deal. Flushing does seem to work, you just have to give the
 	// channel a moment to recieve the message ...
 	//	<- time.After(time.Millisecond * 20)
-	//	indexor.Flush()
+	//	indexer.Flush()
 	done <- true
 
 	WaitFor(func() bool {
@@ -132,22 +132,22 @@ func TestBulkSmallBatch(t *testing.T) {
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
 
 	// Now tests small batches
-	indexorsm := NewBulkIndexor(1)
-	indexorsm.BufferDelayMax = 100 * time.Millisecond
-	indexorsm.BulkMaxDocs = 2
+	indexersm := NewBulkIndexer(1)
+	indexersm.BufferDelayMax = 100 * time.Millisecond
+	indexersm.BulkMaxDocs = 2
 	messageSets = 0
-	indexorsm.BulkSendor = func(buf *bytes.Buffer) error {
+	indexersm.BulkSendor = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		return BulkSend(buf)
 	}
-	indexorsm.Run(done)
+	indexersm.Run(done)
 	<-time.After(time.Millisecond * 20)
 
-	indexorsm.Index("users", "user", "2", "", &date, data)
-	indexorsm.Index("users", "user", "3", "", &date, data)
-	indexorsm.Index("users", "user", "4", "", &date, data)
+	indexersm.Index("users", "user", "2", "", &date, data)
+	indexersm.Index("users", "user", "3", "", &date, data)
+	indexersm.Index("users", "user", "4", "", &date, data)
 	<-time.After(time.Millisecond * 200)
-	//	indexorsm.Flush()
+	//	indexersm.Flush()
 	done <- true
 	Assert(messageSets == 2, t, "Should have sent 2 message sets %d", messageSets)
 
@@ -160,19 +160,19 @@ func TestBulkErrors(t *testing.T) {
 		api.Port = "9200"
 	}()
 	BulkDelaySeconds = 1
-	indexor := NewBulkIndexorErrors(10, 1)
+	indexer := NewBulkIndexerErrors(10, 1)
 	done := make(chan bool)
-	indexor.Run(done)
+	indexer.Run(done)
 
 	errorCt := 0
 	go func() {
 		for i := 0; i < 20; i++ {
 			date := time.Unix(1257894000, 0)
 			data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
-			indexor.Index("users", "user", strconv.Itoa(i), "", &date, data)
+			indexer.Index("users", "user", strconv.Itoa(i), "", &date, data)
 		}
 	}()
-	for errBuf := range indexor.ErrorChannel {
+	for errBuf := range indexer.ErrorChannel {
 		errorCt++
 		u.Debug(errBuf.Err)
 		break
@@ -194,7 +194,7 @@ func BenchmarkBulkSend(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	GlobalBulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexer.BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		//log.Println("got bulk")
@@ -230,7 +230,7 @@ func BenchmarkBulkSendBytes(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	GlobalBulkIndexor.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexer.BulkSendor = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		return BulkSend(buf)

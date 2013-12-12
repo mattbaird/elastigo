@@ -44,7 +44,7 @@ func init() {
 	}
 }
 
-func InitTests(startIndexor bool) {
+func InitTests(startIndexer bool) {
 	if !hasStartedTesting {
 		flag.Parse()
 		hasStartedTesting = true

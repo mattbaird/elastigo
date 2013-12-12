@@ -18,7 +18,7 @@ status updates
 ========================
 
 * *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
-* *2013-7-10* Improvements/changes to bulk indexor (includes breaking changes to support TTL),
+* *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
          Search dsl supports And/Or/Not
     * *SearchDsl* should still be considered beta at this
          point, there will be minor breaking changes as more of the
@@ -133,18 +133,18 @@ example:
     api.Domain = "localhost"
     // api.Port = "9300"
 
-    indexor := core.NewBulkIndexorErrors(10, 60)
+    indexer := core.NewBulkIndexerErrors(10, 60)
     done := make(chan bool)
-    indexor.Run(done)
+    indexer.Run(done)
 
     go func() {
-      for errBuf := range indexor.ErrorChannel {
+      for errBuf := range indexer.ErrorChannel {
         // just blissfully print errors forever
         fmt.Println(errBuf.Err)
       }
     }()
     for i := 0; i < 20; i++ {
-      indexor.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
     }
     done <- true
 
