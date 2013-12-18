@@ -48,18 +48,18 @@ var (
 func init() {
 
 }
-func InitTests(startIndexor bool) {
+func InitTests(startIndexer bool) {
 	if !hasStartedTesting {
 		flag.Parse()
 		hasStartedTesting = true
 		log.SetFlags(log.Ltime | log.Lshortfile)
 		api.Domain = *eshost
 	}
-	if startIndexor && !bulkStarted {
+	if startIndexer && !bulkStarted {
 		BulkDelaySeconds = 1
 		bulkStarted = true
-		log.Println("start global test bulk indexor")
-		BulkIndexorGlobalRun(100, make(chan bool))
+		log.Println("start global test bulk indexer")
+		BulkIndexerGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
 			log.Println("load test data ")
 			hasLoadedData = true
@@ -115,8 +115,8 @@ type GithubEvent struct {
 func LoadTestData() {
 	docCt := 0
 	errCt := 0
-	indexor := NewBulkIndexor(20)
-	indexor.BulkSendor = func(buf *bytes.Buffer) error {
+	indexer := NewBulkIndexer(20)
+	indexer.BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := api.ElasticSearchRequest("POST", "/_bulk")
 		if err != nil {
@@ -137,7 +137,7 @@ func LoadTestData() {
 		return err
 	}
 	done := make(chan bool)
-	indexor.Run(done)
+	indexer.Run(done)
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
 	if err != nil || resp == nil {
 		panic("Could not download data")
@@ -161,7 +161,7 @@ func LoadTestData() {
 		if err != nil && err != io.EOF {
 			log.Println("FATAL:  could not read line? ", err)
 		} else if err != nil {
-			indexor.Flush()
+			indexer.Flush()
 			break
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
@@ -172,7 +172,7 @@ func LoadTestData() {
 				log.Println("HM, already exists? ", ge.Url)
 			}
 			docsm[id] = true
-			indexor.Index("github", ge.Type, id, "", &ge.Created, line)
+			indexer.Index("github", ge.Type, id, "", &ge.Created, line)
 			docCt++
 			//log.Println(docCt, " ", string(line))
 			//os.Exit(1)
