@@ -99,7 +99,7 @@ func Exists(pretty bool, index string, _type string, id string) (BaseResponse, e
 	if httpStatusCode > 304 {
 		if error, ok := response["error"]; ok {
 			status, _ := response["status"]
-			log.Println("Error: %v (%v)\n", error, status)
+			log.Printf("Error: %v (%v)\n", error, status)
 		}
 	} else {
 		// marshall into json

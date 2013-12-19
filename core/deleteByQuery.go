@@ -26,9 +26,9 @@ func DeleteByQuery(pretty bool, indices []string, types []string, query interfac
 	var url string
 	var retval api.BaseResponse
 	if len(indices) > 0 && len(types) > 0 {
-		url = fmt.Sprintf("http://localhost:9200/%s/%s/_query?%s&%s", strings.Join(indices, ","), strings.Join(types, ","), buildQuery, api.Pretty(pretty))
+		url = fmt.Sprintf("http://localhost:9200/%s/%s/_query?%s&%s", strings.Join(indices, ","), strings.Join(types, ","), buildQuery(), api.Pretty(pretty))
 	} else if len(indices) > 0 {
-		url = fmt.Sprintf("http://localhost:9200/%s/_query?%s&%s", strings.Join(indices, ","), buildQuery, api.Pretty(pretty))
+		url = fmt.Sprintf("http://localhost:9200/%s/_query?%s&%s", strings.Join(indices, ","), buildQuery(), api.Pretty(pretty))
 	}
 	body, err := api.DoCommand("DELETE", url, query)
 	if err != nil {
