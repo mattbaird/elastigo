@@ -49,8 +49,6 @@ func Reroute(pretty bool, dryRun bool, commands Commands) (ClusterHealthResponse
 func dryRunOption(isDryRun bool) string {
 	if isDryRun {
 		return "dry_run"
-	} else {
-		return ""
 	}
 	return ""
 }

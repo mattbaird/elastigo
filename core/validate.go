@@ -23,9 +23,9 @@ func Validate(pretty bool, index string, _type string, query string, explain boo
 	var url string
 	var retval api.BaseResponse
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/_validate/query?q=%s&%s&explain=%s", index, _type, query, api.Pretty(pretty), explain)
+		url = fmt.Sprintf("/%s/%s/_validate/query?q=%s&%s&explain=%t", index, _type, query, api.Pretty(pretty), explain)
 	} else {
-		url = fmt.Sprintf("/%s/_validate/query?q=%s&%s&explain=%s", index, query, api.Pretty(pretty), explain)
+		url = fmt.Sprintf("/%s/_validate/query?q=%s&%s&explain=%t", index, query, api.Pretty(pretty), explain)
 	}
 	body, err := api.DoCommand("GET", url, nil)
 	if err != nil {
