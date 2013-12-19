@@ -294,7 +294,7 @@ func (b *BulkIndexer) send(buf *bytes.Buffer) {
 	b.docCt = 0
 }
 
-func (b *BulkIndexor) shutdown() {
+func (b *BulkIndexer) shutdown() {
 	// This must be called After flush
 	b.docDoneChan <- true
 	log.Println("Just sent to doc chan done")
