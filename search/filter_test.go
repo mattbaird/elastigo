@@ -12,8 +12,9 @@
 package search
 
 import (
-	//"encoding/json"
-	. "github.com/araddon/gou"
+	"fmt"
+	//"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 	"testing"
 )
 
@@ -23,25 +24,25 @@ func TestFilters(t *testing.T) {
 		Filter().Exists("repository.name"),
 	)
 	out, err := qry.Result()
-	Assert(err == nil, t, "should not have error")
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 7695, t, "Should have 7695 total= %v", out.Hits.Total)
+	assert.T(t, err == nil, t, "should not have error")
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 7695, fmt.Sprintf("Should have 7695 total= %v", out.Hits.Total))
 
 	qry = Search("github").Filter(
 		Filter().Missing("repository.name"),
 	)
 	out, _ = qry.Result()
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 389, t, "Should have 389 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 389, fmt.Sprintf("Should have 389 total= %v", out.Hits.Total))
 
 	//actor_attributes: {type: "User",
 	qry = Search("github").Filter(
 		Filter().Terms("actor_attributes.location", "portland"),
 	)
 	out, _ = qry.Result()
-	Debug(out)
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 71, t, "Should have 71 total= %v", out.Hits.Total)
+	//gou.Debug(out)
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 71, fmt.Sprintf("Should have 71 total= %v", out.Hits.Total))
 
 	/*
 		Should this be an AND by default?
@@ -51,10 +52,10 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("repository.has_wiki", true),
 	)
 	out, err = qry.Result()
-	Debug(out)
-	Assert(err == nil, t, "should not have error")
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 44, t, "Should have 44 total= %v", out.Hits.Total)
+	//gou.Debug(out)
+	assert.T(t, err == nil, t, "should not have error")
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 44, fmt.Sprintf("Should have 44 total= %v", out.Hits.Total))
 
 	// NOW, lets try with two query calls instead of one
 	qry = Search("github").Filter(
@@ -64,10 +65,10 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("repository.has_wiki", true),
 	)
 	out, err = qry.Result()
-	Debug(out)
-	Assert(err == nil, t, "should not have error")
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 44, t, "Should have 44 total= %v", out.Hits.Total)
+	//gou.Debug(out)
+	assert.T(t, err == nil, t, "should not have error")
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 44, fmt.Sprintf("Should have 44 total= %v", out.Hits.Total))
 
 	qry = Search("github").Filter(
 		"or",
@@ -75,9 +76,9 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("repository.has_wiki", true),
 	)
 	out, err = qry.Result()
-	Assert(err == nil, t, "should not have error")
-	Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 6676, t, "Should have 6676 total= %v", out.Hits.Total)
+	assert.T(t, err == nil, t, "should not have error")
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 6676, fmt.Sprintf("Should have 6676 total= %v", out.Hits.Total))
 }
 
 func TestFilterRange(t *testing.T) {
@@ -91,6 +92,6 @@ func TestFilterRange(t *testing.T) {
 		return
 	}
 
-	Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
-	Assert(out.Hits.Total == 725, t, "Should have total=725 but was %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 25, fmt.Sprintf("Should have 25 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 725, fmt.Sprintf("Should have total=725 but was %v", out.Hits.Total))
 }
