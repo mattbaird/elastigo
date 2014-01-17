@@ -61,8 +61,6 @@ func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 
 	var url string
 
-	var response map[string]interface{}
-
 	if len(_type) > 0 {
 		url = fmt.Sprintf("/%s/%s/%s?fields=_id%s", index, _type, id, api.Pretty(pretty))
 	} else {
@@ -75,7 +73,7 @@ func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 		fmt.Println(err)
 	}
 
-	httpStatusCode, _, err := req.Do(&response)
+	httpStatusCode, _, err := req.Do(nil)
 
 	if err != nil {
 		return false, err
