@@ -16,7 +16,9 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"flag"
-	u "github.com/araddon/gou"
+	"fmt"
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 	"github.com/mattbaird/elastigo/api"
 	"log"
 	"strconv"
@@ -36,9 +38,19 @@ var (
 func init() {
 	flag.Parse()
 	if testing.Verbose() {
-		u.SetupLogging("debug")
+		gou.SetupLogging("debug")
 	}
 }
+
+// take two ints, compare, need to be within 5%
+func CloseInt(a, b int) bool {
+	c := float64(a) / float64(b)
+	if c >= .95 && c <= 1.05 {
+		return true
+	}
+	return false
+}
+
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
 	indexer := NewBulkIndexer(3)
@@ -46,7 +58,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		u.Debug(string(buf.Bytes()))
+		gou.Debug(string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
@@ -61,20 +73,20 @@ func TestBulkIndexerBasic(t *testing.T) {
 	}, 5)
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
-	u.Assert(len(buffers) == 1, t, "Should have sent one operation but was %d", len(buffers))
-	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
-	u.Assert(totalBytesSent == 145, t, "Should have sent 135 bytes but was %v", totalBytesSent)
+	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
+	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
+	assert.T(t, totalBytesSent == 145, fmt.Sprintf("Should have sent 135 bytes but was %v", totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data)
 	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
 	// this will test to ensure that Flush actually catches a doc
 	indexer.Flush()
 	totalBytesSent = totalBytesSent - len(*eshost)
-	u.Assert(err == nil, t, "Should have nil error  =%v", err)
-	u.Assert(len(buffers) == 2, t, "Should have another buffer ct=%d", len(buffers))
+	assert.T(t, err == nil, fmt.Sprintf("Should have nil error  =%v", err))
+	assert.T(t, len(buffers) == 2, fmt.Sprintf("Should have another buffer ct=%d", len(buffers)))
 
-	u.Assert(BulkErrorCt == 0, t, "Should not have any errors %d", BulkErrorCt)
-	u.Assert(u.CloseInt(totalBytesSent, 257), t, "Should have sent 257 bytes but was %v", totalBytesSent)
+	assert.T(t, BulkErrorCt == 0, fmt.Sprintf("Should not have any errors %d", BulkErrorCt))
+	assert.T(t, CloseInt(totalBytesSent, 257), fmt.Sprintf("Should have sent 257 bytes but was %v", totalBytesSent))
 
 	done <- true
 }
@@ -87,7 +99,7 @@ func TestBulkUpdate(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		u.Debug(string(buf.Bytes()))
+		gou.Debug(string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
@@ -116,12 +128,13 @@ func TestBulkUpdate(t *testing.T) {
 		return len(buffers) > 0
 	}, 5)
 
-	u.Assert(BulkErrorCt == 0 && err == nil, t, "Should not have any errors  %v", err)
+	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
 
 	response, err := Get(true, "users", "user", "5")
-	u.Assert(err == nil, t, "Should not have any errors  %v", err)
+	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
 	newCount := response.Source.(map[string]interface{})["count"]
-	u.Assert(newCount.(float64) == 3, t, "Should have update count: %#v ... %#v", response.Source.(map[string]interface{})["count"], response)
+	assert.T(t, newCount.(float64) == 3,
+		fmt.Sprintf("Should have update count: %#v ... %#v", response.Source.(map[string]interface{})["count"], response))
 }
 
 func TestBulkSmallBatch(t *testing.T) {
@@ -150,7 +163,7 @@ func TestBulkSmallBatch(t *testing.T) {
 	<-time.After(time.Millisecond * 200)
 	//	indexersm.Flush()
 	done <- true
-	Assert(messageSets == 2, t, "Should have sent 2 message sets %d", messageSets)
+	assert.T(t, messageSets == 2, fmt.Sprintf("Should have sent 2 message sets %d", messageSets))
 
 }
 
@@ -175,10 +188,10 @@ func TestBulkErrors(t *testing.T) {
 	}()
 	for errBuf := range indexer.ErrorChannel {
 		errorCt++
-		u.Debug(errBuf.Err)
+		gou.Debug(errBuf.Err)
 		break
 	}
-	u.Assert(errorCt > 0, t, "ErrorCt should be > 0 %d", errorCt)
+	assert.T(t, errorCt > 0, fmt.Sprintf("ErrorCt should be > 0 %d", errorCt))
 	done <- true
 }
 
