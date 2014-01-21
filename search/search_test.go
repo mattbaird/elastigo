@@ -12,7 +12,9 @@
 package search
 
 import (
-	u "github.com/araddon/gou"
+	"fmt"
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 	"github.com/mattbaird/elastigo/core"
 	"log"
 	"testing"
@@ -30,8 +32,8 @@ func TestSearchRequest(t *testing.T) {
 	}
 	out, err := core.SearchRequest(true, "github", "", qry, "", 0)
 	//log.Println(out)
-	u.Assert(&out != nil && err == nil, t, "Should get docs")
-	u.Assert(out.Hits.Total == 616 && out.Hits.Len() == 10, t, "Should have 616 hits but was %v", out.Hits.Total)
+	assert.T(t, &out != nil && err == nil, t, "Should get docs")
+	assert.T(t, out.Hits.Total == 616 && out.Hits.Len() == 10, t, "Should have 616 hits but was %v", out.Hits.Total)
 }
 
 func TestSearchSimple(t *testing.T) {
@@ -42,20 +44,20 @@ func TestSearchSimple(t *testing.T) {
 	)
 	out, _ := qry.Result()
 	// how many different docs used the word "add"
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 494, t, "Should have 494 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 494, fmt.Sprintf("Should have 494 total= %v", out.Hits.Total))
 
 	// now the same result from a "Simple" search
 	out, _ = Search("github").Search("add").Result()
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 494, t, "Should have 494 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
+	assert.T(t, out.Hits.Total == 494, t, "Should have 494 total= %v", out.Hits.Total)
 }
 
 func TestSearchRequestQueryString(t *testing.T) {
 	out, err := core.SearchUri("github", "", "actor:a*", "", 0)
 	//log.Println(out)
-	u.Assert(&out != nil && err == nil, t, "Should get docs")
-	u.Assert(out.Hits.Total == 616, t, "Should have 616 hits but was %v", out.Hits.Total)
+	assert.T(t, &out != nil && err == nil, "Should get docs")
+	assert.T(t, out.Hits.Total == 616, fmt.Sprintf("Should have 616 hits but was %v", out.Hits.Total))
 }
 
 func TestSearchFacetOne(t *testing.T) {
@@ -87,25 +89,25 @@ func TestSearchFacetOne(t *testing.T) {
 	).Size("1")
 	out, err := qry.Result()
 	//log.Println(string(out.Facets))
-	u.Debug(out)
-	u.Assert(out != nil && err == nil, t, "Should have output")
+	//gou.Debug(out)
+	assert.T(t, out != nil && err == nil, "Should have output")
 	if out == nil {
 		t.Fail()
 		return
 	}
-	h := u.NewJsonHelper(out.Facets)
-	u.Assert(h.Int("type.total") == 8084, t, "Should have 8084 results %v", h.Int("type.total"))
-	u.Assert(len(h.List("type.terms")) == 16, t, "Should have 16 event types, %v", len(h.List("type.terms")))
+	h := gou.NewJsonHelper(out.Facets)
+	assert.T(t, h.Int("type.total") == 8084, fmt.Sprintf("Should have 8084 results %v", h.Int("type.total")))
+	assert.T(t, len(h.List("type.terms")) == 16, fmt.Sprintf("Should have 16 event types, %v", len(h.List("type.terms"))))
 
 	// Now, lets try changing size to 10
 	qry.FacetVal.Size("10")
 	out, err = qry.Result()
-	h = u.NewJsonHelper(out.Facets)
+	h = gou.NewJsonHelper(out.Facets)
 
 	// still same doc count
-	u.Assert(h.Int("type.total") == 8084, t, "Should have 8084 results %v", h.Int("type.total"))
+	assert.T(t, h.Int("type.total") == 8084, fmt.Sprintf("Should have 8084 results %v", h.Int("type.total")))
 	// make sure size worked
-	u.Assert(len(h.List("type.terms")) == 10, t, "Should have 10 event types, %v", len(h.List("type.terms")))
+	assert.T(t, len(h.List("type.terms")) == 10, fmt.Sprintf("Should have 10 event types, %v", len(h.List("type.terms"))))
 
 	// now, lets add a type (out of the 16)
 	out, _ = Search("github").Type("IssueCommentEvent").Pretty().Facet(
@@ -113,12 +115,12 @@ func TestSearchFacetOne(t *testing.T) {
 	).Query(
 		Query().All(),
 	).Result()
-	h = u.NewJsonHelper(out.Facets)
+	h = gou.NewJsonHelper(out.Facets)
 	//log.Println(string(out.Facets))
 	// still same doc count
-	u.Assert(h.Int("type.total") == 685, t, "Should have 685 results %v", h.Int("type.total"))
+	assert.T(t, h.Int("type.total") == 685, fmt.Sprintf("Should have 685 results %v", h.Int("type.total")))
 	// we should only have one facettype because we limited to one type
-	u.Assert(len(h.List("type.terms")) == 1, t, "Should have 1 event types, %v", len(h.List("type.terms")))
+	assert.T(t, len(h.List("type.terms")) == 1, fmt.Sprintf("Should have 1 event types, %v", len(h.List("type.terms"))))
 
 	// now, add a second type (chained)
 	out, _ = Search("github").Type("IssueCommentEvent").Type("PushEvent").Pretty().Facet(
@@ -126,12 +128,12 @@ func TestSearchFacetOne(t *testing.T) {
 	).Query(
 		Query().All(),
 	).Result()
-	h = u.NewJsonHelper(out.Facets)
+	h = gou.NewJsonHelper(out.Facets)
 	//log.Println(string(out.Facets))
 	// still same doc count
-	u.Assert(h.Int("type.total") == 4941, t, "Should have 4941 results %v", h.Int("type.total"))
+	assert.T(t, h.Int("type.total") == 4941, fmt.Sprintf("Should have 4941 results %v", h.Int("type.total")))
 	// make sure we now have 2 types
-	u.Assert(len(h.List("type.terms")) == 2, t, "Should have 2 event types, %v", len(h.List("type.terms")))
+	assert.T(t, len(h.List("type.terms")) == 2, fmt.Sprintf("Should have 2 event types, %v", len(h.List("type.terms"))))
 
 	//and instead of faceting on type, facet on userid
 	// now, add a second type (chained)
@@ -140,11 +142,11 @@ func TestSearchFacetOne(t *testing.T) {
 	).Query(
 		Query().All(),
 	).Result()
-	h = u.NewJsonHelper(out.Facets)
+	h = gou.NewJsonHelper(out.Facets)
 	// still same doc count
-	u.Assert(h.Int("actor.total") == 5158, t, "Should have 5158 results %v", h.Int("actor.total"))
+	assert.T(t, h.Int("actor.total") == 5158, t, "Should have 5158 results %v", h.Int("actor.total"))
 	// make sure size worked
-	u.Assert(len(h.List("actor.terms")) == 500, t, "Should have 500 users, %v", len(h.List("actor.terms")))
+	assert.T(t, len(h.List("actor.terms")) == 500, t, "Should have 500 users, %v", len(h.List("actor.terms")))
 
 }
 
@@ -156,18 +158,19 @@ func TestSearchFacetRange(t *testing.T) {
 		Query().Search("add"),
 	)
 	out, err := qry.Result()
-	u.Assert(out != nil && err == nil, t, "Should have output")
+	assert.T(t, out != nil && err == nil, t, "Should have output")
 
 	if out == nil {
 		t.Fail()
 		return
 	}
 	//log.Println(string(out.Facets))
-	h := u.NewJsonHelper(out.Facets)
+	h := gou.NewJsonHelper(out.Facets)
 	// how many different docs used the word "add", during entire time range
-	u.Assert(h.Int("actor.total") == 521, t, "Should have 521 results %v", h.Int("actor.total"))
+	assert.T(t, h.Int("actor.total") == 521, fmt.Sprintf("Should have 521 results %v", h.Int("actor.total")))
 	// make sure size worked
-	u.Assert(len(h.List("actor.terms")) == 366, t, "Should have 366 unique userids, %v", len(h.List("actor.terms")))
+	assert.T(t, len(h.List("actor.terms")) == 366,
+		fmt.Sprintf("Should have 366 unique userids, %v", len(h.List("actor.terms"))))
 
 	// ok, repeat but with a range showing different results
 	qry = Search("github").Pretty().Facet(
@@ -178,18 +181,19 @@ func TestSearchFacetRange(t *testing.T) {
 		).Search("add"),
 	)
 	out, err = qry.Result()
-	u.Assert(out != nil && err == nil, t, "Should have output")
+	assert.T(t, out != nil && err == nil, t, "Should have output")
 
 	if out == nil {
 		t.Fail()
 		return
 	}
 	//log.Println(string(out.Facets))
-	h = u.NewJsonHelper(out.Facets)
+	h = gou.NewJsonHelper(out.Facets)
 	// how many different events used the word "add", during time range?
-	u.Assert(h.Int("actor.total") == 97, t, "Should have 97 results %v", h.Int("actor.total"))
+	assert.T(t, h.Int("actor.total") == 97, fmt.Sprintf("Should have 97 results %v", h.Int("actor.total")))
 	// make sure size worked
-	u.Assert(len(h.List("actor.terms")) == 71, t, "Should have 71 event types, %v", len(h.List("actor.terms")))
+	assert.T(t, len(h.List("actor.terms")) == 71,
+		fmt.Sprintf("Should have 71 event types, %v", len(h.List("actor.terms"))))
 
 }
 
@@ -201,8 +205,8 @@ func TestSearchTerm(t *testing.T) {
 	)
 	out, _ := qry.Result()
 	// how many different docs have jasmine in repository.name?
-	u.Assert(out.Hits.Len() == 4, t, "Should have 4 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 4, t, "Should have 4 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 4, fmt.Sprintf("Should have 4 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 4, fmt.Sprintf("Should have 4 total= %v", out.Hits.Total))
 
 }
 
@@ -214,8 +218,8 @@ func TestSearchFields(t *testing.T) {
 	)
 	out, _ := qry.Result()
 
-	u.Assert(out.Hits.Len() == 4, t, "Should have 4 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 4, t, "Should have 4 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 4, fmt.Sprintf("Should have 4 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 4, fmt.Sprintf("Should have 4 total= %v", out.Hits.Total))
 }
 
 func TestSearchMissingExists(t *testing.T) {
@@ -224,15 +228,15 @@ func TestSearchMissingExists(t *testing.T) {
 		Filter().Exists("repository.name"),
 	)
 	out, _ := qry.Result()
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 7695, t, "Should have 7695 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 7695, fmt.Sprintf("Should have 7695 total= %v", out.Hits.Total))
 
 	qry = Search("github").Filter(
 		Filter().Missing("repository.name"),
 	)
 	out, _ = qry.Result()
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 389, t, "Should have 389 total= %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 389, fmt.Sprintf("Should have 389 total= %v", out.Hits.Total))
 }
 
 func TestSearchFilterQuery(t *testing.T) {
@@ -248,8 +252,8 @@ func TestSearchFilterQuery(t *testing.T) {
 		return
 	}
 
-	u.Assert(out.Hits.Len() == 7, t, "Should have 7 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 7, t, "Should have total=7 but was %v", out.Hits.Total)
+	assert.T(t, out.Hits.Len() == 7, fmt.Sprintf("Should have 7 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 7, fmt.Sprintf("Should have total=7 but was %v", out.Hits.Total))
 }
 
 func TestSearchRange(t *testing.T) {
@@ -260,9 +264,9 @@ func TestSearchRange(t *testing.T) {
 			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
 		).Search("add"),
 	).Result()
-	u.Assert(out != nil && &out.Hits != nil, t, "Must not have nil results, or hits")
-	u.Assert(out.Hits.Len() == 25, t, "Should have 25 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 92, t, "Should have total=92 but was %v", out.Hits.Total)
+	assert.T(t, out != nil && &out.Hits != nil, "Must not have nil results, or hits")
+	assert.T(t, out.Hits.Len() == 25, fmt.Sprintf("Should have 25 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 92, fmt.Sprintf("Should have total=92 but was %v", out.Hits.Total))
 }
 
 func TestSearchSortOrder(t *testing.T) {
@@ -276,10 +280,11 @@ func TestSearchSortOrder(t *testing.T) {
 	out, _ := qry.Result()
 
 	// how many different docs used the word "add", during entire time range
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 8084, t, "Should have 8084 total= %v", out.Hits.Total)
-	h1 := u.NewJsonHelper(out.Hits.Hits[0].Source)
-	u.Assert(h1.Int("repository.watchers") == 41377, t, "Should have 41377 watchers= %v", h1.Int("repository.watchers"))
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 8084, fmt.Sprintf("Should have 8084 total= %v", out.Hits.Total))
+	h1 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	assert.T(t, h1.Int("repository.watchers") == 41377,
+		fmt.Sprintf("Should have 41377 watchers= %v", h1.Int("repository.watchers")))
 
 	// ascending
 	out, _ = Search("github").Pretty().Query(
@@ -288,10 +293,11 @@ func TestSearchSortOrder(t *testing.T) {
 		Sort("repository.watchers"),
 	).Result()
 	// how many different docs used the word "add", during entire time range
-	u.Assert(out.Hits.Len() == 10, t, "Should have 10 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 8084, t, "Should have 8084 total= %v", out.Hits.Total)
-	h2 := u.NewJsonHelper(out.Hits.Hits[0].Source)
-	u.Assert(h2.Int("repository.watchers") == 0, t, "Should have 0 watchers= %v", h2.Int("repository.watchers"))
+	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 8084, fmt.Sprintf("Should have 8084 total= %v", out.Hits.Total))
+	h2 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	assert.T(t, h2.Int("repository.watchers") == 0,
+		fmt.Sprintf("Should have 0 watchers= %v", h2.Int("repository.watchers")))
 
 	// sort descending with search
 	out, _ = Search("github").Pretty().Size("5").Query(
@@ -302,9 +308,10 @@ func TestSearchSortOrder(t *testing.T) {
 	//log.Println(out)
 	//log.Println(err)
 	// how many different docs used the word "add", during entire time range
-	u.Assert(out.Hits.Len() == 5, t, "Should have 5 docs %v", out.Hits.Len())
-	u.Assert(out.Hits.Total == 734, t, "Should have 734 total= %v", out.Hits.Total)
-	h3 := u.NewJsonHelper(out.Hits.Hits[0].Source)
-	u.Assert(h3.Int("repository.watchers") == 8659, t, "Should have 8659 watchers= %v", h3.Int("repository.watchers"))
+	assert.T(t, out.Hits.Len() == 5, fmt.Sprintf("Should have 5 docs %v", out.Hits.Len()))
+	assert.T(t, out.Hits.Total == 734, fmt.Sprintf("Should have 734 total= %v", out.Hits.Total))
+	h3 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	assert.T(t, h3.Int("repository.watchers") == 8659,
+		fmt.Sprintf("Should have 8659 watchers= %v", h3.Int("repository.watchers")))
 
 }
