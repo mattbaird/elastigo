@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
+	"net/http"
 )
 
 // Get allows caller to get a typed JSON document from the index based on its id.
@@ -78,9 +79,30 @@ func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if httpStatusCode == 404 {
-		return false, err
-	} else {
+	if httpStatusCode == http.StatusOK {
 		return true, err
+	} else {
+		return false, err
+	}
+}
+
+// ExistsIndex allows caller to check for the existance of an index or a type using HEAD
+func ExistsIndex(pretty bool, index string, _type string) (bool, error) {
+	var url string
+	if len(_type) > 0 {
+		url = fmt.Sprintf("/%s/%s?%s", index, _type, api.Pretty(pretty))
+	} else {
+		url = fmt.Sprintf("/%s?%s", index, api.Pretty(pretty))
+	}
+	req, err := api.ElasticSearchRequest("HEAD", url)
+	httpStatusCode, _, err := req.Do(nil)
+
+	if err != nil {
+		return false, err
+	}
+	if httpStatusCode == http.StatusOK {
+		return true, err
+	} else {
+		return false, err
 	}
 }
