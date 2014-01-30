@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"net/url"
 	"strconv"
 )
 
@@ -70,10 +69,9 @@ func SearchRequest(index string, _type string, args map[string]interface{}, quer
 // produces a request like this:    host:9200/github/_search?q=user:kimchy"
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchUri(index, _type string, args map[string]interface{}, query string) (SearchResult, error) {
+func SearchUri(index, _type string, args map[string]interface{}) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
-	query = url.QueryEscape(query)
 	if len(_type) > 0 && _type != "*" {
 		uriVal = fmt.Sprintf("/%s/%s/_search", index, _type)
 	} else {

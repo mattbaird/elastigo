@@ -89,7 +89,7 @@ func ExampleBulkIndexer_responses() {
 	// Create a custom Sendor Func, to allow inspection of response/error
 	indexer.BulkSendor = func(buf *bytes.Buffer) error {
 		// @buf is the buffer of docs about to be written
-		respJson, err := api.DoCommand("POST", "/_bulk", buf)
+		respJson, err := api.DoCommand("POST", "/_bulk", nil, buf)
 		if err != nil {
 			// handle it better than this
 			fmt.Println(string(respJson))

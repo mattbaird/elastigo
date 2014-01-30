@@ -21,7 +21,7 @@ import (
 // The cluster health API allows to get a very simple status on the health of the cluster.
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
 // information returned. Defaults to cluster.)
-func Reroute(dryRun bool, args map[string]interface{}, commands Commands) (ClusterHealthResponse, error) {
+func Reroute(args map[string]interface{}, commands Commands) (ClusterHealthResponse, error) {
 	var url string
 	var retval ClusterHealthResponse
 

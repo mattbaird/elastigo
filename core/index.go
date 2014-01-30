@@ -35,9 +35,9 @@ func Index(index string, _type string, id string, args map[string]interface{}, d
 	var url string
 
 	if len(id) > 0 {
-		url = fmt.Sprintf("%s/%s/%s", index, _type, id)
+		url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
 	} else {
-		url = fmt.Sprintf("%s/%s", index, _type)
+		url = fmt.Sprintf("/%s/%s", index, _type)
 	}
 
 	var method string
