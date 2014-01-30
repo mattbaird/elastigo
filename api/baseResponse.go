@@ -11,9 +11,7 @@
 
 package api
 
-import (
-	"fmt"
-)
+import ()
 
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
