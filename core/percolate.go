@@ -23,11 +23,11 @@ import (
 // and then running queries. One sends queries, registers them, and then sends docs and finds out which queries
 // match that doc.
 // see http://www.elasticsearch.org/guide/reference/api/percolate.html
-func RegisterPercolate(pretty bool, index string, name string, query api.Query) (api.BaseResponse, error) {
+func RegisterPercolate(index string, name string, args map[string]interface{}, query api.Query) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	url = fmt.Sprintf("/_percolator/%s/%s?%s", index, name, api.Pretty(pretty))
-	body, err := api.DoCommand("PUT", url, query)
+	url = fmt.Sprintf("/_percolator/%s/%s", index, name)
+	body, err := api.DoCommand("PUT", url, args, query)
 	if err != nil {
 		return retval, err
 	}
@@ -38,15 +38,14 @@ func RegisterPercolate(pretty bool, index string, name string, query api.Query) 
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 
-func Percolate(pretty bool, index string, _type string, name string, doc string) (api.Match, error) {
+func Percolate(index string, _type string, name string, args map[string]interface{}, doc string) (api.Match, error) {
 	var url string
 	var retval api.Match
-	url = fmt.Sprintf("/%s/%s/_percolate?%s", index, _type, api.Pretty(pretty))
-	body, err := api.DoCommand("GET", url, doc)
+	url = fmt.Sprintf("/%s/%s/_percolate", index, _type)
+	body, err := api.DoCommand("GET", url, args, doc)
 	if err != nil {
 		return retval, err
 	}
@@ -57,6 +56,5 @@ func Percolate(pretty bool, index string, _type string, name string, doc string)
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }

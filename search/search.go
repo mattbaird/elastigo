@@ -55,7 +55,7 @@ type SearchDsl struct {
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
-	return api.DoCommand("POST", s.url(), s)
+	return api.DoCommand("POST", s.url(), nil, s)
 }
 
 func (s *SearchDsl) Result() (*core.SearchResult, error) {

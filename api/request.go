@@ -19,7 +19,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -40,8 +42,8 @@ var (
 	Port           string    = DefaultPort
 )
 
-func ElasticSearchRequest(method, path string) (*Request, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s://%s:%s%s", Protocol, Domain, Port, path), nil)
+func ElasticSearchRequest(method, path, query string) (*Request, error) {
+	req, err := http.NewRequest(method, fmt.Sprintf("%s://%s:%s%s?%s", Protocol, Domain, Port, path, query), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -108,4 +110,27 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 		}
 	}
 	return res, bodyBytes, err
+}
+
+func QueryString(args map[string]interface{}) (s string, err error) {
+	vals := url.Values{}
+	for key, val := range args {
+		switch v := val.(type) {
+		case string:
+			vals.Add(key, v)
+		case bool:
+			vals.Add(key, strconv.FormatBool(v))
+		case int32, int64:
+			vals.Add(key, strconv.Itoa(v.(int)))
+		case float32, float64:
+			vals.Add(key, strconv.FormatFloat(v.(float64), 'f', -1, 64))
+		case []string:
+			vals.Add(key, strings.Join(v, ","))
+		default:
+			err = fmt.Errorf("Could not format URL argument: %s", key)
+			return
+		}
+	}
+	s = vals.Encode()
+	return
 }

@@ -21,18 +21,18 @@ import (
 // The response includes a docs array with all the fetched documents, each element similar in structure to a document
 // provided by the get API.
 // see http://www.elasticsearch.org/guide/reference/api/multi-get.html
-func MGet(pretty bool, index string, _type string, mgetRequest MGetRequestContainer) (MGetResponseContainer, error) {
+func MGet(index string, _type string, mgetRequest MGetRequestContainer, args map[string]interface{}) (MGetResponseContainer, error) {
 	var url string
 	var retval MGetResponseContainer
 	if len(index) <= 0 {
-		url = fmt.Sprintf("/_mget?%s", api.Pretty(pretty))
+		url = fmt.Sprintf("/_mget")
 	}
 	if len(_type) > 0 && len(index) > 0 {
-		url = fmt.Sprintf("/%s/%s/_mget?%s", index, _type, api.Pretty(pretty))
+		url = fmt.Sprintf("/%s/%s/_mget", index, _type)
 	} else if len(index) > 0 {
-		url = fmt.Sprintf("/%s/_mget?%s", index, api.Pretty(pretty))
+		url = fmt.Sprintf("/%s/_mget", index)
 	}
-	body, err := api.DoCommand("GET", url, nil)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err != nil {
 		return retval, err
 	}

@@ -22,15 +22,15 @@ import (
 // The query can either be provided using a simple query string as a parameter, or using the Query DSL defined within
 // the request body.
 // see: http://www.elasticsearch.org/guide/reference/api/delete-by-query.html
-func DeleteByQuery(pretty bool, indices []string, types []string, query interface{}) (api.BaseResponse, error) {
+func DeleteByQuery(pretty bool, indices []string, types []string, args map[string]interface{}, query interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
 	if len(indices) > 0 && len(types) > 0 {
-		url = fmt.Sprintf("http://localhost:9200/%s/%s/_query?%s&%s", strings.Join(indices, ","), strings.Join(types, ","), buildQuery(), api.Pretty(pretty))
+		url = fmt.Sprintf("http://localhost:9200/%s/%s/_query", strings.Join(indices, ","), strings.Join(types, ","))
 	} else if len(indices) > 0 {
-		url = fmt.Sprintf("http://localhost:9200/%s/_query?%s&%s", strings.Join(indices, ","), buildQuery(), api.Pretty(pretty))
+		url = fmt.Sprintf("http://localhost:9200/%s/_query", strings.Join(indices, ","))
 	}
-	body, err := api.DoCommand("DELETE", url, query)
+	body, err := api.DoCommand("DELETE", url, args, query)
 	if err != nil {
 		return retval, err
 	}

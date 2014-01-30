@@ -20,11 +20,11 @@ import (
 // Delete API allows to delete a typed JSON document from a specific index based on its id.
 // http://www.elasticsearch.org/guide/reference/api/delete.html
 // todo: add routing and versioning support
-func Delete(pretty bool, index string, _type string, id string, version int, routing string) (api.BaseResponse, error) {
+func Delete(index string, _type string, id string, args map[string]interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	url = fmt.Sprintf("/%s/%s/%s?%s", index, _type, id, api.Pretty(pretty))
-	body, err := api.DoCommand("DELETE", url, nil)
+	url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
+	body, err := api.DoCommand("DELETE", url, args, nil)
 	if err != nil {
 		return retval, err
 	}

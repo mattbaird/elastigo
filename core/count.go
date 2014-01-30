@@ -29,11 +29,11 @@ type CountResponse struct {
 // http://www.elasticsearch.org/guide/reference/api/count.html
 // TODO: take parameters.
 // currently not working against 0.19.10
-func Count(pretty bool, index string, _type string) (CountResponse, error) {
+func Count(index string, _type string, args map[string]interface{}) (CountResponse, error) {
 	var url string
 	var retval CountResponse
-	url = fmt.Sprintf("/%s/%s/_count?%s", index, _type, api.Pretty(pretty))
-	body, err := api.DoCommand("GET", url, nil)
+	url = fmt.Sprintf("/%s/%s/_count", index, _type)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err != nil {
 		return retval, err
 	}

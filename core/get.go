@@ -23,15 +23,15 @@ import (
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
 // TODO: make this implement an interface
-func Get(pretty bool, index string, _type string, id string) (api.BaseResponse, error) {
+func Get(index string, _type string, id string, args map[string]interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/%s?%s", index, _type, id, api.Pretty(pretty))
+		url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
 	} else {
-		url = fmt.Sprintf("/%s/%s?%s", index, id, api.Pretty(pretty))
+		url = fmt.Sprintf("/%s/%s", index, id)
 	}
-	body, err := api.DoCommand("GET", url, nil)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err != nil {
 		return retval, err
 	}
@@ -47,9 +47,9 @@ func Get(pretty bool, index string, _type string, id string) (api.BaseResponse, 
 }
 
 // GetSource retrieves the document by id and converts it to provided interface
-func GetSource(index string, _type string, id string, source interface{}) error {
+func GetSource(index string, _type string, id string, args map[string]interface{}, source interface{}) error {
 	url := fmt.Sprintf("/%s/%s/%s/_source", index, _type, id)
-	body, err := api.DoCommand("GET", url, nil)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err == nil {
 		err = json.Unmarshal(body, &source)
 	}
@@ -58,17 +58,22 @@ func GetSource(index string, _type string, id string, source interface{}) error 
 }
 
 // Exists allows caller to check for the existance of a document using HEAD
-func Exists(pretty bool, index string, _type string, id string) (bool, error) {
+func Exists(index string, _type string, id string, args map[string]interface{}) (bool, error) {
 
 	var url string
 
-	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/%s?fields=_id%s", index, _type, id, api.Pretty(pretty))
-	} else {
-		url = fmt.Sprintf("/%s/%s?fields=_id%s", index, id, api.Pretty(pretty))
+	query, err := api.QueryString(args)
+	if err != nil {
+		return false, err
 	}
 
-	req, err := api.ElasticSearchRequest("HEAD", url)
+	if len(_type) > 0 {
+		url = fmt.Sprintf("/%s/%s/%s?fields=_id", index, _type, id)
+	} else {
+		url = fmt.Sprintf("/%s/%s?fields=_id", index, id)
+	}
+
+	req, err := api.ElasticSearchRequest("HEAD", url, query)
 
 	if err != nil {
 		fmt.Println(err)
@@ -87,14 +92,20 @@ func Exists(pretty bool, index string, _type string, id string) (bool, error) {
 }
 
 // ExistsIndex allows caller to check for the existance of an index or a type using HEAD
-func ExistsIndex(pretty bool, index string, _type string) (bool, error) {
+func ExistsIndex(index string, _type string, args map[string]interface{}) (bool, error) {
 	var url string
-	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s?%s", index, _type, api.Pretty(pretty))
-	} else {
-		url = fmt.Sprintf("/%s?%s", index, api.Pretty(pretty))
+
+	query, err := api.QueryString(args)
+	if err != nil {
+		return false, err
 	}
-	req, err := api.ElasticSearchRequest("HEAD", url)
+
+	if len(_type) > 0 {
+		url = fmt.Sprintf("/%s/%s?%s", index, _type)
+	} else {
+		url = fmt.Sprintf("/%s?%s", index)
+	}
+	req, err := api.ElasticSearchRequest("HEAD", url, query)
 	httpStatusCode, _, err := req.Do(nil)
 
 	if err != nil {

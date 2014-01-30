@@ -19,15 +19,15 @@ import (
 
 // Validate allows a user to validate a potentially expensive query without executing it.
 // see http://www.elasticsearch.org/guide/reference/api/validate.html
-func Validate(pretty bool, index string, _type string, query string, explain bool) (api.BaseResponse, error) {
+func Validate(index string, _type string, args map[string]interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/_validate/query?q=%s&%s&explain=%t", index, _type, query, api.Pretty(pretty), explain)
+		url = fmt.Sprintf("/%s/%s/_validate/", index, _type)
 	} else {
-		url = fmt.Sprintf("/%s/_validate/query?q=%s&%s&explain=%t", index, query, api.Pretty(pretty), explain)
+		url = fmt.Sprintf("/%s/_validate/", index)
 	}
-	body, err := api.DoCommand("GET", url, nil)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err != nil {
 		return retval, err
 	}

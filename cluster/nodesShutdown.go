@@ -30,7 +30,7 @@ func NodesShutdown(delay int, nodes ...string) error {
 		values.Add("delay", strconv.Itoa(delay))
 		shutdownUrl += "?" + values.Encode()
 	}
-	_, err := api.DoCommand("POST", shutdownUrl, nil)
+	_, err := api.DoCommand("POST", shutdownUrl, nil, nil)
 	if err != nil {
 		return err
 	}
