@@ -34,7 +34,6 @@ func MoreLikeThis(index string, _type string, id string, args map[string]interfa
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

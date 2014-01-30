@@ -38,7 +38,6 @@ func Validate(index string, _type string, args map[string]interface{}) (api.Base
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

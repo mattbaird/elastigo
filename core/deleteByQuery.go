@@ -41,7 +41,6 @@ func DeleteByQuery(pretty bool, indices []string, types []string, args map[strin
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

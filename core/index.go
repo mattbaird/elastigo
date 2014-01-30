@@ -21,14 +21,6 @@ import (
 // if it did not exist.
 // if id is omited, op_type 'create' will be pased and http method will default to "POST"
 // id is optional
-// parentId is optional
-// version is optional
-// op_type is optional
-// routing is optional
-// timestamp is optional
-// ttl is optional
-// percolate is optional
-// timeout is optional
 // http://www.elasticsearch.org/guide/reference/api/index_.html
 func Index(index string, _type string, id string, args map[string]interface{}, data interface{}) (api.BaseResponse, error) {
 	var retval api.BaseResponse

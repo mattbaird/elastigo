@@ -42,7 +42,6 @@ func Get(index string, _type string, id string, args map[string]interface{}) (ap
 			return retval, jsonErr
 		}
 	}
-	//fmt.Println(body)
 	return retval, err
 }
 
@@ -53,7 +52,6 @@ func GetSource(index string, _type string, id string, args map[string]interface{
 	if err == nil {
 		err = json.Unmarshal(body, &source)
 	}
-	//fmt.Println(body)
 	return err
 }
 
@@ -76,7 +74,7 @@ func Exists(index string, _type string, id string, args map[string]interface{}) 
 	req, err := api.ElasticSearchRequest("HEAD", url, query)
 
 	if err != nil {
-		fmt.Println(err)
+		return false, err
 	}
 
 	httpStatusCode, _, err := req.Do(nil)

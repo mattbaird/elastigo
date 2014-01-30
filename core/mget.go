@@ -43,7 +43,6 @@ func MGet(index string, _type string, mgetRequest MGetRequestContainer, args map
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

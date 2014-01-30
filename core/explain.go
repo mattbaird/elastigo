@@ -21,7 +21,7 @@ import (
 // This can give useful feedback whether a document matches or didn’t match a specific query.
 // This feature is available from version 0.19.9 and up.
 // see http://www.elasticsearch.org/guide/reference/api/explain.html
-func Explain(pretty bool, index string, _type string, id string, args map[string]interface{}, query string) (api.Match, error) {
+func Explain(index string, _type string, id string, args map[string]interface{}, query string) (api.Match, error) {
 	var url string
 	var retval api.Match
 	if len(_type) > 0 {
@@ -40,6 +40,5 @@ func Explain(pretty bool, index string, _type string, id string, args map[string
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }

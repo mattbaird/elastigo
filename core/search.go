@@ -28,12 +28,13 @@ var (
 //   @pretty:  bool for pretty reply or not, a parameter to elasticsearch
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
+//   @args:   a map of URL parameters. Allows all the URI-request parameters allowed by ElasticSearch.
 //   @query:  this can be one of 3 types:
 //              1)  string value that is valid elasticsearch
 //              2)  io.Reader that can be set in body (also valid elasticsearch string syntax..)
 //              3)  other type marshalable to json (also valid elasticsearch json)
 //
-//   out, err := SearchRequest(true, "github","",qryType ,"", 0)
+//   out, err := SearchRequest(true, "github", map[string]interface{} {"from" : 10}, qryType)
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
 func SearchRequest(index string, _type string, args map[string]interface{}, query interface{}) (SearchResult, error) {
@@ -62,9 +63,9 @@ func SearchRequest(index string, _type string, args map[string]interface{}, quer
 // params:
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
-//   @query:  valid string lucene search syntax
+//   @args: a map of URL parameters. Most important one is q
 //
-//   out, err := SearchUri("github","",`user:kimchy` ,"", 0)
+//   out, err := SearchUri("github","", map[string]interface{} { "q" : `user:kimchy`})
 //
 // produces a request like this:    host:9200/github/_search?q=user:kimchy"
 //

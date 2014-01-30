@@ -27,8 +27,6 @@ type CountResponse struct {
 // The query can either be provided using a simple query string as a parameter,
 // or using the Query DSL defined within the request body.
 // http://www.elasticsearch.org/guide/reference/api/count.html
-// TODO: take parameters.
-// currently not working against 0.19.10
 func Count(index string, _type string, args map[string]interface{}) (CountResponse, error) {
 	var url string
 	var retval CountResponse
@@ -44,6 +42,5 @@ func Count(index string, _type string, args map[string]interface{}) (CountRespon
 			return retval, jsonErr
 		}
 	}
-	//fmt.Println(body)
 	return retval, err
 }

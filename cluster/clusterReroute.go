@@ -41,7 +41,6 @@ func Reroute(args map[string]interface{}, commands Commands) (ClusterHealthRespo
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

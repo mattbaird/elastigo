@@ -12,7 +12,6 @@
 package api
 
 import (
-	//"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,7 +29,6 @@ func DoCommand(method string, url string, args map[string]interface{}, data inte
 		return nil, err
 	}
 	req, err := ElasticSearchRequest(method, url, query)
-	//log.Println(req.URL)
 	if err != nil {
 		return body, err
 	}
@@ -41,8 +39,6 @@ func DoCommand(method string, url string, args map[string]interface{}, data inte
 			req.SetBodyString(v)
 		case io.Reader:
 			req.SetBody(v)
-		//case *bytes.Buffer:
-		//	req.SetBody(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {
@@ -118,6 +114,5 @@ func Exists(index string, _type string, id string, args map[string]interface{}) 
 			log.Println(jsonErr)
 		}
 	}
-	//fmt.Println(string(body))
 	return retval, err
 }
