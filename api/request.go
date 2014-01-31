@@ -120,7 +120,7 @@ func QueryString(args map[string]interface{}) (s string, err error) {
 			vals.Add(key, v)
 		case bool:
 			vals.Add(key, strconv.FormatBool(v))
-		case int32, int64:
+		case int, int32, int64:
 			vals.Add(key, strconv.Itoa(v.(int)))
 		case float32, float64:
 			vals.Add(key, strconv.FormatFloat(v.(float64), 'f', -1, 64))
