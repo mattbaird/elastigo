@@ -99,9 +99,9 @@ func ExistsIndex(index string, _type string, args map[string]interface{}) (bool,
 	}
 
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s?%s", index, _type)
+		url = fmt.Sprintf("/%s/%s", index, _type)
 	} else {
-		url = fmt.Sprintf("/%s?%s", index)
+		url = fmt.Sprintf("/%s", index)
 	}
 	req, err := api.ElasticSearchRequest("HEAD", url, query)
 	httpStatusCode, _, err := req.Do(nil)
