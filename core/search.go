@@ -121,6 +121,7 @@ type SearchResult struct {
 	Hits        Hits            `json:"hits"`
 	Facets      json.RawMessage `json:"facets,omitempty"` // structure varies on query
 	ScrollId    string          `json:"_scroll_id,omitempty"`
+	Aggregations json.RawMessage `json:"aggregations"`
 }
 
 func (s *SearchResult) String() string {
