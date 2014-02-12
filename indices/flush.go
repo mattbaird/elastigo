@@ -32,7 +32,7 @@ func Flush(indices ...string) (api.BaseResponse, error) {
 	} else {
 		url = "/_flush"
 	}
-	body, err := api.DoCommand("POST", url, nil)
+	body, err := api.DoCommand("POST", url, nil, nil)
 	if err != nil {
 		return retval, err
 	}

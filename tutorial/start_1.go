@@ -34,15 +34,15 @@ func main() {
 	api.Domain = *host
 
 	// Index a document
-	_, err := core.Index(false, "testindex", "user", "docid_1", `{"name":"bob"}`)
+	_, err := core.Index("testindex", "user", "docid_1", nil, `{"name":"bob"}`)
 	exitIfErr(err)
 
 	// Index a doc using a map of values
-	_, err = core.Index(false, "testindex", "user", "docid_2", map[string]string{"name": "venkatesh"})
+	_, err = core.Index("testindex", "user", "docid_2", nil, map[string]string{"name": "venkatesh"})
 	exitIfErr(err)
 
 	// Index a doc using Structs
-	_, err = core.Index(false, "testindex", "user", "docid_3", MyUser{"wanda", 22})
+	_, err = core.Index("testindex", "user", "docid_3", nil, MyUser{"wanda", 22})
 	exitIfErr(err)
 
 	// Search Using Raw json String
@@ -51,7 +51,7 @@ func main() {
 	        "term" : { "Name" : "wanda" }
 	    }
 	}`
-	out, err := core.SearchRequest(true, "testindex", "user", searchJson, "", 0)
+	out, err := core.SearchRequest("testindex", "user", nil, searchJson)
 	if len(out.Hits.Hits) == 1 {
 		fmt.Println(string(out.Hits.Hits[0].Source))
 	}

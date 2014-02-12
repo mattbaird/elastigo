@@ -30,7 +30,7 @@ func Snapshot(indices ...string) (api.ExtendedStatus, error) {
 	} else {
 		url = fmt.Sprintf("/_gateway/snapshot")
 	}
-	body, err := api.DoCommand("POST", url, nil)
+	body, err := api.DoCommand("POST", url, nil, nil)
 	if err != nil {
 		return retval, err
 	}

@@ -24,7 +24,7 @@ func IndicesExists(indices ...string) (bool, error) {
 	if len(indices) > 0 {
 		url = fmt.Sprintf("/%s", strings.Join(indices, ","))
 	}
-	_, err := api.DoCommand("HEAD", url, nil)
+	_, err := api.DoCommand("HEAD", url, nil, nil)
 	if err != nil {
 		eserror := err.(api.ESError)
 		if eserror.Code == 404 {

@@ -16,39 +16,21 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"net/url"
-	"strings"
 )
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze/
-func AnalyzeIndices(index string, analyzer string, tokenizer string, field string, text string, filters ...string) (AnalyzeResponse, error) {
+func AnalyzeIndices(index string, args map[string]interface{}) (AnalyzeResponse, error) {
 	var retval AnalyzeResponse
-	if len(text) <= 0 {
+	if len(args["text"].(string)) == 0 {
 		return retval, errors.New("text to analyze must not be blank")
 	}
 	var analyzeUrl string = "/_analyze"
 	if len(index) > 0 {
 		analyzeUrl = fmt.Sprintf("/%s/%s", index, analyzeUrl)
 	}
-	var values url.Values = url.Values{}
-	if len(analyzer) > 0 {
-		values.Add("analyzer", analyzer)
-	}
-	if len(tokenizer) > 0 {
-		values.Add("tokenizer", tokenizer)
-	}
-	if len(field) > 0 {
-		values.Add("field", field)
-	}
-	if len(filters) > 0 {
-		values.Add("filters", strings.Join(filters, ","))
-	}
-	// text will not be blank
-	values.Add("text", text)
-	analyzeUrl += "?" + values.Encode()
 
-	body, err := api.DoCommand("GET", analyzeUrl, nil)
+	body, err := api.DoCommand("GET", analyzeUrl, args, nil)
 	if err != nil {
 		return retval, err
 	}

@@ -14,7 +14,6 @@ package cluster
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/mattbaird/elastigo/api"
 )
 
