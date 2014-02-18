@@ -66,6 +66,8 @@ type BulkIndexer struct {
 
 	// We are creating a variable defining the func responsible for sending
 	// to allow a mock sendor for test purposes
+	BulkSender func(*bytes.Buffer) error
+	// Deprecated, for backwards compatibility
 	BulkSendor func(*bytes.Buffer) error
 
 	// If we encounter an error in sending, we are going to retry for this long
@@ -146,11 +148,13 @@ func NewBulkIndexerErrors(maxConns, retrySeconds int) *BulkIndexer {
 func (b *BulkIndexer) Run(done chan bool) {
 
 	go func() {
-		if b.BulkSendor == nil {
-			b.BulkSendor = BulkSend
+		if b.BulkSender == nil {
+			b.BulkSender = BulkSend
 		}
+		// Backwards compatibility
+		b.BulkSendor = b.BulkSender
 		b.shutdownChan = done
-		b.startHttpSendor()
+		b.startHttpSender()
 		b.startDocChannel()
 		b.startTimer()
 		<-b.shutdownChan
@@ -190,7 +194,7 @@ func (b *BulkIndexer) Flush() {
 	}
 }
 
-func (b *BulkIndexer) startHttpSendor() {
+func (b *BulkIndexer) startHttpSender() {
 
 	// this sends http requests to elasticsearch it uses maxConns to open up that
 	// many goroutines, each of which will synchronously call ElasticSearch
@@ -202,7 +206,7 @@ func (b *BulkIndexer) startHttpSendor() {
 				select {
 				case buf := <-b.sendBuf:
 					b.sendWg.Add(1)
-					err := b.BulkSendor(buf)
+					err := b.BulkSender(buf)
 
 					// Perhaps a b.FailureStrategy(err)  ??  with different types of strategies
 					//  1.  Retry, then panic
@@ -211,7 +215,7 @@ func (b *BulkIndexer) startHttpSendor() {
 					if err != nil {
 						if b.RetryForSeconds > 0 {
 							time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
-							err = b.BulkSendor(buf)
+							err = b.BulkSender(buf)
 							if err == nil {
 								// Successfully re-sent with no error
 								b.sendWg.Done()
