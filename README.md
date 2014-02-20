@@ -1,5 +1,8 @@
 elastigo [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 ========
+NOTICE!
+=======
+I'm going to be merging a breaking change shortly. Please contact me directly if you need more than a week to prepare for this. I'm thinking of doing the merge on the 26th of February.
 
 [![Build Status][1]][2]
 
