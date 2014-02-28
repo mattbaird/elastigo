@@ -111,7 +111,7 @@ func TestBulkUpdate(t *testing.T) {
 	}
 
 	// Lets make sure the data is in the index ...
-	_, err := Index(true, "users", "user", "5", user)
+	_, err := Index("users", "user", "5", nil, user)
 
 	// script and params
 	data := map[string]interface{}{
@@ -130,7 +130,7 @@ func TestBulkUpdate(t *testing.T) {
 
 	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
 
-	response, err := Get(true, "users", "user", "5")
+	response, err := Get("users", "user", "5", nil)
 	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
 	newCount := response.Source.(map[string]interface{})["count"]
 	assert.T(t, newCount.(float64) == 3,

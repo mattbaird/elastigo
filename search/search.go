@@ -17,7 +17,6 @@ import (
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
 	"log"
-	"net/url"
 	"strings"
 
 	u "github.com/araddon/gou"
@@ -39,11 +38,11 @@ var (
 //       ).Search("add"),
 //     ).Result()
 func Search(index string) *SearchDsl {
-	return &SearchDsl{Index: index, args: url.Values{}}
+	return &SearchDsl{Index: index, args: map[string]interface{}{}}
 }
 
 type SearchDsl struct {
-	args      url.Values
+	args      map[string]interface{}
 	types     []string
 	FromVal   int         `json:"from,omitempty"`
 	SizeVal   int         `json:"size,omitempty"`
@@ -55,7 +54,7 @@ type SearchDsl struct {
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
-	return api.DoCommand("POST", s.url(), s)
+	return api.DoCommand("POST", s.url(), s.args, s)
 }
 
 func (s *SearchDsl) Result() (*core.SearchResult, error) {
@@ -79,12 +78,12 @@ func (s *SearchDsl) Result() (*core.SearchResult, error) {
 }
 
 func (s *SearchDsl) url() string {
-	url := fmt.Sprintf("/%s%s/_search?%s", s.Index, s.getType(), s.args.Encode())
+	url := fmt.Sprintf("/%s%s/_search", s.Index, s.getType())
 	return url
 }
 
 func (s *SearchDsl) Pretty() *SearchDsl {
-	s.args.Set("pretty", "1")
+	s.args["pretty"] = "1"
 	return s
 }
 
@@ -105,7 +104,7 @@ func (s *SearchDsl) getType() string {
 }
 
 func (s *SearchDsl) From(from string) *SearchDsl {
-	s.args.Set("from", from)
+	s.args["from"] = from
 	return s
 }
 
@@ -117,7 +116,7 @@ func (s *SearchDsl) Search(srch string) *SearchDsl {
 }
 
 func (s *SearchDsl) Size(size string) *SearchDsl {
-	s.args.Set("size", size)
+	s.args["size"] = size
 	return s
 }
 

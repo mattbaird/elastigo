@@ -19,11 +19,11 @@ import (
 
 // MoreLikeThis allows the caller to get documents that are “like” a specified document.
 // http://www.elasticsearch.org/guide/reference/api/more-like-this.html
-func MoreLikeThis(pretty bool, index string, _type string, id string, query MoreLikeThisQuery) (api.BaseResponse, error) {
+func MoreLikeThis(index string, _type string, id string, args map[string]interface{}, query MoreLikeThisQuery) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	url = fmt.Sprintf("/%s/%s/%s/_mlt?%s", index, _type, id, api.Pretty(pretty))
-	body, err := api.DoCommand("GET", url, query)
+	url = fmt.Sprintf("/%s/%s/%s/_mlt", index, _type, id)
+	body, err := api.DoCommand("GET", url, args, query)
 	if err != nil {
 		return retval, err
 	}
@@ -34,7 +34,6 @@ func MoreLikeThis(pretty bool, index string, _type string, id string, query More
 			return retval, jsonErr
 		}
 	}
-	fmt.Println(body)
 	return retval, err
 }
 

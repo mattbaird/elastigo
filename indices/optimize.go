@@ -15,40 +15,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"net/url"
-	"strconv"
 	"strings"
 )
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze/
-func OptimizeIndices(max_num_segments int, only_expunge_deletes bool, refresh bool, flush bool, wait_for_merge bool,
-	indices ...string) (OptimizeResponse, error) {
+func OptimizeIndices(args map[string]interface{}, indices ...string) (OptimizeResponse, error) {
 	var retval OptimizeResponse
 	var optimizeUrl string = "/_optimize"
 	if len(indices) > 0 {
 		optimizeUrl = fmt.Sprintf("/%s/%s", strings.Join(indices, ","), optimizeUrl)
 	}
-	var values url.Values = url.Values{}
-	if max_num_segments > 0 {
-		values.Add("max_num_segments", strconv.Itoa(max_num_segments))
-	}
-	if only_expunge_deletes {
-		values.Add("only_expunge_deletes", strconv.FormatBool(only_expunge_deletes))
-	}
-	if !refresh {
-		values.Add("refresh", strconv.FormatBool(refresh))
-	}
-	if !flush {
-		values.Add("flush", strconv.FormatBool(flush))
-	}
-	if wait_for_merge {
-		values.Add("wait_for_merge", strconv.FormatBool(wait_for_merge))
-	}
 
-	optimizeUrl += "?" + values.Encode()
-
-	body, err := api.DoCommand("POST", optimizeUrl, nil)
+	body, err := api.DoCommand("POST", optimizeUrl, args, nil)
 	if err != nil {
 		return retval, err
 	}

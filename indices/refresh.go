@@ -31,7 +31,7 @@ func Refresh(indices ...string) (api.BaseResponse, error) {
 	} else {
 		url = "/_refresh"
 	}
-	body, err := api.DoCommand("POST", url, nil)
+	body, err := api.DoCommand("POST", url, nil, nil)
 	if err != nil {
 		return retval, err
 	}

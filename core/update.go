@@ -27,11 +27,12 @@ import (
 //
 // http://www.elasticsearch.org/guide/reference/api/update.html
 // TODO: finish this, it's fairly complex
-func Update(pretty bool, index string, _type string, id string, data interface{}) (api.BaseResponse, error) {
+func Update(index string, _type string, id string, args map[string]interface{}, data interface{}) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	url = fmt.Sprintf("/%s/%s/%s/_update?%s", index, _type, id, api.Pretty(pretty))
-	body, err := api.DoCommand("POST", url, data)
+
+	url = fmt.Sprintf("/%s/%s/%s/_update", index, _type, id)
+	body, err := api.DoCommand("POST", url, args, data)
 	if err != nil {
 		return retval, err
 	}
@@ -52,7 +53,7 @@ func Update(pretty bool, index string, _type string, id string, data interface{}
 // document in the script itself.
 //
 // http://www.elasticsearch.org/guide/reference/api/update.html
-func UpdateWithPartialDoc(pretty bool, index string, _type string, id string, doc interface{}, upsert bool) (api.BaseResponse, error) {
+func UpdateWithPartialDoc(index string, _type string, id string, args map[string]interface{}, doc interface{}, upsert bool) (api.BaseResponse, error) {
 	switch v := doc.(type) {
 	case string:
 		upsertStr := ""
@@ -60,14 +61,14 @@ func UpdateWithPartialDoc(pretty bool, index string, _type string, id string, do
 			upsertStr = ", \"doc_as_upsert\":true"
 		}
 		content := fmt.Sprintf("{\"doc\":%s %s}", v, upsertStr)
-		return Update(pretty, index, _type, id, content)
+		return Update(index, _type, id, args, content)
 	default:
 		var data map[string]interface{} = make(map[string]interface{})
 		data["doc"] = doc
 		if upsert {
 			data["doc_as_upsert"] = true
 		}
-		return Update(pretty, index, _type, id, data)
+		return Update(index, _type, id, args, data)
 	}
 }
 
@@ -81,16 +82,16 @@ func UpdateWithPartialDoc(pretty bool, index string, _type string, id string, do
 // roundtrips and reduces chances of version conflicts between the get and the index. The _source
 // field need to be enabled for this feature to work.
 // http://www.elasticsearch.org/guide/reference/api/update.html
-func UpdateWithScript(pretty bool, index string, _type string, id string, script string, params interface{}) (api.BaseResponse, error) {
+func UpdateWithScript(index string, _type string, id string, args map[string]interface{}, script string, params interface{}) (api.BaseResponse, error) {
 	switch v := params.(type) {
 	case string:
 		paramsPart := fmt.Sprintf("{\"params\":%s}", v)
 		data := fmt.Sprintf("{\"script\":\"%s\", \"params\":%s}", script, paramsPart)
-		return Update(pretty, index, _type, id, data)
+		return Update(index, _type, id, args, data)
 	default:
 		var data map[string]interface{} = make(map[string]interface{})
 		data["params"] = params
 		data["script"] = script
-		return Update(pretty, index, _type, id, data)
+		return Update(index, _type, id, args, data)
 	}
 }

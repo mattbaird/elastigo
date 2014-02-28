@@ -15,13 +15,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"net/url"
 	"strings"
 )
 
 // ClearCache allows to clear either all caches or specific cached associated with one ore more indices.
 // see http://www.elasticsearch.org/guide/reference/api/admin-indices-clearcache/
-func ClearCache(clearId bool, clearBloom bool, indices ...string) (api.ExtendedStatus, error) {
+func ClearCache(clearId bool, clearBloom bool, args map[string]interface{}, indices ...string) (api.ExtendedStatus, error) {
 	var retval api.ExtendedStatus
 	var clearCacheUrl string
 	if len(indices) > 0 {
@@ -30,16 +29,8 @@ func ClearCache(clearId bool, clearBloom bool, indices ...string) (api.ExtendedS
 	} else {
 		clearCacheUrl = fmt.Sprintf("/_cache/clear")
 	}
-	var values url.Values = url.Values{}
 
-	if clearId {
-		values.Add("id", "true")
-	}
-	if clearBloom {
-		values.Add("bloom", "true")
-	}
-	clearCacheUrl += "?" + values.Encode()
-	body, err := api.DoCommand("POST", clearCacheUrl, nil)
+	body, err := api.DoCommand("POST", clearCacheUrl, args, nil)
 	if err != nil {
 		return retval, err
 	}
