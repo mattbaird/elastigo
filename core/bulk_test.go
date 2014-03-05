@@ -54,7 +54,7 @@ func CloseInt(a, b int) bool {
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
 	indexer := NewBulkIndexer(3)
-	indexer.BulkSendor = func(buf *bytes.Buffer) error {
+	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
@@ -95,7 +95,7 @@ func TestBulkUpdate(t *testing.T) {
 	InitTests(true)
 	api.Port = "9200"
 	indexer := NewBulkIndexer(3)
-	indexer.BulkSendor = func(buf *bytes.Buffer) error {
+	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
@@ -150,7 +150,7 @@ func TestBulkSmallBatch(t *testing.T) {
 	indexersm.BufferDelayMax = 100 * time.Millisecond
 	indexersm.BulkMaxDocs = 2
 	messageSets = 0
-	indexersm.BulkSendor = func(buf *bytes.Buffer) error {
+	indexersm.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		return BulkSend(buf)
 	}
@@ -208,7 +208,7 @@ func BenchmarkBulkSend(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	GlobalBulkIndexer.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexer.BulkSender = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		//log.Println("got bulk")
@@ -244,7 +244,7 @@ func BenchmarkBulkSendBytes(b *testing.B) {
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
-	GlobalBulkIndexer.BulkSendor = func(buf *bytes.Buffer) error {
+	GlobalBulkIndexer.BulkSender = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
 		return BulkSend(buf)

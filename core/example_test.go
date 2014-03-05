@@ -86,8 +86,8 @@ func ExampleBulkIndexer_errorsmarter() {
 // The inspecting the response
 func ExampleBulkIndexer_responses() {
 	indexer := core.NewBulkIndexer(10)
-	// Create a custom Sendor Func, to allow inspection of response/error
-	indexer.BulkSendor = func(buf *bytes.Buffer) error {
+	// Create a custom Sender Func, to allow inspection of response/error
+	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		// @buf is the buffer of docs about to be written
 		respJson, err := api.DoCommand("POST", "/_bulk", nil, buf)
 		if err != nil {
