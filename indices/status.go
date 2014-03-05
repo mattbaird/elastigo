@@ -20,16 +20,16 @@ import (
 
 // Status lists status details of all indices or the specified index.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
-func Status(pretty bool, indices ...string) (api.BaseResponse, error) {
+func Status(args map[string]interface{}, indices ...string) (api.BaseResponse, error) {
 	var retval api.BaseResponse
 	var url string
 	if len(indices) > 0 {
-		url = fmt.Sprintf("/%s/_status?%s", strings.Join(indices, ","), api.Pretty(pretty))
+		url = fmt.Sprintf("/%s/_status", strings.Join(indices, ","))
 
 	} else {
-		url = fmt.Sprintf("/_status?%s", api.Pretty(pretty))
+		url = "/_status"
 	}
-	body, err := api.DoCommand("GET", url, nil)
+	body, err := api.DoCommand("GET", url, args, nil)
 	if err != nil {
 		return retval, err
 	}

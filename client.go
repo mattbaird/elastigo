@@ -33,10 +33,10 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.Ltime | log.Lshortfile)
 	api.Domain = *eshost
-	response, _ := core.Index(true, "twitter", "tweet", "1", NewTweet("kimchy", "Search is cool"))
+	response, _ := core.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	indices.Flush()
 	log.Printf("Index OK: %v", response.Ok)
-	searchresponse, err := core.SearchRequest(true, "twitter", "tweet", "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}", "", 0)
+	searchresponse, err := core.SearchRequest("twitter", "tweet", nil, "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}")
 	if err != nil {
 		log.Println("error during search:" + err.Error())
 		log.Fatal(err)
@@ -45,19 +45,19 @@ func main() {
 	var t Tweet
 	json.Unmarshal(searchresponse.Hits.Hits[0].Source, t)
 	log.Printf("Search Found: %s", t)
-	response, _ = core.Get(true, "twitter", "tweet", "1")
+	response, _ = core.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
-	exists, _ := core.Exists(true, "twitter", "tweet", "1")
+	exists, _ := core.Exists("twitter", "tweet", "1", nil)
 	log.Printf("Exists: %v", exists)
 	indices.Flush()
-	countResponse, _ := core.Count(true, "twitter", "tweet")
+	countResponse, _ := core.Count("twitter", "tweet", nil)
 	log.Printf("Count: %v", countResponse.Count)
-	response, _ = core.Delete(true, "twitter", "tweet", "1", -1, "")
+	response, _ = core.Delete("twitter", "tweet", "1", map[string]interface{}{"version": -1, "routing": ""})
 	log.Printf("Delete OK: %v", response.Ok)
-	response, _ = core.Get(true, "twitter", "tweet", "1")
+	response, _ = core.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
 
-	healthResponse, _ := cluster.Health(true)
+	healthResponse, _ := cluster.Health(map[string]interface{}{"pretty": true})
 	log.Printf("Health: %v", healthResponse.Status)
 
 	cluster.UpdateSettings("transient", "discovery.zen.minimum_master_nodes", 2)

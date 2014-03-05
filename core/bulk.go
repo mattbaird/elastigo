@@ -332,7 +332,7 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
 func BulkSend(buf *bytes.Buffer) error {
-	_, err := api.DoCommand("POST", "/_bulk", buf)
+	_, err := api.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
 		log.Println(err)
 		BulkErrorCt += 1

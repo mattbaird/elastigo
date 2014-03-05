@@ -20,7 +20,6 @@ import (
 )
 
 func TestFacetRegex(t *testing.T) {
-
 	// This is a possible solution for auto-complete
 	out, _ := Search("github").Size("0").Facet(
 		Facet().Regex("repository.name", "no.*").Size("8"),

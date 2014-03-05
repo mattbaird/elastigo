@@ -30,7 +30,7 @@ func TestSearchRequest(t *testing.T) {
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := core.SearchRequest(true, "github", "", qry, "", 0)
+	out, err := core.SearchRequest("github", "", nil, qry)
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, t, "Should get docs")
 	assert.T(t, out.Hits.Total == 616 && out.Hits.Len() == 10, t, "Should have 616 hits but was %v", out.Hits.Total)
@@ -54,7 +54,7 @@ func TestSearchSimple(t *testing.T) {
 }
 
 func TestSearchRequestQueryString(t *testing.T) {
-	out, err := core.SearchUri("github", "", "actor:a*", "", 0)
+	out, err := core.SearchUri("github", "", map[string]interface{}{"q": "actor:a*"})
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, "Should get docs")
 	assert.T(t, out.Hits.Total == 616, fmt.Sprintf("Should have 616 hits but was %v", out.Hits.Total))

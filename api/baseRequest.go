@@ -12,7 +12,6 @@
 package api
 
 import (
-	//"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,12 +19,16 @@ import (
 	"time"
 )
 
-func DoCommand(method string, url string, data interface{}) ([]byte, error) {
+func DoCommand(method string, url string, args map[string]interface{}, data interface{}) ([]byte, error) {
 	var response map[string]interface{}
 	var body []byte
 	var httpStatusCode int
-	req, err := ElasticSearchRequest(method, url)
-	//log.Println(req.URL)
+
+	query, err := QueryString(args)
+	if err != nil {
+		return nil, err
+	}
+	req, err := ElasticSearchRequest(method, url, query)
 	if err != nil {
 		return body, err
 	}
@@ -36,8 +39,6 @@ func DoCommand(method string, url string, data interface{}) ([]byte, error) {
 			req.SetBodyString(v)
 		case io.Reader:
 			req.SetBody(v)
-		//case *bytes.Buffer:
-		//	req.SetBody(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {
@@ -79,19 +80,24 @@ func (e ESError) Error() string {
 // Exists allows the caller to check for the existance of a document using HEAD
 // This appears to be broken in the current version of elasticsearch 0.19.10, currently
 // returning nothing
-func Exists(pretty bool, index string, _type string, id string) (BaseResponse, error) {
+func Exists(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
 	var response map[string]interface{}
 	var body []byte
 	var url string
 	var retval BaseResponse
 	var httpStatusCode int
 
-	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/%s?%s", index, _type, id, Pretty(pretty))
-	} else {
-		url = fmt.Sprintf("/%s/%s?%s", index, id, Pretty(pretty))
+	query, err := QueryString(args)
+	if err != nil {
+		return retval, err
 	}
-	req, err := ElasticSearchRequest("HEAD", url)
+
+	if len(_type) > 0 {
+		url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
+	} else {
+		url = fmt.Sprintf("/%s/%s", index, id)
+	}
+	req, err := ElasticSearchRequest("HEAD", url, query)
 	if err != nil {
 		// some sort of generic error handler
 	}
@@ -108,6 +114,5 @@ func Exists(pretty bool, index string, _type string, id string) (BaseResponse, e
 			log.Println(jsonErr)
 		}
 	}
-	//fmt.Println(string(body))
 	return retval, err
 }

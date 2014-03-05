@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"net/url"
 	"strconv"
 )
 
@@ -29,23 +28,24 @@ var (
 //   @pretty:  bool for pretty reply or not, a parameter to elasticsearch
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
+//   @args:   a map of URL parameters. Allows all the URI-request parameters allowed by ElasticSearch.
 //   @query:  this can be one of 3 types:
 //              1)  string value that is valid elasticsearch
 //              2)  io.Reader that can be set in body (also valid elasticsearch string syntax..)
 //              3)  other type marshalable to json (also valid elasticsearch json)
 //
-//   out, err := SearchRequest(true, "github","",qryType ,"", 0)
+//   out, err := SearchRequest(true, "github", map[string]interface{} {"from" : 10}, qryType)
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchRequest(pretty bool, index string, _type string, query interface{}, scroll string, scan int) (SearchResult, error) {
+func SearchRequest(index string, _type string, args map[string]interface{}, query interface{}) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
 	if len(_type) > 0 && _type != "*" {
-		uriVal = fmt.Sprintf("/%s/%s/_search?%s%s%s", index, _type, api.Pretty(pretty), api.Scroll(scroll), api.Scan(scan))
+		uriVal = fmt.Sprintf("/%s/%s/_search", index, _type)
 	} else {
-		uriVal = fmt.Sprintf("/%s/_search?%s%s%s", index, api.Pretty(pretty), api.Scroll(scroll), api.Scan(scan))
+		uriVal = fmt.Sprintf("/%s/_search", index)
 	}
-	body, err := api.DoCommand("POST", uriVal, query)
+	body, err := api.DoCommand("POST", uriVal, args, query)
 	if err != nil {
 		return retval, err
 	}
@@ -63,24 +63,23 @@ func SearchRequest(pretty bool, index string, _type string, query interface{}, s
 // params:
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
-//   @query:  valid string lucene search syntax
+//   @args: a map of URL parameters. Most important one is q
 //
-//   out, err := SearchUri("github","",`user:kimchy` ,"", 0)
+//   out, err := SearchUri("github","", map[string]interface{} { "q" : `user:kimchy`})
 //
 // produces a request like this:    host:9200/github/_search?q=user:kimchy"
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func SearchUri(index, _type string, query, scroll string, scan int) (SearchResult, error) {
+func SearchUri(index, _type string, args map[string]interface{}) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
-	query = url.QueryEscape(query)
 	if len(_type) > 0 && _type != "*" {
-		uriVal = fmt.Sprintf("/%s/%s/_search?q=%s%s%s", index, _type, query, api.Scroll(scroll), api.Scan(scan))
+		uriVal = fmt.Sprintf("/%s/%s/_search", index, _type)
 	} else {
-		uriVal = fmt.Sprintf("/%s/_search?q=%s%s%s", index, query, api.Scroll(scroll), api.Scan(scan))
+		uriVal = fmt.Sprintf("/%s/_search", index)
 	}
 	//log.Println(uriVal)
-	body, err := api.DoCommand("GET", uriVal, nil)
+	body, err := api.DoCommand("GET", uriVal, args, nil)
 	if err != nil {
 		return retval, err
 	}
@@ -94,13 +93,17 @@ func SearchUri(index, _type string, query, scroll string, scan int) (SearchResul
 	return retval, err
 }
 
-func Scroll(pretty bool, scroll_id string, scroll string) (SearchResult, error) {
+func Scroll(args map[string]interface{}, scroll_id string) (SearchResult, error) {
 	var url string
 	var retval SearchResult
 
-	url = fmt.Sprintf("/_search/scroll?%s%s", api.Pretty(pretty), api.Scroll(scroll))
+	if _, ok := args["scroll"]; !ok {
+		return retval, fmt.Errorf("Cannot call scroll without 'scroll' in arguments")
+	}
 
-	body, err := api.DoCommand("POST", url, scroll_id)
+	url = "/_search/scroll"
+
+	body, err := api.DoCommand("POST", url, args, scroll_id)
 	if err != nil {
 		return retval, err
 	}

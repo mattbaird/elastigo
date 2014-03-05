@@ -11,9 +11,7 @@
 
 package api
 
-import (
-	"fmt"
-)
+import ()
 
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
@@ -36,39 +34,15 @@ type Status struct {
 }
 
 type Match struct {
-	OK           bool         `json:"ok"`
-	Matches      []string     `json:"matches"`
-	Explaination Explaination `json:"explaination,omitempty"`
+	OK          bool        `json:"ok"`
+	Matches     []string    `json:"matches"`
+	Explanation Explanation `json:"explanation,omitempty"`
 }
 
-type Explaination struct {
-	Value       float32        `json:"value"`
-	Description string         `json:"description"`
-	Details     []Explaination `json:"details,omitempty"`
-}
-
-func Pretty(pretty bool) string {
-	prettyString := ""
-	if pretty == true {
-		prettyString = "pretty=1"
-	}
-	return prettyString
+type Explanation struct {
+	Value       float32       `json:"value"`
+	Description string        `json:"description"`
+	Details     []Explanation `json:"details,omitempty"`
 }
 
 // http://www.elasticsearch.org/guide/reference/api/search/search-type/
-
-func Scan(scan int) string {
-	scanString := ""
-	if scan > 0 {
-		scanString = fmt.Sprintf("&search_type=scan&size=%v", scan)
-	}
-	return scanString
-}
-
-func Scroll(duration string) string {
-	scrollString := ""
-	if duration != "" {
-		scrollString = "&scroll=" + duration
-	}
-	return scrollString
-}

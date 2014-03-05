@@ -13,7 +13,6 @@ package cluster
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 )
@@ -24,11 +23,11 @@ import (
 func UpdateSettings(settingType string, key string, value int) (ClusterSettingsResponse, error) {
 	var retval ClusterSettingsResponse
 	if settingType != "transient" && settingType != "persistent" {
-		return retval, errors.New(fmt.Sprintf("settingType must be one of transient or persistent, you passed %s", settingType))
+		return retval, fmt.Errorf("settingType must be one of transient or persistent, you passed %s", settingType)
 	}
 	var url string = "/_cluster/state"
 	m := map[string]map[string]int{settingType: map[string]int{key: value}}
-	body, err := api.DoCommand("PUT", url, m)
+	body, err := api.DoCommand("PUT", url, nil, m)
 	if err != nil {
 		return retval, err
 	}

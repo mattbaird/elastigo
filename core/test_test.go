@@ -118,7 +118,7 @@ func LoadTestData() {
 	indexer := NewBulkIndexer(20)
 	indexer.BulkSendor = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
-		req, err := api.ElasticSearchRequest("POST", "/_bulk")
+		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
 			log.Println("ERROR: ", err)
