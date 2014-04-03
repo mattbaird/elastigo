@@ -24,7 +24,8 @@ func TestSearchRequest(t *testing.T) {
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := SearchRequest("github", "", nil, qry)
+	var args map[string]interface{}
+	out, err := SearchRequest("github", "", args, qry)
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, fmt.Sprintf("Should get docs"))
 	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs but was %v", out.Hits.Len()))
@@ -37,7 +38,8 @@ func TestSearchResultToJSON(t *testing.T) {
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := SearchRequest(true, "github", "", qry, "", 0)
+	var args map[string]interface{}
+	out, err := SearchRequest("github", "", args, qry)
 
 	if err != nil {
 		t.Error(err)
