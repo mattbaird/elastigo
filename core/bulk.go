@@ -173,6 +173,10 @@ func wgChan(wg *sync.WaitGroup) <-chan interface{} {
 	return ch
 }
 
+func (b *BulkIndexer) PendingDocuments() int {
+	return b.docCt
+}
+
 // Flush all current documents to ElasticSearch
 func (b *BulkIndexer) Flush() {
 	b.mu.Lock()
