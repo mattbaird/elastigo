@@ -84,9 +84,8 @@ func Exists(index string, _type string, id string, args map[string]interface{}) 
 	}
 	if httpStatusCode == http.StatusOK {
 		return true, err
-	} else {
-		return false, err
 	}
+	return false, err
 }
 
 // ExistsIndex allows caller to check for the existance of an index or a type using HEAD
@@ -111,7 +110,6 @@ func ExistsIndex(index string, _type string, args map[string]interface{}) (bool,
 	}
 	if httpStatusCode == http.StatusOK {
 		return true, err
-	} else {
-		return false, err
 	}
+	return false, err
 }

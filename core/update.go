@@ -62,14 +62,13 @@ func UpdateWithPartialDoc(index string, _type string, id string, args map[string
 		}
 		content := fmt.Sprintf("{\"doc\":%s %s}", v, upsertStr)
 		return Update(index, _type, id, args, content)
-	default:
-		var data map[string]interface{} = make(map[string]interface{})
-		data["doc"] = doc
-		if upsert {
-			data["doc_as_upsert"] = true
-		}
-		return Update(index, _type, id, args, data)
 	}
+	var data map[string]interface{} = make(map[string]interface{})
+	data["doc"] = doc
+	if upsert {
+		data["doc_as_upsert"] = true
+	}
+	return Update(index, _type, id, args, data)
 }
 
 // UpdateWithScript updates a document based on a script provided.
@@ -88,10 +87,9 @@ func UpdateWithScript(index string, _type string, id string, args map[string]int
 		paramsPart := fmt.Sprintf("{\"params\":%s}", v)
 		data := fmt.Sprintf("{\"script\":\"%s\", \"params\":%s}", script, paramsPart)
 		return Update(index, _type, id, args, data)
-	default:
-		var data map[string]interface{} = make(map[string]interface{})
-		data["params"] = params
-		data["script"] = script
-		return Update(index, _type, id, args, data)
 	}
+	var data map[string]interface{} = make(map[string]interface{})
+	data["params"] = params
+	data["script"] = script
+	return Update(index, _type, id, args, data)
 }
