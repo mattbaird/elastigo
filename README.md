@@ -49,12 +49,12 @@ examples:
     // api.Port = "9300"
 
     // add single go struct entity
-    response, _ := core.Index(true, "twitter", "tweet", "1", Tweet{"kimchy", "Search is cool"})
+    response, _ := core.Index("twitter", "tweet", "1", nil, Tweet{"kimchy", "Search is cool"})
 
     // you have bytes
     tw := Tweet{"kimchy", "Search is cool part 2"}
     bytesLine, err := json.Marshall(tw)
-    response, _ := core.Index(true, "twitter", "tweet", "2", bytesLine)
+    response, _ := core.Index("twitter", "tweet", "2", nil, bytesLine)
 
     // Bulk Indexing
     core.IndexBulk("twitter", "tweet", "3", &time.Now(), Tweet{"kimchy", "Search is now cooler"})
