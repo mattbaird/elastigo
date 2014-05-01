@@ -10,3 +10,34 @@
 // limitations under the License.
 
 package indices
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/mattbaird/elastigo/api"
+	"strings"
+)
+
+// Delete an index in ElasticSearch
+func Delete(indices ...string) (api.BaseResponse, error) {
+	var url string
+	var retval api.BaseResponse
+	if len(indices) > 0 {
+		url = fmt.Sprintf("/%s/", strings.Join(indices, ","))
+	} else {
+		return retval, errors.New("must include indices to delete")
+	}
+	body, err := api.DoCommand("DELETE", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		// marshall into json
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	return retval, err
+}
