@@ -188,11 +188,11 @@ func (b *BulkIndexer) Flush() {
 		select {
 		case <-wgChan(b.sendWg):
 			// done
-			log.Println("BulkIndexor Wait Group Shutdown")
+			log.Println("BulkIndexer Wait Group Shutdown")
 			return
 		case <-time.After(time.Second * time.Duration(MAX_SHUTDOWN_SECS)):
 			// timeout!
-			log.Println("BulkIndexor Timeout in Shutdown!")
+			log.Println("BulkIndexer Timeout in Shutdown!")
 			return
 		}
 	}
