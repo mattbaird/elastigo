@@ -25,7 +25,6 @@ var (
 // SearchRequest performs a very basic search on an index via the request URI API.
 //
 // params:
-//   @pretty:  bool for pretty reply or not, a parameter to elasticsearch
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
 //   @args:   a map of URL parameters. Allows all the URI-request parameters allowed by ElasticSearch.
