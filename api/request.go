@@ -40,6 +40,8 @@ var (
 	Domain         string    = DefaultDomain
 	ClusterDomains [1]string = [1]string{DefaultDomain}
 	Port           string    = DefaultPort
+	Username       string
+	Password       string
 )
 
 func ElasticSearchRequest(method, path, query string) (*Request, error) {
@@ -49,6 +51,9 @@ func ElasticSearchRequest(method, path, query string) (*Request, error) {
 	}
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "elasticSearch/"+Version+" ("+runtime.GOOS+"-"+runtime.GOARCH+")")
+	if Username != "" || Password != "" {
+		req.SetBasicAuth(Username, Password)
+	}
 	return (*Request)(req), nil
 }
 
