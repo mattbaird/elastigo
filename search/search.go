@@ -51,7 +51,7 @@ type SearchDsl struct {
 	QueryVal      *QueryDsl                `json:"query,omitempty"`
 	SortBody      []*SortDsl               `json:"sort,omitempty"`
 	FilterVal     *FilterWrap              `json:"filter,omitempty"`
-	AggregatesVal map[string]*AggregateDsl `json:"aggregates,omitempty"`
+	AggregatesVal map[string]*AggregateDsl `json:"aggregations,omitempty"`
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
