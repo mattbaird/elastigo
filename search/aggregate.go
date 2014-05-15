@@ -118,7 +118,7 @@ func (d *AggregateDsl) Cardinality(field string, rehash bool, threshold int) *Ag
 	return d
 }
 
-func (d *AggregateDsl) Global(field string) *AggregateDsl {
+func (d *AggregateDsl) Global() *AggregateDsl {
 	d.Type = struct{}{}
 	d.TypeName = "global"
 	return d

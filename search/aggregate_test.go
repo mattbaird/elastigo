@@ -18,7 +18,7 @@ func TestAggregateDsl(t *testing.T) {
 	valueCount := Aggregate("value_count_price").ValueCount("price")
 	percentiles := Aggregate("percentiles_price").Percentiles("price")
 	cardinality := Aggregate("cardinality_price").Cardinality("price", true, 50)
-	global := Aggregate("global_price").Global("price")
+	global := Aggregate("global").Global()
 	missing := Aggregate("missing_price").Missing("price")
 	terms := Aggregate("terms_price").Terms("price")
 	significantTerms := Aggregate("significant_terms_price").SignificantTerms("price")
@@ -88,7 +88,7 @@ func TestAggregateDsl(t *testing.T) {
 						"cardinality_price":{
 							"cardinality": { "field": "price", "precision_threshold": 50 }
 						},
-						"global_price":{
+						"global":{
 							"global": {}
 						},
 						"missing_price":{
