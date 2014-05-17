@@ -128,23 +128,23 @@ func Filter() *FilterOp {
 
 type FilterOp struct {
 	curField    string
-	TermsMap    map[string][]interface{}     `json:"terms,omitempty"`
-	Range       map[string]map[string]string `json:"range,omitempty"`
-	Exist       map[string]string            `json:"exists,omitempty"`
-	MisssingVal map[string]string            `json:"missing,omitempty"`
+	TermsMap    map[string][]interface{}          `json:"terms,omitempty"`
+	Range       map[string]map[string]interface{} `json:"range,omitempty"`
+	Exist       map[string]string                 `json:"exists,omitempty"`
+	MisssingVal map[string]string                 `json:"missing,omitempty"`
 }
 
 // A range is a special type of Filter operation
 //
 //    Range().Exists("repository.name")
 func Range() *FilterOp {
-	return &FilterOp{Range: make(map[string]map[string]string)}
+	return &FilterOp{Range: make(map[string]map[string]interface{})}
 }
 
 func (f *FilterOp) Field(fld string) *FilterOp {
 	f.curField = fld
 	if _, ok := f.Range[fld]; !ok {
-		m := make(map[string]string)
+		m := make(map[string]interface{})
 		f.Range[fld] = m
 	}
 	return f
@@ -173,6 +173,10 @@ func (f *FilterOp) From(from string) *FilterOp {
 }
 func (f *FilterOp) To(to string) *FilterOp {
 	f.Range[f.curField]["to"] = to
+	return f
+}
+func (f *FilterOp) Gt(gt int) *FilterOp {
+	f.Range[f.curField]["gt"] = float64(gt)
 	return f
 }
 func (f *FilterOp) Exists(name string) *FilterOp {
