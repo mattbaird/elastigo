@@ -17,7 +17,6 @@ import (
 	"github.com/mattbaird/elastigo/api"
 )
 
-
 // MGet allows the caller to get multiple documents based on an index, type (optional) and id (and possibly routing).
 // The response includes a docs array with all the fetched documents, each element similar in structure to a document
 // provided by the get API.
