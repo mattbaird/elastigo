@@ -12,7 +12,7 @@ usage:
 	
     $go test -v -host eshost -loaddata # load the data
     
-    $go test -v -host   # without load data, which only needs to run once
+    $go test -v -host eshost # without load data, which only needs to run once
 
 Clean out the Elasticsearch index:
     
