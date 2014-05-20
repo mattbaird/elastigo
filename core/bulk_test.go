@@ -51,6 +51,8 @@ func CloseInt(a, b int) bool {
 	return false
 }
 
+const layout = "Jan 2, 2006 at 3:04pm (MST)"
+
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
 	indexer := NewBulkIndexer(3)
@@ -58,14 +60,14 @@ func TestBulkIndexerBasic(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		log.Println(string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
 	indexer.Run(done)
 
 	date := time.Unix(1257894000, 0)
-	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(layout)}
+
 	err := indexer.Index("users", "user", "1", "", &date, data, true)
 
 	WaitFor(func() bool {
@@ -75,7 +77,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
 	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors. BulkErroCt: %v, err:%v", BulkErrorCt, err))
-	expectedBytes := 160
+	expectedBytes := 163
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data, true)
@@ -101,7 +103,6 @@ func TestBulkUpdate(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		gou.Debug(string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
@@ -188,10 +189,13 @@ func TestBulkErrors(t *testing.T) {
 			indexer.Index("users", "user", strconv.Itoa(i), "", &date, data, true)
 		}
 	}()
-	for errBuf := range indexer.ErrorChannel {
+	var errBuf *ErrorBuffer
+	for errBuf = range indexer.ErrorChannel {
 		errorCt++
-		gou.Debug(errBuf.Err)
 		break
+	}
+	if errBuf.Buf.Len() > 0 {
+		gou.Debug(errBuf.Err)
 	}
 	assert.T(t, errorCt > 0, fmt.Sprintf("ErrorCt should be > 0 %d", errorCt))
 	done <- true

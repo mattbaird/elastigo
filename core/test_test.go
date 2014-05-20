@@ -58,7 +58,6 @@ func InitTests(startIndexer bool) {
 	if startIndexer && !bulkStarted {
 		BulkDelaySeconds = 1
 		bulkStarted = true
-		log.Println("start global test bulk indexer")
 		BulkIndexerGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
 			log.Println("load test data ")

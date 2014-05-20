@@ -188,11 +188,9 @@ func (b *BulkIndexer) Flush() {
 		select {
 		case <-wgChan(b.sendWg):
 			// done
-			log.Println("BulkIndexer Wait Group Shutdown")
 			return
 		case <-time.After(time.Second * time.Duration(MAX_SHUTDOWN_SECS)):
 			// timeout!
-			log.Println("BulkIndexer Timeout in Shutdown!")
 			return
 		}
 	}
@@ -227,7 +225,6 @@ func (b *BulkIndexer) startHttpSender() {
 							}
 						}
 						if b.ErrorChannel != nil {
-							log.Println(err)
 							b.ErrorChannel <- &ErrorBuffer{err, buf}
 						}
 					}
@@ -246,7 +243,6 @@ func (b *BulkIndexer) startHttpSender() {
 // even if we haven't hit max messages/size
 func (b *BulkIndexer) startTimer() {
 	ticker := time.NewTicker(b.BufferDelayMax)
-	log.Println("Starting timer with delay = ", b.BufferDelayMax)
 	go func() {
 		for {
 			select {
@@ -305,7 +301,6 @@ func (b *BulkIndexer) send(buf *bytes.Buffer) {
 func (b *BulkIndexer) shutdown() {
 	// This must be called After flush
 	b.docDoneChan <- true
-	log.Println("Just sent to doc chan done")
 	b.timerDoneChan <- true
 	for i := 0; i < b.maxConns; i++ {
 		b.httpDoneChan <- true
@@ -342,7 +337,6 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 func BulkSend(buf *bytes.Buffer) error {
 	_, err := api.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
-		log.Println(err)
 		BulkErrorCt += 1
 		return err
 	}
