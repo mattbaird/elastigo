@@ -33,7 +33,7 @@ func TestSearchRequest(t *testing.T) {
 	out, err := core.SearchRequest("github", "", nil, qry)
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, t, "Should get docs")
-	assert.T(t, out.Hits.Total == 616 && out.Hits.Len() == 10, t, "Should have 616 hits but was %v", out.Hits.Total)
+	assert.T(t, out.Hits.Total == 616 && out.Hits.Len() == 10, t, fmt.Sprintf("Should have 616 hits but was %v", out.Hits.Total))
 }
 
 func TestSearchSimple(t *testing.T) {
@@ -282,7 +282,9 @@ func TestSearchSortOrder(t *testing.T) {
 	// how many different docs used the word "add", during entire time range
 	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
 	assert.T(t, out.Hits.Total == 8084, fmt.Sprintf("Should have 8084 total= %v", out.Hits.Total))
-	h1 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	b, err := out.Hits.Hits[0].Source.MarshalJSON()
+	assert.T(t, err == nil, fmt.Sprintf("Should not have returned an error: %v", err))
+	h1 := gou.NewJsonHelper(b)
 	assert.T(t, h1.Int("repository.watchers") == 41377,
 		fmt.Sprintf("Should have 41377 watchers= %v", h1.Int("repository.watchers")))
 
@@ -295,7 +297,9 @@ func TestSearchSortOrder(t *testing.T) {
 	// how many different docs used the word "add", during entire time range
 	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
 	assert.T(t, out.Hits.Total == 8084, fmt.Sprintf("Should have 8084 total= %v", out.Hits.Total))
-	h2 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	b, err = out.Hits.Hits[0].Source.MarshalJSON()
+	assert.T(t, err == nil, fmt.Sprintf("Should not have returned an error: %v", err))
+	h2 := gou.NewJsonHelper(b)
 	assert.T(t, h2.Int("repository.watchers") == 0,
 		fmt.Sprintf("Should have 0 watchers= %v", h2.Int("repository.watchers")))
 
@@ -310,7 +314,9 @@ func TestSearchSortOrder(t *testing.T) {
 	// how many different docs used the word "add", during entire time range
 	assert.T(t, out.Hits.Len() == 5, fmt.Sprintf("Should have 5 docs %v", out.Hits.Len()))
 	assert.T(t, out.Hits.Total == 734, fmt.Sprintf("Should have 734 total= %v", out.Hits.Total))
-	h3 := gou.NewJsonHelper(out.Hits.Hits[0].Source)
+	b, err = out.Hits.Hits[0].Source.MarshalJSON()
+	assert.T(t, err == nil, fmt.Sprintf("Should not have returned an error: %v", err))
+	h3 := gou.NewJsonHelper(b)
 	assert.T(t, h3.Int("repository.watchers") == 8659,
 		fmt.Sprintf("Should have 8659 watchers= %v", h3.Int("repository.watchers")))
 
