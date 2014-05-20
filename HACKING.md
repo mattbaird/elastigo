@@ -17,3 +17,5 @@ usage:
 Clean out the Elasticsearch index:
     
     http -v DELETE http://localhost:9200/github
+    or
+    curl -XDELETE http://localhost:9200/github
