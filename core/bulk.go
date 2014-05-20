@@ -338,7 +338,6 @@ func BulkSend(buf *bytes.Buffer) error {
 	_, err := api.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
 		BulkErrorCt += 1
-		log.Printf("error in BulkSend:%v", err)
 		return err
 	}
 	return nil
@@ -385,7 +384,8 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 		buf.WriteString(`,"refresh":true`)
 	}
 	buf.WriteString(`}}`)
-	buf.WriteByte('\n')
+	buf.WriteRune('\n')
+	//buf.WriteByte('\n')
 	switch v := data.(type) {
 	case *bytes.Buffer:
 		io.Copy(&buf, v)
@@ -400,8 +400,10 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 			return nil, jsonErr
 		}
 		buf.Write(body)
+		//		buf.WriteRune('\n')
 	}
-	buf.WriteByte('\n')
+	buf.WriteRune('\n')
+	//	buf.WriteByte('\n')
 	return buf.Bytes(), nil
 }
 
