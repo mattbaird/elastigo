@@ -75,7 +75,8 @@ func TestBulkIndexerBasic(t *testing.T) {
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
 	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
-	assert.T(t, totalBytesSent == 145, fmt.Sprintf("Should have sent 135 bytes but was %v", totalBytesSent))
+	expectedBytes := 140
+	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data)
 	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
@@ -128,7 +129,7 @@ func TestBulkUpdate(t *testing.T) {
 		return len(buffers) > 0
 	}, 5)
 
-	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
+	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors, bulkErrorCt:%v, err:%v", bulkErrorCt, err))
 
 	response, err := Get("users", "user", "5", nil)
 	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
