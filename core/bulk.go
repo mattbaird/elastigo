@@ -338,6 +338,7 @@ func BulkSend(buf *bytes.Buffer) error {
 	_, err := api.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
 		BulkErrorCt += 1
+		log.Printf("error in BulkSend:%v", err)
 		return err
 	}
 	return nil
@@ -400,7 +401,7 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 			return nil, jsonErr
 		}
 		buf.Write(body)
-		//		buf.WriteRune('\n')
+		buf.WriteRune('\n')
 	}
 	buf.WriteRune('\n')
 	//	buf.WriteByte('\n')
