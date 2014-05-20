@@ -121,18 +121,18 @@ func LoadTestData() {
 		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
-			log.Println("ERROR: ", err)
+			log.Fatalf("ERROR: ", err)
 			return err
 		}
 		req.SetBody(buf)
 		res, err := http.DefaultClient.Do((*http.Request)(req))
 		if err != nil {
 			errCt += 1
-			log.Println("ERROR: ", err)
+			log.Fatalf("ERROR: ", err)
 			return err
 		}
 		if res.StatusCode != 200 {
-			log.Printf("Not 200! %d \n", res.StatusCode)
+			log.Fatalf("Not 200! %d \n", res.StatusCode)
 		}
 		return err
 	}
@@ -185,7 +185,7 @@ func LoadTestData() {
 		log.Println("FATAL, could not load ", errCt)
 	}
 	// lets wait a bit to ensure that elasticsearch finishes?
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 30)
 	if len(docsm) != docCt {
 		panic(fmt.Sprintf("Docs didn't match?   %d:%d", len(docsm), docCt))
 	}

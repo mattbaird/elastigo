@@ -25,24 +25,28 @@ func TestFilters(t *testing.T) {
 	)
 	out, err := qry.Result()
 	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 7695, fmt.Sprintf("Should have 7695 total= %v", out.Hits.Total))
-
+	expectedDocs := 10
+	expectedHits := 5455 //7695
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 	qry = Search("github").Filter(
 		Filter().Missing("repository.name"),
 	)
 	out, _ = qry.Result()
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 389, fmt.Sprintf("Should have 389 total= %v", out.Hits.Total))
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	expectedDocs = 10
+	expectedHits = 286 //389
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 
 	//actor_attributes: {type: "User",
 	qry = Search("github").Filter(
 		Filter().Terms("actor_attributes.location", "portland"),
 	)
 	out, _ = qry.Result()
-	//gou.Debug(out)
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 71, fmt.Sprintf("Should have 71 total= %v", out.Hits.Total))
+	expectedDocs = 10
+	expectedHits = 51 //71
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 
 	/*
 		Should this be an AND by default?
@@ -52,10 +56,11 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("repository.has_wiki", true),
 	)
 	out, err = qry.Result()
-	//gou.Debug(out)
+	expectedDocs = 10
+	expectedHits = 27
 	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 44, fmt.Sprintf("Should have 44 total= %v", out.Hits.Total))
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 
 	// NOW, lets try with two query calls instead of one
 	qry = Search("github").Filter(
@@ -67,8 +72,8 @@ func TestFilters(t *testing.T) {
 	out, err = qry.Result()
 	//gou.Debug(out)
 	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 44, fmt.Sprintf("Should have 44 total= %v", out.Hits.Total))
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 
 	qry = Search("github").Filter(
 		"or",
@@ -76,9 +81,10 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("repository.has_wiki", true),
 	)
 	out, err = qry.Result()
+	expectedHits = 4718
 	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 6676, fmt.Sprintf("Should have 6676 total= %v", out.Hits.Total))
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
 }
 
 func TestFilterRange(t *testing.T) {
@@ -91,7 +97,9 @@ func TestFilterRange(t *testing.T) {
 		t.Fail()
 		return
 	}
+	expectedDocs := 25
+	expectedHits := 506 //725
 
-	assert.T(t, out.Hits.Len() == 25, fmt.Sprintf("Should have 25 docs %v", out.Hits.Len()))
-	assert.T(t, out.Hits.Total == 725, fmt.Sprintf("Should have total=725 but was %v", out.Hits.Total))
+	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
+	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have total=%v but was %v", expectedHits, out.Hits.Total))
 }
