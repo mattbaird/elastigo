@@ -51,8 +51,6 @@ func CloseInt(a, b int) bool {
 	return false
 }
 
-const layout = "Jan 2, 2006 at 3:04pm (MST)"
-
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
 	indexer := NewBulkIndexer(3)
@@ -60,13 +58,14 @@ func TestBulkIndexerBasic(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
+		log.Printf("buffer:%s", string(buf.Bytes()))
 		return BulkSend(buf)
 	}
 	done := make(chan bool)
 	indexer.Run(done)
 
 	date := time.Unix(1257894000, 0)
-	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(layout)}
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(time.RFC1123Z)}
 
 	err := indexer.Index("users", "user", "1", "", &date, data, true)
 
@@ -77,7 +76,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
 	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors. BulkErroCt: %v, err:%v", BulkErrorCt, err))
-	expectedBytes := 163
+	expectedBytes := 166
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data, true)
