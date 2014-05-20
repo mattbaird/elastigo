@@ -114,7 +114,7 @@ type GithubEvent struct {
 func LoadTestData() {
 	docCt := 0
 	errCt := 0
-	indexer := NewBulkIndexer(5)
+	indexer := NewBulkIndexer(1)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
