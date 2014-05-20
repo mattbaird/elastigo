@@ -74,7 +74,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
-	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors  %v", err))
+	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors. BulkErroCt: %v, err:%v", BulkErrorCt, err))
 	expectedBytes := 140
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
@@ -129,7 +129,7 @@ func TestBulkUpdate(t *testing.T) {
 		return len(buffers) > 0
 	}, 5)
 
-	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors, bulkErrorCt:%v, err:%v", bulkErrorCt, err))
+	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors, bulkErrorCt:%v, err:%v", BulkErrorCt, err))
 
 	response, err := Get("users", "user", "5", nil)
 	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
