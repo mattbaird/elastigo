@@ -315,9 +315,9 @@ func (b *BulkIndexer) shutdown() {
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
+func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data)
+	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -326,9 +326,9 @@ func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *ti
 	return nil
 }
 
-func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
+func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data)
+	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -351,7 +351,7 @@ func BulkSend(buf *bytes.Buffer) error {
 
 // Given a set of arguments for index, type, id, data create a set of bytes that is formatted for bulkd index
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func WriteBulkBytes(op string, index string, _type string, id, ttl string, date *time.Time, data interface{}) ([]byte, error) {
+func WriteBulkBytes(op string, index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) ([]byte, error) {
 	// only index and update are currently supported
 	if op != "index" && op != "update" {
 		return nil, errors.New(fmt.Sprintf("Operation '%s' is not yet supported", op))
@@ -363,27 +363,34 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 	buf.WriteString(index)
 	buf.WriteString(`","_type":"`)
 	buf.WriteString(_type)
+	buf.WriteString(`"`)
 	if len(id) > 0 {
-		buf.WriteString(`","_id":"`)
+		buf.WriteString(`,"_id":"`)
 		buf.WriteString(id)
+		buf.WriteString(`"`)
 	}
 
 	if op == "update" {
-		buf.WriteString(`","retry_on_conflict":"3`)
+		buf.WriteString(`,"retry_on_conflict":"3`)
 		buf.WriteString(ttl)
+		buf.WriteString(`"`)
 	}
 
 	if len(ttl) > 0 {
-		buf.WriteString(`","ttl":"`)
+		buf.WriteString(`,"ttl":"`)
 		buf.WriteString(ttl)
+		buf.WriteString(`"`)
 	}
 	if date != nil {
-		buf.WriteString(`","_timestamp":"`)
+		buf.WriteString(`,"_timestamp":"`)
 		buf.WriteString(strconv.FormatInt(date.UnixNano()/1e6, 10))
+		buf.WriteString(`"`)
 	}
-	buf.WriteString(`"}}`)
+	if refresh {
+		buf.WriteString(`,"refresh":true`)
+	}
+	buf.WriteString(`}}`)
 	buf.WriteByte('\n')
-
 	switch v := data.(type) {
 	case *bytes.Buffer:
 		io.Copy(&buf, v)
@@ -410,12 +417,12 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 // Index functions of that
 //
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func IndexBulk(index string, _type string, id string, date *time.Time, data interface{}) error {
+func IndexBulk(index string, _type string, id string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	if GlobalBulkIndexer == nil {
 		panic("Must have Global Bulk Indexer to use this Func")
 	}
-	by, err := WriteBulkBytes("index", index, _type, id, "", date, data)
+	by, err := WriteBulkBytes("index", index, _type, id, "", date, data, refresh)
 	if err != nil {
 		return err
 	}
@@ -423,12 +430,12 @@ func IndexBulk(index string, _type string, id string, date *time.Time, data inte
 	return nil
 }
 
-func UpdateBulk(index string, _type string, id string, date *time.Time, data interface{}) error {
+func UpdateBulk(index string, _type string, id string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "update" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	if GlobalBulkIndexer == nil {
 		panic("Must have Global Bulk Indexer to use this Func")
 	}
-	by, err := WriteBulkBytes("update", index, _type, id, "", date, data)
+	by, err := WriteBulkBytes("update", index, _type, id, "", date, data, refresh)
 	if err != nil {
 		return err
 	}
@@ -443,12 +450,12 @@ func UpdateBulk(index string, _type string, id string, date *time.Time, data int
 // IndexTtl functions of that
 //
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func IndexBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
+func IndexBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	if GlobalBulkIndexer == nil {
 		panic("Must have Global Bulk Indexer to use this Func")
 	}
-	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data)
+	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
 		return err
 	}
@@ -456,12 +463,12 @@ func IndexBulkTtl(index string, _type string, id, ttl string, date *time.Time, d
 	return nil
 }
 
-func UpdateBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}) error {
+func UpdateBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
 	//{ "update" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	if GlobalBulkIndexer == nil {
 		panic("Must have Global Bulk Indexer to use this Func")
 	}
-	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data)
+	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
 		return err
 	}

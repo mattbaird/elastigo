@@ -115,7 +115,7 @@ type GithubEvent struct {
 func LoadTestData() {
 	docCt := 0
 	errCt := 0
-	indexer := NewBulkIndexer(20)
+	indexer := NewBulkIndexer(5)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
@@ -172,20 +172,17 @@ func LoadTestData() {
 				log.Println("HM, already exists? ", ge.Url)
 			}
 			docsm[id] = true
-			indexer.Index("github", ge.Type, id, "", &ge.Created, line)
+			indexer.Index("github", ge.Type, id, "", &ge.Created, line, true)
 			docCt++
-			//log.Println(docCt, " ", string(line))
-			//os.Exit(1)
 		} else {
 			log.Println("ERROR? ", string(line))
 		}
-
 	}
 	if errCt != 0 {
 		log.Println("FATAL, could not load ", errCt)
 	}
 	// lets wait a bit to ensure that elasticsearch finishes?
-	time.Sleep(time.Second * 30)
+	time.Sleep(time.Second * 5)
 	if len(docsm) != docCt {
 		panic(fmt.Sprintf("Docs didn't match?   %d:%d", len(docsm), docCt))
 	}

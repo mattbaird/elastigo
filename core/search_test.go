@@ -29,7 +29,7 @@ func TestSearchRequest(t *testing.T) {
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, fmt.Sprintf("Should get docs"))
 	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs but was %v", out.Hits.Len()))
-	expectedHits := 459
+	expectedHits := 621
 	assert.T(t, CloseInt(out.Hits.Total, expectedHits), fmt.Sprintf("Should have %v hits but was %v", expectedHits, out.Hits.Total))
 }
 
