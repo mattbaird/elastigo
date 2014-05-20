@@ -404,7 +404,6 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 		buf.WriteRune('\n')
 	}
 	buf.WriteRune('\n')
-	//	buf.WriteByte('\n')
 	return buf.Bytes(), nil
 }
 
