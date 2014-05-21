@@ -24,3 +24,7 @@ _testmain.go
 *.exe
 
 elastigo
+
+# IDE
+
+*.iml
