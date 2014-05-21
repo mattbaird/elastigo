@@ -45,9 +45,7 @@ func TestSearchResultToJSON(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	_, err = json.Marshal(out.Hits.Hits)
-
 	if err != nil {
 		t.Error(err)
 	}
