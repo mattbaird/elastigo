@@ -54,7 +54,7 @@ type NodeStatsIndicesResponse struct {
 	Store    NodeStatsIndicesStoreResponse
 	Indexing NodeStatsIndicesIndexingResponse
 	Get      NodeStatsIndicesGetResponse
-	Search   NodeStatsIndicesStoreResponse
+	Search   NodeStatsIndicesSearchResponse
 }
 
 type NodeStatsIndicesDocsResponse struct {
