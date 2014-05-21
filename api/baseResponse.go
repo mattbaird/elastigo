@@ -22,11 +22,14 @@ type BaseResponse struct {
 	Version int         `json:"_version,omitempty"`
 	Found   bool        `json:"found,omitempty"`
 	Exists  bool        `json:"exists,omitempty"`
+	Matches []string    `json:"matches,omitempty"` // percolate matches
 }
+
 type ExtendedStatus struct {
 	Ok           bool   `json:"ok"`
 	ShardsStatus Status `json:"_shards"`
 }
+
 type Status struct {
 	Total      int `json:"total"`
 	Successful int `json:"successful"`
@@ -43,6 +46,14 @@ type Explanation struct {
 	Value       float32       `json:"value"`
 	Description string        `json:"description"`
 	Details     []Explanation `json:"details,omitempty"`
+}
+
+func Scroll(duration string) string {
+	scrollString := ""
+	if duration != "" {
+		scrollString = "&scroll=" + duration
+	}
+	return scrollString
 }
 
 // http://www.elasticsearch.org/guide/reference/api/search/search-type/
