@@ -60,7 +60,7 @@ func InitTests(startIndexer bool) {
 		bulkStarted = true
 		BulkIndexerGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
-			log.Println("load test data ")
+			log.Println("loading test data ")
 			hasLoadedData = true
 			LoadTestData()
 		}
@@ -116,7 +116,7 @@ func LoadTestData() {
 	errCt := 0
 	indexer := NewBulkIndexer(1)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
-		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
+		//		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
@@ -124,14 +124,16 @@ func LoadTestData() {
 			return err
 		}
 		req.SetBody(buf)
-		res, err := http.DefaultClient.Do((*http.Request)(req))
+		//		res, err := http.DefaultClient.Do(*(api.Request(req)))
+		var response map[string]interface{}
+		httpStatusCode, _, err := req.Do(&response)
 		if err != nil {
 			errCt += 1
 			log.Fatalf("ERROR: ", err)
 			return err
 		}
-		if res.StatusCode != 200 {
-			log.Fatalf("Not 200! %d \n", res.StatusCode)
+		if httpStatusCode != 200 {
+			log.Fatalf("Not 200! %d \n", httpStatusCode)
 		}
 		return err
 	}
