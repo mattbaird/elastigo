@@ -14,6 +14,12 @@ To get the Chef based Vagrantfile working, be sure to pull like so::
     # This will pull submodules.
     git clone --recursive git@github.com:mattbaird/elastigo.git
 
+It's easier to use the ElasticSearch provided Docker image found here: https://github.com/dockerfile/elasticsearch
+
+Non-persistent usage is: 
+```bash
+docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
+```
 
 status updates
 ========================
