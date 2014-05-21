@@ -14,22 +14,24 @@ package cluster
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/mattbaird/elastigo/api"
 )
 
 // The cluster health API allows to get a very simple status on the health of the cluster.
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
 // information returned. Defaults to cluster.)
-func Reroute(args map[string]interface{}, commands Commands) (ClusterHealthResponse, error) {
+func Reroute(dryRun bool, commands Commands) (api.ClusterHealthResponse, error) {
 	var url string
-	var retval ClusterHealthResponse
+	var retval api.ClusterHealthResponse
 
 	if len(commands.Commands) > 0 {
-		url = "/_cluster/reroute"
+		url = fmt.Sprintf("/_cluster/reroute%s&%s", dryRunOption(dryRun))
 	} else {
 		return retval, errors.New("Must pass at least one command")
 	}
-	body, err := api.DoCommand("POST", url, args, commands)
+	m := map[string]interface{}{"commands": commands.Commands}
+	body, err := api.DoCommand("POST", url, m, nil)
 	if err != nil {
 		return retval, err
 	}
@@ -41,6 +43,15 @@ func Reroute(args map[string]interface{}, commands Commands) (ClusterHealthRespo
 		}
 	}
 	return retval, err
+}
+
+func dryRunOption(isDryRun bool) string {
+	if isDryRun {
+		return "dry_run"
+	} else {
+		return ""
+	}
+	return ""
 }
 
 // supported commands are
