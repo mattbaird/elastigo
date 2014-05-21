@@ -7,6 +7,7 @@ elastigo
 [1]: https://drone.io/github.com/mattbaird/elastigo/status.png
 [2]: https://drone.io/github.com/mattbaird/elastigo/latest
 
+
 A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so::
@@ -24,6 +25,7 @@ docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
 status updates
 ========================
 
+* *2014-5-21* Note: Drone.io tests are failing, I don't know why because the build and tests are working fine for me on my ubuntu box running the docker elasticsearch image. It's possible there is a timing issue. Any Ideas?
 * *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
 * *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
          Search dsl supports And/Or/Not
