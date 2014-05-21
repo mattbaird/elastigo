@@ -14,12 +14,12 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	u "github.com/araddon/gou"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
 	"log"
+	"strconv"
 	"strings"
-
-	u "github.com/araddon/gou"
 )
 
 var (
@@ -118,6 +118,16 @@ func (s *SearchDsl) Search(srch string) *SearchDsl {
 
 func (s *SearchDsl) Size(size string) *SearchDsl {
 	s.args["size"] = size
+	return s
+}
+
+func (s *SearchDsl) Fields(fields ...string) *SearchDsl {
+	s.args["fields"] = strings.Join(fields, ",")
+	return s
+}
+
+func (s *SearchDsl) Source(returnSource bool) *SearchDsl {
+	s.args["_source"] = strconv.FormatBool(returnSource)
 	return s
 }
 
