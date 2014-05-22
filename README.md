@@ -22,6 +22,33 @@ Non-persistent usage is:
 docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
 ```
 
+Quick Start with Docker
+=======================
+Make sure docker is installed. If you are running docker on a mac, you must expose ports 9200 and 9300. Shut down docker:
+```bash
+boot2docker stop
+```
+and run
+```bash
+for i in {9200..9300}; do
+ VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port$i,tcp,,$i,,$i";
+ VBoxManage modifyvm "boot2docker-vm" --natpf1 "udp-port$i,udp,,$i,,$i";
+done
+```
+The following will allow you to get the code, and run the tests against your docker based non-persistent elasticsearch:
+
+```bash
+docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
+git clone git@github.com:mattbaird/elastigo.git
+cd elastigo
+go get -u ./...
+cd core
+go test -v -host localhost -loaddata
+cd ..
+go test -v ./...
+```
+
+
 status updates
 ========================
 
