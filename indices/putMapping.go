@@ -32,7 +32,7 @@ type TimestampOptions struct {
 }
 
 type IdOptions struct {
-	Index string `'json:"index"`
+	Index string `json:"index"`
 	Path  string `json:"path"`
 }
 
