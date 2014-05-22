@@ -129,7 +129,7 @@ func LoadTestData() {
 		httpStatusCode, _, err := req.Do(&response)
 		if err != nil {
 			errCt += 1
-			log.Fatalf("ERROR: ", err)
+			log.Fatalf("ERROR: %v", err)
 			return err
 		}
 		if httpStatusCode != 200 {
