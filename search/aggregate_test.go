@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 )
 
 // Test all aggregate types and nested aggregations
@@ -22,9 +23,22 @@ func TestAggregateDsl(t *testing.T) {
 	missing := Aggregate("missing_price").Missing("price")
 	terms := Aggregate("terms_price").Terms("price")
 	significantTerms := Aggregate("significant_terms_price").SignificantTerms("price")
-	histogram := Aggregate("histogram_price").Histogram("price", 50)
+	histogram := Aggregate("histogram_price").Histogram("price", 50).MinDocCount(float64(0)).ExtendedBounds(nil, float64(0))
+	histogramOther := Aggregate("histogram_other").Histogram("price", 50)
 
-	dateAgg := Aggregate("articles_over_time").DateHistogram("date", "month")
+	time2013, _ := time.Parse(time.RFC3339, "2013-01-01T00:00:00+00:00")
+	time2014, _ := time.Parse(time.RFC3339, "2014-01-01T00:00:00+00:00")
+	dateAgg := Aggregate(
+		"articles_over_time",
+	).DateHistogram(
+		"date",
+		"month",
+	).MinDocCount(
+		float64(0),
+	).ExtendedBounds(
+		time2013,
+		time2014,
+	)
 	dateAgg.Aggregates(
 		min,
 		max,
@@ -40,6 +54,7 @@ func TestAggregateDsl(t *testing.T) {
 		terms,
 		significantTerms,
 		histogram,
+		histogramOther,
 	)
 
 	qry := Search("github").Aggregates(dateAgg)
@@ -58,7 +73,12 @@ func TestAggregateDsl(t *testing.T) {
 				"articles_over_time": {
 					"date_histogram" : {
 						"field" : "date",
-						"interval" : "month"
+						"interval" : "month",
+						"min_doc_count": 0,
+						"extended_bounds": {
+							"min": "2013-01-01T00:00:00Z",
+							"max": "2014-01-01T00:00:00Z"
+						}
 					},
 					"aggregations": {
 						"min_price":{
@@ -100,8 +120,22 @@ func TestAggregateDsl(t *testing.T) {
 						"significant_terms_price":{
 							"significant_terms": { "field": "price" }
 						},
+						"histogram_other":{
+							"histogram": {
+								"field": "price",
+								"min_doc_count": 1,
+								"interval": 50
+							}
+						},
 						"histogram_price":{
-							"histogram": { "field": "price", "interval": 50 }
+							"histogram": {
+								"field": "price",
+								"interval": 50,
+								"min_doc_count": 0,
+								"extended_bounds": {
+									"max": 0
+								}
+							}
 						}
 					}
 				}

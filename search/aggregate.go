@@ -1,6 +1,9 @@
 package search
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 func Aggregate(name string) *AggregateDsl {
 	return &AggregateDsl{Name: name}
@@ -157,33 +160,140 @@ func (d *AggregateDsl) SignificantTerms(field string) *AggregateDsl {
 }
 
 type Histogram struct {
-	Field    string  `json:"field"`
-	Interval float64 `json:"interval"`
+	Field          string      `json:"field"`
+	Interval       float64     `json:"interval"`
+	MinDocCount    float64     `json:"min_doc_count"`
+	ExtendedBounds interface{} `json:"extended_bounds,omitempty"`
 }
 
 func (d *AggregateDsl) Histogram(field string, interval int) *AggregateDsl {
 	d.Type = Histogram{
-		Field:    field,
-		Interval: float64(interval),
+		Field:       field,
+		Interval:    float64(interval),
+		MinDocCount: 1,
 	}
 	d.TypeName = "histogram"
 	return d
 }
 
 type DateHistogram struct {
-	Field    string `json:"field"`
-	Interval string `json:"interval"`
+	Field          string      `json:"field"`
+	Interval       string      `json:"interval"`
+	MinDocCount    float64     `json:"min_doc_count"`
+	ExtendedBounds interface{} `json:"extended_bounds,omitempty"`
 }
 
 func (d *AggregateDsl) DateHistogram(field, interval string) *AggregateDsl {
 	d.Type = DateHistogram{
-		Field:    field,
-		Interval: interval,
+		Field:       field,
+		Interval:    interval,
+		MinDocCount: 1,
 	}
 	d.TypeName = "date_histogram"
 	return d
 }
 
+// Sets the min doc count for a date histogram or histogram
+// This will no-op if used on an inappropriate dsl type
+func (d *AggregateDsl) MinDocCount(i float64) *AggregateDsl {
+
+	if d.TypeName == "date_histogram" {
+		t := d.Type.(DateHistogram)
+		t.MinDocCount = i
+		d.Type = t
+	} else if d.TypeName == "histogram" {
+		t := d.Type.(Histogram)
+		t.MinDocCount = i
+		d.Type = t
+	}
+
+	return d
+}
+
+// Hackety hack function that expects different types depending on the type of aggregate
+// Not very idiomatic, but fits the elastigo DSL
+func (d *AggregateDsl) ExtendedBounds(min, max interface{}) *AggregateDsl {
+	if min == nil && max == nil {
+		return d
+	}
+
+	if d.TypeName == "date_histogram" {
+		var n time.Time
+		var x time.Time
+		t := d.Type.(DateHistogram)
+		if min != nil {
+			switch min.(type) {
+			case time.Time:
+				n = min.(time.Time)
+			}
+		}
+		if max != nil {
+			switch max.(type) {
+			case time.Time:
+				x = max.(time.Time)
+			}
+		}
+
+		if min == nil {
+			bounds := struct {
+				Max time.Time `json:"max"`
+			}{x}
+			t.ExtendedBounds = &bounds
+		} else if max == nil {
+			bounds := struct {
+				Min time.Time `json:"min"`
+			}{n}
+			t.ExtendedBounds = &bounds
+		} else {
+			bounds := struct {
+				Min time.Time `json:"min"`
+				Max time.Time `json:"max"`
+			}{n, x}
+			t.ExtendedBounds = &bounds
+		}
+
+		d.Type = t
+	}
+	if d.TypeName == "histogram" {
+		var n float64
+		var x float64
+		t := d.Type.(Histogram)
+		if min != nil {
+			switch min.(type) {
+			case time.Time:
+				n = min.(float64)
+			}
+		}
+		if max != nil {
+			switch max.(type) {
+			case time.Time:
+				x = max.(float64)
+			}
+		}
+
+		if min == nil {
+			bounds := struct {
+				Max float64 `json:"max"`
+			}{x}
+			t.ExtendedBounds = &bounds
+		} else if max == nil {
+			bounds := struct {
+				Min float64 `json:"min"`
+			}{n}
+			t.ExtendedBounds = &bounds
+		} else {
+			bounds := struct {
+				Min float64 `json:"min"`
+				Max float64 `json:"max"`
+			}{n, x}
+			t.ExtendedBounds = &bounds
+		}
+
+		d.Type = t
+	}
+
+	return d
+}
 func (d *AggregateDsl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.toMap())
 }
