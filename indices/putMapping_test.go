@@ -53,11 +53,16 @@ type TestStruct struct {
 	unexported    string
 	JsonOmitEmpty string `json:"jsonOmitEmpty,omitempty" elastic:"type:string"`
 	Embedded
-	MultiAnalyze string `json:"multi_analyze"`
+	Nested       NestedStruct `json:"nested"`
+	MultiAnalyze string       `json:"multi_analyze"`
 }
 
 type Embedded struct {
 	EmbeddedField string `json:"embeddedField" elastic:"type:string"`
+}
+
+type NestedStruct struct {
+	NestedField string `json:"nestedField" elastic:"type:date"`
 }
 
 func TestPutMapping(t *testing.T) {
@@ -93,6 +98,11 @@ func TestPutMapping(t *testing.T) {
 				"fields": map[string]map[string]string{
 					"ma_analyzed":   {"type": "string", "index": "analyzed"},
 					"ma_unanalyzed": {"type": "string", "index": "un_analyzed"},
+				},
+			},
+			"nested": map[string]map[string]map[string]string{
+				"properties": {
+					"nestedField": {"type": "date"},
 				},
 			},
 		},
