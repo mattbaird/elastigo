@@ -32,8 +32,8 @@ type TimestampOptions struct {
 }
 
 type IdOptions struct {
-	Index string `json:"index"`
-	Path  string `json:"path"`
+	Index string `json:"index,omitempty"`
+	Path  string `json:"path,omitempty"`
 }
 
 func (m_ Mapping) Options() MappingOptions {
