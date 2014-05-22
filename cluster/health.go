@@ -28,7 +28,7 @@ func Health(indices ...string) (api.ClusterHealthResponse, error) {
 	if len(indices) > 0 {
 		url = fmt.Sprintf("/_cluster/health/%s?%s", strings.Join(indices, ","))
 	} else {
-		url = fmt.Sprintf("/_cluster/health?%s")
+		url = "/_cluster/health"
 	}
 	body, err := api.DoCommand("GET", url, nil, nil)
 	if err != nil {
