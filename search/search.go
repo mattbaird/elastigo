@@ -197,3 +197,8 @@ func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
 	s.SortBody = append(s.SortBody, sort...)
 	return s
 }
+
+func (s *SearchDsl) Scroll(duration string) *SearchDsl {
+	s.args["scroll"] = duration
+	return s
+}
