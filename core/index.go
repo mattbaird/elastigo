@@ -15,10 +15,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"log"
 	"net/url"
 	"strconv"
+
+	"github.com/mattbaird/elastigo/api"
 )
 
 // Index adds or updates a typed JSON document in a specific index, making it searchable, creating an index
@@ -55,7 +56,7 @@ func IndexWithParameters(index string, _type string, id string, parentId string,
 	} else {
 		method = "PUT"
 	}
-	log.Printf("about to :%v %v %v", url, args, data)
+	log.Printf("about to :%v %v %s", url, args, data)
 	body, err := api.DoCommand(method, url, args, data)
 	if err != nil {
 		return retval, err
