@@ -86,11 +86,12 @@ examples:
 
     // you have bytes
     tw := Tweet{"kimchy", "Search is cool part 2"}
-    bytesLine, err := json.Marshall(tw)
+    bytesLine, err := json.Marshal(tw)
     response, _ := core.Index("twitter", "tweet", "2", nil, bytesLine)
 
     // Bulk Indexing
-    core.IndexBulk("twitter", "tweet", "3", &time.Now(), Tweet{"kimchy", "Search is now cooler"})
+    t := time.Now()
+    core.IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
 
     // Search Using Raw json String
     searchJson := `{
@@ -183,6 +184,8 @@ example:
       indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
     }
     done <- true
+    // Indexing might take a while. So make sure the program runs
+    // a little longer when trying this in main.
 
 license
 =======
