@@ -39,6 +39,8 @@ func DoCommand(method string, url string, args map[string]interface{}, data inte
 			req.SetBodyString(v)
 		case io.Reader:
 			req.SetBody(v)
+		case []byte:
+			req.SetBodyBytes(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {

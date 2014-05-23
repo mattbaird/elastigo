@@ -108,13 +108,17 @@ func (r *Request) SetBodyJson(data interface{}) error {
 	if err != nil {
 		return err
 	}
-	r.SetBody(bytes.NewReader(body))
+	r.SetBodyBytes(body)
 	r.Header.Set("Content-Type", "application/json")
 	return nil
 }
 
 func (r *Request) SetBodyString(body string) {
 	r.SetBody(strings.NewReader(body))
+}
+
+func (r *Request) SetBodyBytes(body []byte) {
+	r.SetBody(bytes.NewReader(body))
 }
 
 func (r *Request) SetBody(body io.Reader) {
