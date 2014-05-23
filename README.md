@@ -181,7 +181,7 @@ example:
       }
     }()
     for i := 0; i < 20; i++ {
-      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, false)
     }
     done <- true
     // Indexing might take a while. So make sure the program runs
