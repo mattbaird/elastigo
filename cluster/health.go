@@ -26,7 +26,7 @@ func Health(indices ...string) (api.ClusterHealthResponse, error) {
 	var url string
 	var retval api.ClusterHealthResponse
 	if len(indices) > 0 {
-		url = fmt.Sprintf("/_cluster/health/%s?%s", strings.Join(indices, ","))
+		url = fmt.Sprintf("/_cluster/health/%s", strings.Join(indices, ","))
 	} else {
 		url = "/_cluster/health"
 	}
