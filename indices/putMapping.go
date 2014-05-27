@@ -85,12 +85,20 @@ func getProperties(t reflect.Type, prop map[string]interface{}) {
 		attrMap := make(map[string]string)
 		tag := field.Tag.Get("elastic")
 		if tag == "" {
-			if field.Type.Kind() == reflect.Struct {
+
+			// We are looking for tags on any nested struct, independently of
+			// whether the field is a struct or a pointer to struct.
+			targetType := field.Type
+			if field.Type.Kind() == reflect.Ptr {
+				targetType = field.Type.Elem()
+			}
+
+			if targetType.Kind() == reflect.Struct {
 				if field.Anonymous {
-					getProperties(field.Type, prop)
+					getProperties(targetType, prop)
 				} else {
 					nestedProp := make(map[string]interface{})
-					getProperties(field.Type, nestedProp)
+					getProperties(targetType, nestedProp)
 					prop[name] = map[string]interface{}{
 						"properties": nestedProp,
 					}
