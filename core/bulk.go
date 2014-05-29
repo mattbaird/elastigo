@@ -16,12 +16,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"io"
-	"log"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/mattbaird/elastigo/api"
 )
 
 var (
@@ -279,7 +279,6 @@ func (b *BulkIndexer) startDocChannel() {
 				b.buf.Write(docBytes)
 				if b.buf.Len() >= b.BulkMaxBuffer || b.docCt >= b.BulkMaxDocs {
 					b.needsTimeBasedFlush = false
-					//log.Printf("Send due to size:  docs=%d  bufsize=%d", b.docCt, b.buf.Len())
 					b.send(b.buf)
 				}
 				b.mu.Unlock()
@@ -314,7 +313,6 @@ func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *ti
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	b.bulkChannel <- by
@@ -325,7 +323,6 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
 	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data, refresh)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	b.bulkChannel <- by
@@ -338,7 +335,6 @@ func BulkSend(buf *bytes.Buffer) error {
 	_, err := api.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
 		BulkErrorCt += 1
-		log.Printf("error in BulkSend:%v", err)
 		return err
 	}
 	return nil
@@ -366,9 +362,7 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 	}
 
 	if op == "update" {
-		buf.WriteString(`,"retry_on_conflict":"3`)
-		buf.WriteString(ttl)
-		buf.WriteString(`"`)
+		buf.WriteString(`,"retry_on_conflict":3`)
 	}
 
 	if len(ttl) > 0 {
@@ -397,11 +391,9 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 	default:
 		body, jsonErr := json.Marshal(data)
 		if jsonErr != nil {
-			log.Println("Json data error ", data)
 			return nil, jsonErr
 		}
 		buf.Write(body)
-		buf.WriteRune('\n')
 	}
 	buf.WriteRune('\n')
 	return buf.Bytes(), nil
