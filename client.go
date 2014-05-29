@@ -43,7 +43,11 @@ func main() {
 	}
 	// try marshalling to tweet type
 	var t Tweet
-	json.Unmarshal(searchresponse.Hits.Hits[0].Source, t)
+	bytes, err := searchresponse.Hits.Hits[0].Source.MarshalJSON()
+	if err != nil {
+		log.Fatalf("err calling marshalJson:%v", err)
+	}
+	json.Unmarshal(bytes, t)
 	log.Printf("Search Found: %s", t)
 	response, _ = core.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
@@ -57,7 +61,7 @@ func main() {
 	response, _ = core.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
 
-	healthResponse, _ := cluster.Health(map[string]interface{}{"pretty": true})
+	healthResponse, _ := cluster.Health()
 	log.Printf("Health: %v", healthResponse.Status)
 
 	cluster.UpdateSettings("transient", "discovery.zen.minimum_master_nodes", 2)

@@ -53,7 +53,7 @@ func main() {
 	}`
 	out, err := core.SearchRequest("testindex", "user", nil, searchJson)
 	if len(out.Hits.Hits) == 1 {
-		fmt.Println(string(out.Hits.Hits[0].Source))
+		fmt.Println("%v", out.Hits.Hits[0].Source)
 	}
 	exitIfErr(err)
 

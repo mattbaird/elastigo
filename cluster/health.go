@@ -8,7 +8,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package cluster
 
 import (
@@ -18,20 +17,81 @@ import (
 	"strings"
 )
 
-// Health gets a very simple status on the health of the cluster. This call defaults to no parameters
+// The cluster health API allows to get a very simple status on the health of the cluster.
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
-func Health(args map[string]interface{}, indices ...string) (ClusterHealthResponse, error) {
+// TODO: implement wait_for_status, timeout, wait_for_relocating_shards, wait_for_nodes
+// TODO: implement level (Can be one of cluster, indices or shards. Controls the details level of the health
+// information returned. Defaults to cluster.)
+func Health(indices ...string) (api.ClusterHealthResponse, error) {
 	var url string
-	var retval ClusterHealthResponse
-
-	url = "/_cluster/health"
-
+	var retval api.ClusterHealthResponse
 	if len(indices) > 0 {
-		url = fmt.Sprintf("%s/%s", url, strings.Join(indices, ","))
+		url = fmt.Sprintf("/_cluster/health/%s", strings.Join(indices, ","))
+	} else {
+		url = "/_cluster/health"
+	}
+	body, err := api.DoCommand("GET", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		// marshall into json
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	//fmt.Println(body)
+	return retval, err
+}
+
+type ClusterStateFilter struct {
+	FilterNodes        bool
+	FilterRoutingTable bool
+	FilterMetadata     bool
+	FilterBlocks       bool
+	FilterIndices      []string
+}
+
+func (f ClusterStateFilter) Parameterize() []string {
+	var parts []string
+
+	if f.FilterNodes {
+		parts = append(parts, "filter_nodes=true")
 	}
 
-	body, err := api.DoCommand("GET", url, args, nil)
+	if f.FilterRoutingTable {
+		parts = append(parts, "filter_routing_table=true")
+	}
 
+	if f.FilterMetadata {
+		parts = append(parts, "filter_metadata=true")
+	}
+
+	if f.FilterBlocks {
+		parts = append(parts, "filter_blocks=true")
+	}
+
+	if f.FilterIndices != nil && len(f.FilterIndices) > 0 {
+		parts = append(parts, strings.Join([]string{"filter_indices=", strings.Join(f.FilterIndices, ",")}, ""))
+	}
+
+	return parts
+}
+
+func ClusterState(filter ClusterStateFilter) (api.ClusterStateResponse, error) {
+	var parameters []string
+	var url string
+	var retval api.ClusterStateResponse
+
+	parameters = filter.Parameterize()
+
+	url = fmt.Sprintf("/_cluster/state?%s", strings.Join(parameters, "&"))
+
+	body, err := api.DoCommand("GET", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
 	if err == nil {
 		// marshall into json
 		jsonErr := json.Unmarshal(body, &retval)
@@ -40,17 +100,5 @@ func Health(args map[string]interface{}, indices ...string) (ClusterHealthRespon
 		}
 	}
 	return retval, err
-}
 
-type ClusterHealthResponse struct {
-	ClusterName         string `json:"cluster_name"`
-	Status              string `json:"status"`
-	TimedOut            bool   `json:"timed_out"`
-	NumberOfNodes       int    `json:"number_of_nodes"`
-	NumberOfDataNodes   int    `json:"number_of_data_nodes"`
-	ActivePrimaryShards int    `json:"active_primary_shards"`
-	ActiveShards        int    `json:"active_shards"`
-	RelocatingShards    int    `json:"relocating_shards"`
-	InitializingShards  int    `json:"initializing_shards"`
-	UnassignedShards    int    `json:"unassigned_shards"`
 }

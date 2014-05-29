@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -25,7 +26,6 @@ var (
 // SearchRequest performs a very basic search on an index via the request URI API.
 //
 // params:
-//   @pretty:  bool for pretty reply or not, a parameter to elasticsearch
 //   @index:  the elasticsearch index
 //   @_type:  optional ("" if not used) search specific type in this index
 //   @args:   a map of URL parameters. Allows all the URI-request parameters allowed by ElasticSearch.
@@ -118,12 +118,12 @@ func Scroll(args map[string]interface{}, scroll_id string) (SearchResult, error)
 }
 
 type SearchResult struct {
-	Took        int             `json:"took"`
-	TimedOut    bool            `json:"timed_out"`
-	ShardStatus api.Status      `json:"_shards"`
-	Hits        Hits            `json:"hits"`
-	Facets      json.RawMessage `json:"facets,omitempty"` // structure varies on query
-	ScrollId    string          `json:"_scroll_id,omitempty"`
+	Took         int             `json:"took"`
+	TimedOut     bool            `json:"timed_out"`
+	ShardStatus  api.Status      `json:"_shards"`
+	Hits         Hits            `json:"hits"`
+	Facets       json.RawMessage `json:"facets,omitempty"` // structure varies on query
+	ScrollId     string          `json:"_scroll_id,omitempty"`
 	Aggregations json.RawMessage `json:"aggregations,omitempty"` // structure varies on query
 }
 
@@ -142,12 +142,31 @@ func (h *Hits) Len() int {
 }
 
 type Hit struct {
-	Index  string          `json:"_index"`
-	Type   string          `json:"_type,omitempty"`
-	Id     string          `json:"_id"`
-	Score  Float32Nullable `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
-	Source json.RawMessage `json:"_source"`          // marshalling left to consumer
-	Fields json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
+	Index       string           `json:"_index"`
+	Type        string           `json:"_type,omitempty"`
+	Id          string           `json:"_id"`
+	Score       Float32Nullable  `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
+	Source      *json.RawMessage `json:"_source"`          // marshalling left to consumer
+	Fields      *json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
+	Explanation *Explanation     `json:"_explanation,omitempty"`
+}
+
+type Explanation struct {
+	Value       float32        `json:"value"`
+	Description string         `json:"description"`
+	Details     []*Explanation `json:"details,omitempty"`
+}
+
+func (e *Explanation) String(indent string) string {
+	if len(e.Details) == 0 {
+		return fmt.Sprintf("%s>>>  %v = %s", indent, e.Value, strings.Replace(e.Description, "\n", "", -1))
+	} else {
+		detailStrs := make([]string, 0)
+		for _, detail := range e.Details {
+			detailStrs = append(detailStrs, fmt.Sprintf("%s", detail.String(indent+"| ")))
+		}
+		return fmt.Sprintf("%s%v = %s(\n%s\n%s)", indent, e.Value, strings.Replace(e.Description, "\n", "", -1), strings.Join(detailStrs, "\n"), indent)
+	}
 }
 
 // Elasticsearch returns some invalid (according to go) json, with floats having...

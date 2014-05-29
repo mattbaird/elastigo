@@ -14,12 +14,12 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	u "github.com/araddon/gou"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
 	"log"
+	"strconv"
 	"strings"
-
-	u "github.com/araddon/gou"
 )
 
 var (
@@ -42,15 +42,16 @@ func Search(index string) *SearchDsl {
 }
 
 type SearchDsl struct {
-	args      map[string]interface{}
-	types     []string
-	FromVal   int         `json:"from,omitempty"`
-	SizeVal   int         `json:"size,omitempty"`
-	Index     string      `json:"-"`
-	FacetVal  *FacetDsl   `json:"facets,omitempty"`
-	QueryVal  *QueryDsl   `json:"query,omitempty"`
-	SortBody  []*SortDsl  `json:"sort,omitempty"`
-	FilterVal *FilterWrap `json:"filter,omitempty"`
+	args          map[string]interface{}
+	types         []string
+	FromVal       int                      `json:"from,omitempty"`
+	SizeVal       int                      `json:"size,omitempty"`
+	Index         string                   `json:"-"`
+	FacetVal      *FacetDsl                `json:"facets,omitempty"`
+	QueryVal      *QueryDsl                `json:"query,omitempty"`
+	SortBody      []*SortDsl               `json:"sort,omitempty"`
+	FilterVal     *FilterWrap              `json:"filter,omitempty"`
+	AggregatesVal map[string]*AggregateDsl `json:"aggregations,omitempty"`
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
@@ -120,6 +121,16 @@ func (s *SearchDsl) Size(size string) *SearchDsl {
 	return s
 }
 
+func (s *SearchDsl) Fields(fields ...string) *SearchDsl {
+	s.args["fields"] = strings.Join(fields, ",")
+	return s
+}
+
+func (s *SearchDsl) Source(returnSource bool) *SearchDsl {
+	s.args["_source"] = strconv.FormatBool(returnSource)
+	return s
+}
+
 // Facet passes a Query expression to this search
 //
 //		qry := Search("github").Size("0").Facet(
@@ -131,6 +142,20 @@ func (s *SearchDsl) Size(size string) *SearchDsl {
 //				)
 func (s *SearchDsl) Facet(f *FacetDsl) *SearchDsl {
 	s.FacetVal = f
+	return s
+}
+
+func (s *SearchDsl) Aggregates(aggs ...*AggregateDsl) *SearchDsl {
+	if len(aggs) < 1 {
+		return s
+	}
+	if len(s.AggregatesVal) == 0 {
+		s.AggregatesVal = make(map[string]*AggregateDsl)
+	}
+
+	for _, agg := range aggs {
+		s.AggregatesVal[agg.Name] = agg
+	}
 	return s
 }
 
@@ -170,5 +195,10 @@ func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
 		s.SortBody = make([]*SortDsl, 0)
 	}
 	s.SortBody = append(s.SortBody, sort...)
+	return s
+}
+
+func (s *SearchDsl) Scroll(duration string) *SearchDsl {
+	s.args["scroll"] = duration
 	return s
 }

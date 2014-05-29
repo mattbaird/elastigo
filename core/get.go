@@ -23,9 +23,9 @@ import (
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
 // TODO: make this implement an interface
-func Get(index string, _type string, id string, args map[string]interface{}) (api.BaseResponse, error) {
+func get(index string, _type string, id string, args map[string]interface{}, source interface{}) (api.BaseResponse, error) {
 	var url string
-	var retval api.BaseResponse
+	retval := api.BaseResponse{Source: source}
 	if len(_type) > 0 {
 		url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
 	} else {
@@ -43,6 +43,20 @@ func Get(index string, _type string, id string, args map[string]interface{}) (ap
 		}
 	}
 	return retval, err
+}
+
+// The get API allows to get a typed JSON document from the index based on its id.
+// GET - retrieves the doc
+// HEAD - checks for existence of the doc
+// http://www.elasticsearch.org/guide/reference/api/get.html
+// TODO: make this implement an interface
+func Get(index string, _type string, id string, args map[string]interface{}) (api.BaseResponse, error) {
+	return get(index, _type, id, args, nil)
+}
+
+// Same as Get but with custom source type.
+func GetCustom(index string, _type string, id string, args map[string]interface{}, source interface{}) (api.BaseResponse, error) {
+	return get(index, _type, id, args, source)
 }
 
 // GetSource retrieves the document by id and converts it to provided interface
@@ -84,9 +98,8 @@ func Exists(index string, _type string, id string, args map[string]interface{}) 
 	}
 	if httpStatusCode == http.StatusOK {
 		return true, err
-	} else {
-		return false, err
 	}
+	return false, err
 }
 
 // ExistsIndex allows caller to check for the existance of an index or a type using HEAD
@@ -111,7 +124,6 @@ func ExistsIndex(index string, _type string, args map[string]interface{}) (bool,
 	}
 	if httpStatusCode == http.StatusOK {
 		return true, err
-	} else {
-		return false, err
 	}
+	return false, err
 }

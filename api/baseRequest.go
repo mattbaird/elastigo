@@ -39,6 +39,8 @@ func DoCommand(method string, url string, args map[string]interface{}, data inte
 			req.SetBodyString(v)
 		case io.Reader:
 			req.SetBody(v)
+		case []byte:
+			req.SetBodyBytes(v)
 		default:
 			err = req.SetBodyJson(v)
 			if err != nil {
@@ -56,9 +58,9 @@ func DoCommand(method string, url string, args map[string]interface{}, data inte
 
 		jsonErr := json.Unmarshal(body, &response)
 		if jsonErr == nil {
-			if error, ok := response["error"]; ok {
+			if res_err, ok := response["error"]; ok {
 				status, _ := response["status"]
-				return body, ESError{time.Now(), fmt.Sprintf("Error [%s] Status [%v]", error, status), httpStatusCode}
+				return body, ESError{time.Now(), fmt.Sprintf("Error [%s] Status [%v]", res_err, status), httpStatusCode}
 			}
 		}
 		return body, jsonErr

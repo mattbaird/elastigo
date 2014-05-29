@@ -26,7 +26,7 @@ func ExampleBulkIndexer_simple() {
 	done := make(chan bool)
 	indexer.Run(done)
 
-	indexer.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`)
+	indexer.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`, true)
 
 	<-done // wait forever
 }
@@ -44,7 +44,7 @@ func ExampleBulkIndexer_errorchannel() {
 		}
 	}()
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true
 }
@@ -78,7 +78,7 @@ func ExampleBulkIndexer_errorsmarter() {
 		}
 	}()
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true // send shutdown signal
 }
@@ -86,8 +86,8 @@ func ExampleBulkIndexer_errorsmarter() {
 // The inspecting the response
 func ExampleBulkIndexer_responses() {
 	indexer := core.NewBulkIndexer(10)
-	// Create a custom Sendor Func, to allow inspection of response/error
-	indexer.BulkSendor = func(buf *bytes.Buffer) error {
+	// Create a custom Sender Func, to allow inspection of response/error
+	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		// @buf is the buffer of docs about to be written
 		respJson, err := api.DoCommand("POST", "/_bulk", nil, buf)
 		if err != nil {
@@ -100,7 +100,7 @@ func ExampleBulkIndexer_responses() {
 	indexer.Run(done)
 
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true // send shutdown signal
 }

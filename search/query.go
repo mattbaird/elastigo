@@ -186,13 +186,28 @@ type QueryString struct {
 
 // Generic Term based (used in query, facet, filter)
 type Term struct {
-	Terms Terms `json:"terms,omitempty"`
+	Terms     Terms       `json:"terms,omitempty"`
+	FilterVal *FilterWrap `json:"facet_filter,omitempty"`
 }
 
 type Terms struct {
 	Fields []string `json:"field,omitempty"`
 	Size   string   `json:"size,omitempty"`
 	Regex  string   `json:"regex,omitempty"`
+}
+
+func NewTerm(fields ...string) *Term {
+	m := &Term{Terms{Fields: fields}, nil}
+	return m
+}
+
+func (s *Term) Filter(fl ...interface{}) *Term {
+	if s.FilterVal == nil {
+		s.FilterVal = NewFilterWrap()
+	}
+
+	s.FilterVal.addFilters(fl)
+	return s
 }
 
 // Custom marshalling

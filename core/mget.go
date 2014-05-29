@@ -32,7 +32,7 @@ func MGet(index string, _type string, mgetRequest MGetRequestContainer, args map
 	} else if len(index) > 0 {
 		url = fmt.Sprintf("/%s/_mget", index)
 	}
-	body, err := api.DoCommand("GET", url, args, nil)
+	body, err := api.DoCommand("GET", url, args, mgetRequest)
 	if err != nil {
 		return retval, err
 	}
