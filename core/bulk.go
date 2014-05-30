@@ -395,8 +395,8 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 			return nil, jsonErr
 		}
 		buf.Write(body)
-		buf.WriteRune('\n')
 	}
+	buf.WriteRune('\n')
 	return buf.Bytes(), nil
 }
 
