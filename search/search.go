@@ -14,12 +14,12 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	u "github.com/araddon/gou"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
 	"log"
+	"strconv"
 	"strings"
-
-	u "github.com/araddon/gou"
 )
 
 var (
@@ -121,6 +121,16 @@ func (s *SearchDsl) Size(size string) *SearchDsl {
 	return s
 }
 
+func (s *SearchDsl) Fields(fields ...string) *SearchDsl {
+	s.args["fields"] = strings.Join(fields, ",")
+	return s
+}
+
+func (s *SearchDsl) Source(returnSource bool) *SearchDsl {
+	s.args["_source"] = strconv.FormatBool(returnSource)
+	return s
+}
+
 // Facet passes a Query expression to this search
 //
 //		qry := Search("github").Size("0").Facet(
@@ -185,5 +195,10 @@ func (s *SearchDsl) Sort(sort ...*SortDsl) *SearchDsl {
 		s.SortBody = make([]*SortDsl, 0)
 	}
 	s.SortBody = append(s.SortBody, sort...)
+	return s
+}
+
+func (s *SearchDsl) Scroll(duration string) *SearchDsl {
+	s.args["scroll"] = duration
 	return s
 }

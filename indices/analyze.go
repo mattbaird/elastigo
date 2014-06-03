@@ -49,8 +49,8 @@ type AnalyzeResponse struct {
 }
 type Token struct {
 	Name        string `json:"token"`
-	StartOffset string `json:"start_offset"`
-	EndOffset   string `json:"end_offset"`
+	StartOffset int    `json:"start_offset"`
+	EndOffset   int    `json:"end_offset"`
 	Type        string `json:"type"`
-	Position    string `json:"position"`
+	Position    int    `json:"position"`
 }

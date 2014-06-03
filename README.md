@@ -7,6 +7,7 @@ elastigo
 [1]: https://drone.io/github.com/mattbaird/elastigo/status.png
 [2]: https://drone.io/github.com/mattbaird/elastigo/latest
 
+
 A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so::
@@ -14,10 +15,43 @@ To get the Chef based Vagrantfile working, be sure to pull like so::
     # This will pull submodules.
     git clone --recursive git@github.com:mattbaird/elastigo.git
 
+It's easier to use the ElasticSearch provided Docker image found here: https://github.com/dockerfile/elasticsearch
+
+Non-persistent usage is: 
+```bash
+docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
+```
+
+Quick Start with Docker
+=======================
+Make sure docker is installed. If you are running docker on a mac, you must expose ports 9200 and 9300. Shut down docker:
+```bash
+boot2docker stop
+```
+and run
+```bash
+for i in {9200..9300}; do
+ VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port$i,tcp,,$i,,$i";
+ VBoxManage modifyvm "boot2docker-vm" --natpf1 "udp-port$i,udp,,$i,,$i";
+done
+```
+The following will allow you to get the code, and run the tests against your docker based non-persistent elasticsearch:
+
+```bash
+docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
+git clone git@github.com:mattbaird/elastigo.git
+cd elastigo
+go get -u ./...
+cd core
+go test -v -host localhost -loaddata
+cd ..
+go test -v ./...
+```
 
 status updates
 ========================
 
+* *2014-5-21* Note: Drone.io tests are failing, I don't know why because the build and tests are working fine for me on my ubuntu box running the docker elasticsearch image. It's possible there is a timing issue. Any Ideas?
 * *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
 * *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
          Search dsl supports And/Or/Not
@@ -51,11 +85,12 @@ examples:
 
     // you have bytes
     tw := Tweet{"kimchy", "Search is cool part 2"}
-    bytesLine, err := json.Marshall(tw)
+    bytesLine, err := json.Marshal(tw)
     response, _ := core.Index("twitter", "tweet", "2", nil, bytesLine)
 
     // Bulk Indexing
-    core.IndexBulk("twitter", "tweet", "3", &time.Now(), Tweet{"kimchy", "Search is now cooler"})
+    t := time.Now()
+    core.IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
 
     // Search Using Raw json String
     searchJson := `{
@@ -145,9 +180,11 @@ example:
       }
     }()
     for i := 0; i < 20; i++ {
-      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, false)
     }
     done <- true
+    // Indexing might take a while. So make sure the program runs
+    // a little longer when trying this in main.
 
 license
 =======

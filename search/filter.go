@@ -126,6 +126,12 @@ func Filter() *FilterOp {
 	return &FilterOp{}
 }
 
+func CompoundFilter(fl ...interface{}) *FilterWrap {
+	FilterVal := NewFilterWrap()
+	FilterVal.addFilters(fl)
+	return FilterVal
+}
+
 type FilterOp struct {
 	curField    string
 	TermsMap    map[string][]interface{}          `json:"terms,omitempty"`

@@ -58,10 +58,9 @@ func InitTests(startIndexer bool) {
 	if startIndexer && !bulkStarted {
 		BulkDelaySeconds = 1
 		bulkStarted = true
-		log.Println("start global test bulk indexer")
 		BulkIndexerGlobalRun(100, make(chan bool))
 		if *loadData && !hasLoadedData {
-			log.Println("load test data ")
+			log.Println("loading test data ")
 			hasLoadedData = true
 			LoadTestData()
 		}
@@ -115,24 +114,26 @@ type GithubEvent struct {
 func LoadTestData() {
 	docCt := 0
 	errCt := 0
-	indexer := NewBulkIndexer(20)
+	indexer := NewBulkIndexer(1)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
-		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
+		//		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
-			log.Println("ERROR: ", err)
+			log.Fatalf("ERROR: ", err)
 			return err
 		}
 		req.SetBody(buf)
-		res, err := http.DefaultClient.Do((*http.Request)(req))
+		//		res, err := http.DefaultClient.Do(*(api.Request(req)))
+		var response map[string]interface{}
+		httpStatusCode, _, err := req.Do(&response)
 		if err != nil {
 			errCt += 1
-			log.Println("ERROR: ", err)
+			log.Fatalf("ERROR: %v", err)
 			return err
 		}
-		if res.StatusCode != 200 {
-			log.Printf("Not 200! %d \n", res.StatusCode)
+		if httpStatusCode != 200 {
+			log.Fatalf("Not 200! %d \n", httpStatusCode)
 		}
 		return err
 	}
@@ -172,14 +173,11 @@ func LoadTestData() {
 				log.Println("HM, already exists? ", ge.Url)
 			}
 			docsm[id] = true
-			indexer.Index("github", ge.Type, id, "", &ge.Created, line)
+			indexer.Index("github", ge.Type, id, "", &ge.Created, line, true)
 			docCt++
-			//log.Println(docCt, " ", string(line))
-			//os.Exit(1)
 		} else {
 			log.Println("ERROR? ", string(line))
 		}
-
 	}
 	if errCt != 0 {
 		log.Println("FATAL, could not load ", errCt)

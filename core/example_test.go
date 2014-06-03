@@ -26,7 +26,7 @@ func ExampleBulkIndexer_simple() {
 	done := make(chan bool)
 	indexer.Run(done)
 
-	indexer.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`)
+	indexer.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`, true)
 
 	<-done // wait forever
 }
@@ -44,7 +44,7 @@ func ExampleBulkIndexer_errorchannel() {
 		}
 	}()
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true
 }
@@ -78,7 +78,7 @@ func ExampleBulkIndexer_errorsmarter() {
 		}
 	}()
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true // send shutdown signal
 }
@@ -100,7 +100,7 @@ func ExampleBulkIndexer_responses() {
 	indexer.Run(done)
 
 	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`)
+		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
 	done <- true // send shutdown signal
 }

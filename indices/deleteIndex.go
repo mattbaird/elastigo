@@ -13,31 +13,31 @@ package indices
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
-	"strings"
 )
 
-// Delete an index in ElasticSearch
-func Delete(indices ...string) (api.BaseResponse, error) {
+// The delete API allows you to delete one or more indices through an API. This operation may fail
+// if the elasitsearch configuration has been set to forbid deleting indexes.
+func Delete(index string) (api.BaseResponse, error) {
 	var url string
 	var retval api.BaseResponse
-	if len(indices) > 0 {
-		url = fmt.Sprintf("/%s/", strings.Join(indices, ","))
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s", index)
 	} else {
-		return retval, errors.New("must include indices to delete")
+		return retval, fmt.Errorf("You must specify at least one index to delete")
 	}
+
 	body, err := api.DoCommand("DELETE", url, nil, nil)
 	if err != nil {
 		return retval, err
 	}
-	if err == nil {
-		// marshall into json
-		jsonErr := json.Unmarshal(body, &retval)
-		if jsonErr != nil {
-			return retval, jsonErr
-		}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
 	}
+
 	return retval, err
 }
