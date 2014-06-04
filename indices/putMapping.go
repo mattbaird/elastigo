@@ -87,9 +87,10 @@ func getProperties(t reflect.Type, prop map[string]interface{}) {
 		if tag == "" {
 
 			// We are looking for tags on any nested struct, independently of
-			// whether the field is a struct or a pointer to struct.
+			// whether the field is a struct, a pointer to struct, or a slice of structs
 			targetType := field.Type
-			if field.Type.Kind() == reflect.Ptr {
+			if targetType.Kind() == reflect.Ptr ||
+				targetType.Kind() == reflect.Slice {
 				targetType = field.Type.Elem()
 			}
 
