@@ -51,6 +51,7 @@ var (
 	Port           string    = DefaultPort
 	Username       string
 	Password       string
+	BasePath       string
 	// Store a slice of hosts in a hostpool
 	Hosts []string
 	hp    hostpool.HostPool
@@ -72,6 +73,11 @@ func ElasticSearchRequest(method, path, query string) (*Request, error) {
 
 	// Get the final host and port
 	host, portNum := splitHostnamePartsFromHost(hr.Host(), Port)
+
+	// Prepend base path if set
+	if BasePath != "" {
+		path = fmt.Sprintf("%s%s", BasePath, path)
+	}
 
 	// Build request
 	req, err := http.NewRequest(method, fmt.Sprintf("%s://%s:%s%s?%s", Protocol, host, portNum, path, query), nil)
