@@ -18,7 +18,8 @@ type AggregateDsl struct {
 }
 
 type FieldAggregate struct {
-	Field string `json:"field"`
+	Field   string `json:"field"`
+	SizeVal *int   `json:"size,omitempty"`
 }
 
 /**
@@ -190,6 +191,16 @@ func (d *AggregateDsl) DateHistogram(field, interval string) *AggregateDsl {
 		MinDocCount: 1,
 	}
 	d.TypeName = "date_histogram"
+	return d
+}
+
+func (d *AggregateDsl) Size(size int) *AggregateDsl {
+	switch d.Type.(type) {
+	case FieldAggregate:
+		typ := d.Type.(FieldAggregate)
+		typ.SizeVal = &size
+		d.Type = typ
+	}
 	return d
 }
 
