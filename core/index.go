@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 
@@ -56,7 +55,6 @@ func IndexWithParameters(index string, _type string, id string, parentId string,
 	} else {
 		method = "PUT"
 	}
-	log.Printf("about to :%v %v %s", url, args, data)
 	body, err := api.DoCommand(method, url, args, data)
 	if err != nil {
 		return retval, err
