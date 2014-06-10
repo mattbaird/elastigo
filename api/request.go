@@ -74,7 +74,15 @@ func ElasticSearchRequest(method, path, query string) (*Request, error) {
 	host, portNum := splitHostnamePartsFromHost(hr.Host(), Port)
 
 	// Build request
-	req, err := http.NewRequest(method, fmt.Sprintf("%s://%s:%s%s?%s", Protocol, host, portNum, path, query), nil)
+    var uri string 
+    // If query parameters are provided, the add them to the URL, 
+    // otherwise, leave them out
+    if len(query)>0{
+        uri = fmt.Sprintf("%s://%s:%s%s?%s", Protocol, host, portNum, path, query) 
+    }else{
+        uri = fmt.Sprintf("%s://%s:%s%s", Protocol, host, portNum, path)
+    }
+	req, err := http.NewRequest(method, uri, nil)
 	if err != nil {
 		return nil, err
 	}
