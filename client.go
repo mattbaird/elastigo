@@ -33,6 +33,7 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.Ltime | log.Lshortfile)
 	api.Domain = *eshost
+	core.VerboseLogging = true
 	response, _ := core.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	indices.Flush()
 	log.Printf("Index OK: %v", response.Ok)
