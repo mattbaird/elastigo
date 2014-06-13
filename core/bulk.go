@@ -294,7 +294,7 @@ func (b *BulkIndexer) startDocChannel() {
 func (b *BulkIndexer) send(buf *bytes.Buffer) {
 	//b2 := *b.buf
 	b.sendBuf <- buf
-	b.buf = new(bytes.Buffer)
+	b.buf.Reset()
 	b.docCt = 0
 }
 
