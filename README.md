@@ -1,4 +1,4 @@
-elastigo 
+elastigo
 --------
 [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 
@@ -17,7 +17,7 @@ To get the Chef based Vagrantfile working, be sure to pull like so::
 
 It's easier to use the ElasticSearch provided Docker image found here: https://github.com/dockerfile/elasticsearch
 
-Non-persistent usage is: 
+Non-persistent usage is:
 ```bash
 docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
 ```
@@ -67,124 +67,136 @@ Adding content to Elasticsearch
 ----------------------------------------------
 
 examples:
+```go
+import "github.com/mattbaird/elastigo/api"
+import "github.com/mattbaird/elastigo/core"
 
-    import "github.com/mattbaird/elastigo/api"
-    import "github.com/mattbaird/elastigo/core"
+type Tweet struct {
+  User     string    `json:"user"`
+  Message  string    `json:"message"`
+}
 
-    type Tweet struct {
-      User     string    `json:"user"`
-      Message  string    `json:"message"`
+// Set the Elasticsearch Host to Connect to
+api.Domain = "localhost"
+// api.Port = "9300"
+
+// add single go struct entity
+response, _ := core.Index("twitter", "tweet", "1", nil, Tweet{"kimchy", "Search is cool"})
+
+// you have bytes
+tw := Tweet{"kimchy", "Search is cool part 2"}
+bytesLine, err := json.Marshal(tw)
+response, _ := core.Index("twitter", "tweet", "2", nil, bytesLine)
+
+// Bulk Indexing
+t := time.Now()
+core.IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
+
+// Search Using Raw json String
+searchJson := `{
+    "query" : {
+        "term" : { "user" : "kimchy" }
     }
-
-    // Set the Elasticsearch Host to Connect to
-    api.Domain = "localhost"
-    // api.Port = "9300"
-
-    // add single go struct entity
-    response, _ := core.Index("twitter", "tweet", "1", nil, Tweet{"kimchy", "Search is cool"})
-
-    // you have bytes
-    tw := Tweet{"kimchy", "Search is cool part 2"}
-    bytesLine, err := json.Marshal(tw)
-    response, _ := core.Index("twitter", "tweet", "2", nil, bytesLine)
-
-    // Bulk Indexing
-    t := time.Now()
-    core.IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
-
-    // Search Using Raw json String
-    searchJson := `{
-        "query" : {
-            "term" : { "user" : "kimchy" }
-        }
-    }`
-    out, err := core.SearchRequest(true, "twitter", "tweet", searchJson, "")
-    if len(out.Hits.Hits) == 1 {
-      fmt.Println(string(out.Hits.Hits[0].Source))
-    }
-
+}`
+out, err := core.SearchRequest(true, "twitter", "tweet", searchJson, "")
+if len(out.Hits.Hits) == 1 {
+  fmt.Println(string(out.Hits.Hits[0].Source))
+}
+```
 
 Search DSL Examples
 -------------------------
 
 A Faceted, ranged Search using the `Search DSL` :
 
-    import "github.com/mattbaird/elastigo/api"
-    import "github.com/mattbaird/elastigo/core"
+```go
+import "github.com/mattbaird/elastigo/api"
+import "github.com/mattbaird/elastigo/core"
 
-    // Set the Elasticsearch Host to Connect to
-    api.Domain = "localhost"
-    // api.Port = "9300"
+// Set the Elasticsearch Host to Connect to
+api.Domain = "localhost"
+// api.Port = "9300"
 
-    out, err := Search("github").Size("1").Facet(
-      Facet().Fields("actor").Size("500"),
-    ).Query(
-      Query().Range(
-         Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
-      ).Search("add"),
-    ).Result()
+out, err := Search("github").Size("1").Facet(
+  Facet().Fields("actor").Size("500"),
+).Query(
+  Query().Range(
+     Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+  ).Search("add"),
+).Result()
+```
 
 A Ranged Search using the `Search DSL` :
 
-    out, err := Search("github").Type("Issues").Pretty().Query(
-      Query().Range(
-         Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
-      ).Search("add"),
-    ).Result()
+```go
+out, err := Search("github").Type("Issues").Pretty().Query(
+  Query().Range(
+     Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+  ).Search("add"),
+).Result()
+```
 
 A Simple Search using the `Search DSL` :
 
-    out, err := Search("github").Type("Issues").Size("100").Search("add").Result()
-
+```go
+out, err := Search("github").Type("Issues").Size("100").Search("add").Result()
+```
 
 A Direct Search using the api :
 
-    qry := map[string]interface{}{
-      "query":map[string]interface{}{
-         "term":map[string]string{"user:"kimchy"},
-      },
-    }
-    core.SearchRequest(true, "github", "Issues", qry, "", 0)
+```go
+qry := map[string]interface{}{
+  "query":map[string]interface{}{
+     "term":map[string]string{"user:"kimchy"},
+  },
+}
+core.SearchRequest(true, "github", "Issues", qry, "", 0)
+```
 
 A Direct Search using the query string Api :
 
-    core.SearchUri("github", "Issues", "user:kimchy", "", 0)
+```go
+core.SearchUri("github", "Issues", "user:kimchy", "", 0)
+```
 
 A Filtered search `Search DSL` :
 
-    out, err := Search("github").Filter(
-      Filter().Exists("repository.name"),
-    ).Result()
-
+```go
+out, err := Search("github").Filter(
+  Filter().Exists("repository.name"),
+).Result()
+```
 
 Adding content to Elasticsearch in Bulk
 ----------------------------------------------
 
 example:
 
-    import "github.com/mattbaird/elastigo/api"
-    import "github.com/mattbaird/elastigo/core"
+```go
+import "github.com/mattbaird/elastigo/api"
+import "github.com/mattbaird/elastigo/core"
 
-    // Set the Elasticsearch Host to Connect to
-    api.Domain = "localhost"
-    // api.Port = "9300"
+// Set the Elasticsearch Host to Connect to
+api.Domain = "localhost"
+// api.Port = "9300"
 
-    indexer := core.NewBulkIndexerErrors(10, 60)
-    done := make(chan bool)
-    indexer.Run(done)
+indexer := core.NewBulkIndexerErrors(10, 60)
+done := make(chan bool)
+indexer.Run(done)
 
-    go func() {
-      for errBuf := range indexer.ErrorChannel {
-        // just blissfully print errors forever
-        fmt.Println(errBuf.Err)
-      }
-    }()
-    for i := 0; i < 20; i++ {
-      indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, false)
-    }
-    done <- true
-    // Indexing might take a while. So make sure the program runs
-    // a little longer when trying this in main.
+go func() {
+  for errBuf := range indexer.ErrorChannel {
+    // just blissfully print errors forever
+    fmt.Println(errBuf.Err)
+  }
+}()
+for i := 0; i < 20; i++ {
+  indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, false)
+}
+done <- true
+// Indexing might take a while. So make sure the program runs
+// a little longer when trying this in main.
+```
 
 license
 =======
