@@ -22,6 +22,10 @@ import (
 	"github.com/mattbaird/elastigo/api"
 )
 
+// VerboseLogging controls whether elastigo will log more information
+// about its actions. Set it to false for less logging.
+var VerboseLogging bool = true;
+
 // Index adds or updates a typed JSON document in a specific index, making it searchable, creating an index
 // if it did not exist.
 // if id is omited, op_type 'create' will be passed and http method will default to "POST"
@@ -56,7 +60,9 @@ func IndexWithParameters(index string, _type string, id string, parentId string,
 	} else {
 		method = "PUT"
 	}
-	log.Printf("about to :%v %v %s", url, args, data)
+	if VerboseLogging {
+		log.Printf("about to :%v %v %s", url, args, data)
+	}
 	body, err := api.DoCommand(method, url, args, data)
 	if err != nil {
 		return retval, err
