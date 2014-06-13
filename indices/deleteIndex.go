@@ -14,7 +14,7 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/packetbeat/elastigo/api"
 )
 
 // The delete API allows you to delete one or more indices through an API. This operation may fail

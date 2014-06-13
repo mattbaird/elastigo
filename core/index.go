@@ -19,7 +19,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/mattbaird/elastigo/api"
+	"github.com/packetbeat/elastigo/api"
 )
 
 // VerboseLogging controls whether elastigo will log more information

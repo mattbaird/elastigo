@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/packetbeat/elastigo/api"
 	"io"
 	"log"
 	"net/http"
@@ -42,6 +42,8 @@ var (
 	hasLoadedData     bool
 	hasStartedTesting bool
 	eshost            *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
+	esport            *string = flag.String("port", "9200", "Elasticsearch Server Port")
+	espath            *string = flag.String("path", "", "Elasticsearch HTTP Path. E.g.: /elasticsearch")
 	loadData          *bool   = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
 )
 
@@ -54,6 +56,8 @@ func InitTests(startIndexer bool) {
 		hasStartedTesting = true
 		log.SetFlags(log.Ltime | log.Lshortfile)
 		api.Domain = *eshost
+		api.Port = *esport
+		api.BasePath = *espath
 	}
 	if startIndexer && !bulkStarted {
 		BulkDelaySeconds = 1
