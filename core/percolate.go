@@ -14,7 +14,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/packetbeat/elastigo/api"
 )
 
 // RegisterPercolate allows the caller to register queries against an index, and then send percolate requests which include a doc, and

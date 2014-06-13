@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+	"github.com/packetbeat/elastigo/api"
 	"io"
 	"log"
 	"net/http"
