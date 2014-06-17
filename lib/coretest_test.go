@@ -22,7 +22,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 )
@@ -36,34 +35,34 @@ usage:
 */
 
 var (
-	_                 = os.ModeDir
-	bulkStarted       bool
-	hasLoadedData     bool
+	bulkStarted   bool
 	hasStartedTesting bool
-	eshost            *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
-	loadData          *bool   = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
+	hasLoadedData bool
+	loadData      *bool = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
 )
 
-func init() {
+func InitTests(startIndexer bool) *Conn {
+	c := NewConn()
 
-}
-func InitTests(startIndexer bool) {
 	if !hasStartedTesting {
 		flag.Parse()
 		hasStartedTesting = true
 		log.SetFlags(log.Ltime | log.Lshortfile)
-		api.Domain = *eshost
+		c.Domain = *eshost
 	}
 	if startIndexer && !bulkStarted {
 		BulkDelaySeconds = 1
 		bulkStarted = true
-		BulkIndexerGlobalRun(100, make(chan bool))
+		b := c.NewBulkIndexer(100)
+		b.Run(make(chan bool))
 		if *loadData && !hasLoadedData {
 			log.Println("loading test data ")
 			hasLoadedData = true
 			LoadTestData()
 		}
 	}
+
+	return c
 }
 
 // dumb simple assert for testing, printing
@@ -83,7 +82,7 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 //   },10)
 //
 // @timeout (in seconds) is the last arg
-func WaitFor(check func() bool, timeoutSecs int) {
+func waitFor(check func() bool, timeoutSecs int) {
 	timer := time.NewTicker(100 * time.Millisecond)
 	tryct := 0
 	for _ = range timer.C {
@@ -111,12 +110,14 @@ type GithubEvent struct {
 
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
+	c := NewConn()
+
 	docCt := 0
 	errCt := 0
-	indexer := NewBulkIndexer(1)
+	indexer := c.NewBulkIndexer(1)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		//		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
-		req, err := api.ElasticSearchRequest("POST", "/_bulk", "")
+		req, err := c.NewRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
 			log.Fatalf("ERROR: ", err)

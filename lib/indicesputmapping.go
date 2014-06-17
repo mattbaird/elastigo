@@ -47,7 +47,7 @@ func MappingForType(typeName string, opts MappingOptions) Mapping {
 	return map[string]MappingOptions{typeName: opts}
 }
 
-func (c *Connection) PutMapping(index string, typeName string, instance interface{}, opt MappingOptions) error {
+func (c *Conn) PutMapping(index string, typeName string, instance interface{}, opt MappingOptions) error {
 	instanceType := reflect.TypeOf(instance)
 	if instanceType.Kind() != reflect.Struct {
 		return fmt.Errorf("instance kind was not struct")

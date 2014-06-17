@@ -18,11 +18,11 @@ import (
 
 // The cluster nodes info API allows to retrieve one or more (or all) of the cluster nodes information.
 // informatino can be one of jvm, process
-func (c *Connection) AllNodesInfo() (NodeInfo, error) {
+func (c *Conn) AllNodesInfo() (NodeInfo, error) {
 	return c.NodesInfo([]string{"_all"}, "_all")
 }
 
-func (c *Connection) NodesInfo(information []string, nodes ...string) (NodeInfo, error) {
+func (c *Conn) NodesInfo(information []string, nodes ...string) (NodeInfo, error) {
 	var url string
 	var retval NodeInfo
 	url = fmt.Sprintf("/_nodes/%s/%s", strings.Join(nodes, ","), strings.Join(information, ","))

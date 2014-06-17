@@ -21,7 +21,7 @@ import (
 // TODO: implement wait_for_status, timeout, wait_for_relocating_shards, wait_for_nodes
 // TODO: implement level (Can be one of cluster, indices or shards. Controls the details level of the health
 // information returned. Defaults to cluster.)
-func (c *Connection) Health(indices ...string) (ClusterHealthResponse, error) {
+func (c *Conn) Health(indices ...string) (ClusterHealthResponse, error) {
 	var url string
 	var retval ClusterHealthResponse
 	if len(indices) > 0 {
@@ -78,7 +78,7 @@ func (f ClusterStateFilter) Parameterize() []string {
 	return parts
 }
 
-func (c *Connection) ClusterState(filter ClusterStateFilter) (ClusterStateResponse, error) {
+func (c *Conn) ClusterState(filter ClusterStateFilter) (ClusterStateResponse, error) {
 	var parameters []string
 	var url string
 	var retval ClusterStateResponse

@@ -22,7 +22,7 @@ import (
 // delay is a integer representing number of seconds
 // passing "" or "_all" for the nodes parameter will shut down all nodes
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-nodes-shutdown/
-func (c *Connection) NodesShutdown(delay int, nodes ...string) error {
+func (c *Conn) NodesShutdown(delay int, nodes ...string) error {
 	shutdownUrl := fmt.Sprintf("/_cluster/nodes/%s/_shutdown", strings.Join(nodes, ","))
 	if delay > 0 {
 		var values url.Values = url.Values{}

@@ -23,7 +23,7 @@ import (
 // as required in order to clear memory.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-flush.html
 // TODO: add Shards to response
-func (c *Connection) Flush(indices ...string) (BaseResponse, error) {
+func (c *Conn) Flush(indices ...string) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	if len(indices) > 0 {

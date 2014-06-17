@@ -18,7 +18,7 @@ import (
 
 // IndicesExists checks for the existance of indices. uses http 404 if it does not exist, and 200 if it does
 // see http://www.elasticsearch.org/guide/reference/api/admin-indices-indices-exists/
-func (c *Connection) IndicesExists(indices ...string) (bool, error) {
+func (c *Conn) IndicesExists(indices ...string) (bool, error) {
 	var url string
 	if len(indices) > 0 {
 		url = fmt.Sprintf("/%s", strings.Join(indices, ","))

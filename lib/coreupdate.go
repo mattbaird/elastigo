@@ -26,7 +26,7 @@ import (
 //
 // http://www.elasticsearch.org/guide/reference/api/update.html
 // TODO: finish this, it's fairly complex
-func (c *Connection) Update(index string, _type string, id string, args map[string]interface{}, data interface{}) (BaseResponse, error) {
+func (c *Conn) Update(index string, _type string, id string, args map[string]interface{}, data interface{}) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 
@@ -52,7 +52,7 @@ func (c *Connection) Update(index string, _type string, id string, args map[stri
 // document in the script itself.
 //
 // http://www.elasticsearch.org/guide/reference/api/update.html
-func (c *Connection) UpdateWithPartialDoc(index string, _type string, id string, args map[string]interface{}, doc interface{}, upsert bool) (BaseResponse, error) {
+func (c *Conn) UpdateWithPartialDoc(index string, _type string, id string, args map[string]interface{}, doc interface{}, upsert bool) (BaseResponse, error) {
 	switch v := doc.(type) {
 	case string:
 		upsertStr := ""
@@ -80,7 +80,7 @@ func (c *Connection) UpdateWithPartialDoc(index string, _type string, id string,
 // roundtrips and reduces chances of version conflicts between the get and the index. The _source
 // field need to be enabled for this feature to work.
 // http://www.elasticsearch.org/guide/reference/api/update.html
-func (c *Connection) UpdateWithScript(index string, _type string, id string, args map[string]interface{}, script string, params interface{}) (BaseResponse, error) {
+func (c *Conn) UpdateWithScript(index string, _type string, id string, args map[string]interface{}, script string, params interface{}) (BaseResponse, error) {
 	switch v := params.(type) {
 	case string:
 		paramsPart := fmt.Sprintf("{\"params\":%s}", v)

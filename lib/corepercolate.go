@@ -22,7 +22,7 @@ import (
 // and then running queries. One sends queries, registers them, and then sends docs and finds out which queries
 // match that doc.
 // see http://www.elasticsearch.org/guide/reference/api/percolate.html
-func (c *Connection) RegisterPercolate(index string, name string, args map[string]interface{}, query Query) (BaseResponse, error) {
+func (c *Conn) RegisterPercolate(index string, name string, args map[string]interface{}, query Query) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	url = fmt.Sprintf("/_percolator/%s/%s", index, name)
@@ -40,7 +40,7 @@ func (c *Connection) RegisterPercolate(index string, name string, args map[strin
 	return retval, err
 }
 
-func (c *Connection) Percolate(index string, _type string, name string, args map[string]interface{}, doc string) (Match, error) {
+func (c *Conn) Percolate(index string, _type string, name string, args map[string]interface{}, doc string) (Match, error) {
 	var url string
 	var retval Match
 	url = fmt.Sprintf("/%s/%s/_percolate", index, _type)

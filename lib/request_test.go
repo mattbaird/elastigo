@@ -19,31 +19,31 @@ import (
 
 func TestQueryString(t *testing.T) {
 	// Test nil argument
-	s, err := QueryString(nil)
+	s, err := Escape(nil)
 	assert.T(t, s == "" && err == nil, fmt.Sprintf("Nil should not fail and yield empty string"))
 
 	// Test single string argument
-	s, err = QueryString(map[string]interface{}{"foo": "bar"})
+	s, err = Escape(map[string]interface{}{"foo": "bar"})
 	exp := "foo=bar"
 	assert.T(t, s == exp && err == nil, fmt.Sprintf("Expected %s, got: %s", exp, s))
 
 	// Test single int argument
-	s, err = QueryString(map[string]interface{}{"foo": 1})
+	s, err = Escape(map[string]interface{}{"foo": 1})
 	exp = "foo=1"
 	assert.T(t, s == exp && err == nil, fmt.Sprintf("Expected %s, got: %s", exp, s))
 
 	// Test single float argument
-	s, err = QueryString(map[string]interface{}{"foo": 3.141592})
+	s, err = Escape(map[string]interface{}{"foo": 3.141592})
 	exp = "foo=3.141592"
 	assert.T(t, s == exp && err == nil, fmt.Sprintf("Expected %s, got: %s", exp, s))
 
 	// Test single []string argument
-	s, err = QueryString(map[string]interface{}{"foo": []string{"bar", "baz"}})
+	s, err = Escape(map[string]interface{}{"foo": []string{"bar", "baz"}})
 	exp = "foo=bar%2Cbaz"
 	assert.T(t, s == exp && err == nil, fmt.Sprintf("Expected %s, got: %s", exp, s))
 
 	// Test combination of all arguments
-	s, err = QueryString(map[string]interface{}{
+	s, err = Escape(map[string]interface{}{
 		"foo":  "bar",
 		"bar":  1,
 		"baz":  3.141592,
@@ -54,6 +54,6 @@ func TestQueryString(t *testing.T) {
 	assert.T(t, s == exp && err == nil, fmt.Sprintf("Expected %s, got: %s", exp, s))
 
 	// Test invalid datatype
-	s, err = QueryString(map[string]interface{}{"foo": []int{}})
+	s, err = Escape(map[string]interface{}{"foo": []int{}})
 	assert.T(t, err != nil, fmt.Sprintf("Expected err to not be nil"))
 }

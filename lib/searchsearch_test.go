@@ -15,21 +15,18 @@ import (
 	"fmt"
 	"github.com/araddon/gou"
 	"github.com/bmizerany/assert"
-	"log"
 	"testing"
 )
 
-var (
-	_ = log.Ldate
-)
-
 func TestSearchRequest(t *testing.T) {
+	c := NewConn()
+
 	qry := map[string]interface{}{
 		"query": map[string]interface{}{
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
-	out, err := core.SearchRequest("github", "", nil, qry)
+	out, err := c.Search("github", "", nil, qry)
 	//log.Println(out)
 	assert.T(t, &out != nil && err == nil, t, "Should get docs")
 	expectedDocs := 10
@@ -39,10 +36,11 @@ func TestSearchRequest(t *testing.T) {
 }
 
 func TestSearchSimple(t *testing.T) {
+	c := NewConn()
 
 	// searching without faceting
 	qry := Search("github").Pretty().Query(
-		Query().Search("add"),
+		c.Query().Search("add"),
 	)
 	out, _ := qry.Result()
 	// how many different docs used the word "add"
@@ -58,7 +56,9 @@ func TestSearchSimple(t *testing.T) {
 }
 
 func TestSearchRequestQueryString(t *testing.T) {
-	out, err := core.SearchUri("github", "", map[string]interface{}{"q": "actor:a*"})
+	c := NewConn()
+
+	out, err := c.SearchUri("github", "", map[string]interface{}{"q": "actor:a*"})
 	expectedHits := 621
 	assert.T(t, &out != nil && err == nil, "Should get docs")
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v hits but was %v", expectedHits, out.Hits.Total))
@@ -86,10 +86,12 @@ func TestSearchFacetOne(t *testing.T) {
 		 }
 
 	*/
+	c := NewConn()
+
 	qry := Search("github").Pretty().Facet(
 		Facet().Fields("type").Size("25"),
 	).Query(
-		Query().All(),
+		c.Query().All(),
 	).Size("1")
 	out, err := qry.Result()
 	//log.Println(string(out.Facets))
@@ -120,7 +122,7 @@ func TestSearchFacetOne(t *testing.T) {
 	out, _ = Search("github").Type("IssueCommentEvent").Pretty().Facet(
 		Facet().Fields("type").Size("25"),
 	).Query(
-		Query().All(),
+		c.Query().All(),
 	).Result()
 	h = gou.NewJsonHelper(out.Facets)
 	//log.Println(string(out.Facets))
@@ -134,7 +136,7 @@ func TestSearchFacetOne(t *testing.T) {
 	out, _ = Search("github").Type("IssueCommentEvent").Type("PushEvent").Pretty().Facet(
 		Facet().Fields("type").Size("25"),
 	).Query(
-		Query().All(),
+		c.Query().All(),
 	).Result()
 	h = gou.NewJsonHelper(out.Facets)
 	// still same doc count
@@ -149,7 +151,7 @@ func TestSearchFacetOne(t *testing.T) {
 	out, _ = Search("github").Type("IssueCommentEvent,PushEvent").Pretty().Facet(
 		Facet().Fields("actor").Size("500"),
 	).Query(
-		Query().All(),
+		c.Query().All(),
 	).Result()
 	h = gou.NewJsonHelper(out.Facets)
 	// still same doc count
@@ -162,11 +164,13 @@ func TestSearchFacetOne(t *testing.T) {
 }
 
 func TestSearchFacetRange(t *testing.T) {
+	c := NewConn()
+
 	// ok, now lets try facet but on actor field with a range
 	qry := Search("github").Pretty().Facet(
 		Facet().Fields("actor").Size("500"),
 	).Query(
-		Query().Search("add"),
+		c.Query().Search("add"),
 	)
 	out, err := qry.Result()
 	assert.T(t, out != nil && err == nil, t, "Should have output")
@@ -189,7 +193,7 @@ func TestSearchFacetRange(t *testing.T) {
 	qry = Search("github").Pretty().Facet(
 		Facet().Fields("actor").Size("500"),
 	).Query(
-		Query().Range(
+		c.Query().Range(
 			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
 		).Search("add"),
 	)
@@ -213,10 +217,11 @@ func TestSearchFacetRange(t *testing.T) {
 }
 
 func TestSearchTerm(t *testing.T) {
+	c := NewConn()
 
 	// ok, now lets try searching with term query (specific field/term)
 	qry := Search("github").Query(
-		Query().Term("repository.name", "jasmine"),
+		c.Query().Term("repository.name", "jasmine"),
 	)
 	out, _ := qry.Result()
 	// how many different docs have jasmine in repository.name?
@@ -224,14 +229,15 @@ func TestSearchTerm(t *testing.T) {
 	expectedHits := 4
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
-
 }
 
 func TestSearchFields(t *testing.T) {
+	c := NewConn()
+
 	// same as terms, search using fields:
 	//    how many different docs have jasmine in repository.name?
 	qry := Search("github").Query(
-		Query().Fields("repository.name", "jasmine", "", ""),
+		c.Query().Fields("repository.name", "jasmine", "", ""),
 	)
 	out, _ := qry.Result()
 	expectedDocs := 4
@@ -262,10 +268,11 @@ func TestSearchMissingExists(t *testing.T) {
 }
 
 func TestSearchFilterQuery(t *testing.T) {
+	c := NewConn()
 
 	// compound query + filter with query being wildcard
 	out, _ := Search("github").Size("25").Query(
-		Query().Fields("repository.name", "jas*", "", ""),
+		c.Query().Fields("repository.name", "jas*", "", ""),
 	).Filter(
 		Filter().Terms("repository.has_wiki", true),
 	).Result()
@@ -281,10 +288,11 @@ func TestSearchFilterQuery(t *testing.T) {
 }
 
 func TestSearchRange(t *testing.T) {
+	c := NewConn()
 
 	// now lets filter by a subset of the total time
 	out, _ := Search("github").Size("25").Query(
-		Query().Range(
+		c.Query().Range(
 			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
 		).Search("add"),
 	).Result()
@@ -294,10 +302,11 @@ func TestSearchRange(t *testing.T) {
 }
 
 func TestSearchSortOrder(t *testing.T) {
+	c := NewConn()
 
 	// ok, now lets try sorting by repository watchers descending
 	qry := Search("github").Pretty().Query(
-		Query().All(),
+		c.Query().All(),
 	).Sort(
 		Sort("repository.watchers").Desc(),
 	)
@@ -316,7 +325,7 @@ func TestSearchSortOrder(t *testing.T) {
 
 	// ascending
 	out, _ = Search("github").Pretty().Query(
-		Query().All(),
+		c.Query().All(),
 	).Sort(
 		Sort("repository.watchers"),
 	).Result()
@@ -331,7 +340,7 @@ func TestSearchSortOrder(t *testing.T) {
 
 	// sort descending with search
 	out, _ = Search("github").Pretty().Size("5").Query(
-		Query().Search("python"),
+		c.Query().Search("python"),
 	).Sort(
 		Sort("repository.watchers").Desc(),
 	).Result()

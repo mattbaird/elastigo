@@ -20,7 +20,7 @@ import (
 // This can give useful feedback whether a document matches or didn’t match a specific query.
 // This feature is available from version 0.19.9 and up.
 // see http://www.elasticsearch.org/guide/reference/api/explain.html
-func (c *Connection) Explain(index string, _type string, id string, args map[string]interface{}, query string) (Match, error) {
+func (c *Conn) Explain(index string, _type string, id string, args map[string]interface{}, query string) (Match, error) {
 	var url string
 	var retval Match
 	if len(_type) > 0 {

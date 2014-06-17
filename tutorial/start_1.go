@@ -24,7 +24,7 @@ var (
 )
 
 func main() {
-	c := elastigo.NewConnection()
+	c := elastigo.NewConn()
 	log.SetFlags(log.LstdFlags)
 	flag.Parse()
 

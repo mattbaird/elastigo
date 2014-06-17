@@ -18,7 +18,8 @@ import (
 )
 
 func TestGetAll(t *testing.T) {
-	nodesInfo, err := AllNodesInfo()
+	c := NewConn()
+	nodesInfo, err := c.AllNodesInfo()
 	//log.Println(out)
 	assert.T(t, err == nil, fmt.Sprintf("should not have gotten error, received :%v", err))
 	assert.T(t, nodesInfo.ClusterName == "elasticsearch", fmt.Sprintf("clustername should have been elasticsearch, received :%v", err))
