@@ -39,7 +39,7 @@ func Search(index string) *SearchDsl {
 }
 
 type SearchDsl struct {
-	connection  *Connection
+	connection    *Connection
 	args          map[string]interface{}
 	types         []string
 	FromVal       int                      `json:"from,omitempty"`
