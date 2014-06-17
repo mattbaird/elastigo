@@ -33,12 +33,12 @@ import (
 // percolate is optional
 // timeout is optional
 // http://www.elasticsearch.org/guide/reference/api/index_.html
-func (c *Connection) Index(index string, _type string, id string, args map[string]interface{}, data interface{}) (BaseResponse, error) {
+func (c *Conn) Index(index string, _type string, id string, args map[string]interface{}, data interface{}) (BaseResponse, error) {
 	return c.IndexWithParameters(index, _type, id, "", 0, "", "", "", 0, "", "", false, args, data)
 }
 
 // IndexWithParameters takes all the potential parameters available
-func (c *Connection) IndexWithParameters(index string, _type string, id string, parentId string, version int, op_type string,
+func (c *Conn) IndexWithParameters(index string, _type string, id string, parentId string, version int, op_type string,
 	routing string, timestamp string, ttl int, percolate string, timeout string, refresh bool,
 	args map[string]interface{}, data interface{}) (BaseResponse, error) {
 	var url string

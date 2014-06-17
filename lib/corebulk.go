@@ -47,7 +47,7 @@ type ErrorBuffer struct {
 // A bulk indexer creates goroutines, and channels for connecting and sending data
 // to elasticsearch in bulk, using buffers.
 type BulkIndexer struct {
-	connection *Connection
+	conn *Conn
 
 	// We are creating a variable defining the func responsible for sending
 	// to allow a mock sendor for test purposes
@@ -86,7 +86,7 @@ type BulkIndexer struct {
 
 	// Number of documents we have send through so far on this session
 	docCt int
-	// Max number of http connections in flight at one time
+	// Max number of http conns in flight at one time
 	maxConns int
 	// If we are indexing enough docs per bufferdelaymax, we won't need to do time
 	// based eviction, else we do.
@@ -97,8 +97,8 @@ type BulkIndexer struct {
 	sendWg *sync.WaitGroup
 }
 
-func (c *Connection) NewBulkIndexer(maxConns int) *BulkIndexer {
-	b := BulkIndexer{connection: c, sendBuf: make(chan *bytes.Buffer, maxConns)}
+func (c *Conn) NewBulkIndexer(maxConns int) *BulkIndexer {
+	b := BulkIndexer{conn: c, sendBuf: make(chan *bytes.Buffer, maxConns)}
 	b.needsTimeBasedFlush = true
 	b.buf = new(bytes.Buffer)
 	b.maxConns = maxConns
@@ -119,7 +119,7 @@ func (c *Connection) NewBulkIndexer(maxConns int) *BulkIndexer {
 //
 //   done := make(chan bool)
 //   BulkIndexerGlobalRun(100, done)
-func (c *Connection) NewBulkIndexerErrors(maxConns, retrySeconds int) *BulkIndexer {
+func (c *Conn) NewBulkIndexerErrors(maxConns, retrySeconds int) *BulkIndexer {
 	b := c.NewBulkIndexer(maxConns)
 	b.RetryForSeconds = retrySeconds
 	b.ErrorChannel = make(chan *ErrorBuffer, 20)
@@ -132,7 +132,7 @@ func (b *BulkIndexer) Run(done chan bool) {
 
 	go func() {
 		if b.BulkSender == nil {
-			b.BulkSender = b.connection.BulkSend
+			b.BulkSender = b.conn.BulkSend
 		}
 		// Backwards compatibility
 		b.shutdownChan = done
@@ -314,7 +314,7 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
-func (c *Connection) BulkSend(buf *bytes.Buffer) error {
+func (c *Conn) BulkSend(buf *bytes.Buffer) error {
 	_, err := c.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
 		BulkErrorCt += 1

@@ -12,6 +12,7 @@
 package elastigo_test
 
 import (
+	elastigo "github.com/shutej/elastigo/lib"
 	"bytes"
 	"fmt"
 	"strconv"
@@ -20,7 +21,9 @@ import (
 
 // The simplest usage of background bulk indexing
 func ExampleBulkIndexer_simple() {
-	indexer := core.NewBulkIndexerErrors(10, 60)
+	c := elastigo.NewConn()
+
+	indexer := c.NewBulkIndexerErrors(10, 60)
 	done := make(chan bool)
 	indexer.Run(done)
 
@@ -30,26 +33,10 @@ func ExampleBulkIndexer_simple() {
 }
 
 // The simplest usage of background bulk indexing with error channel
-func ExampleBulkIndexer_errorchannel() {
-	indexer := core.NewBulkIndexerErrors(10, 60)
-	done := make(chan bool)
-	indexer.Run(done)
-
-	go func() {
-		for errBuf := range indexer.ErrorChannel {
-			// just blissfully print errors forever
-			fmt.Println(errBuf.Err)
-		}
-	}()
-	for i := 0; i < 20; i++ {
-		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
-	}
-	done <- true
-}
-
-// The simplest usage of background bulk indexing with error channel
 func ExampleBulkIndexer_errorsmarter() {
-	indexer := core.NewBulkIndexerErrors(10, 60)
+	c := elastigo.NewConn()
+
+	indexer := c.NewBulkIndexerErrors(10, 60)
 	done := make(chan bool)
 	indexer.Run(done)
 
@@ -83,11 +70,13 @@ func ExampleBulkIndexer_errorsmarter() {
 
 // The inspecting the response
 func ExampleBulkIndexer_responses() {
-	indexer := core.NewBulkIndexer(10)
+	c := elastigo.NewConn()
+
+	indexer := c.NewBulkIndexer(10)
 	// Create a custom Sender Func, to allow inspection of response/error
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		// @buf is the buffer of docs about to be written
-		respJson, err := api.DoCommand("POST", "/_bulk", nil, buf)
+		respJson, err := c.DoCommand("POST", "/_bulk", nil, buf)
 		if err != nil {
 			// handle it better than this
 			fmt.Println(string(respJson))

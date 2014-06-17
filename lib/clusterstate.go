@@ -17,7 +17,7 @@ import (
 
 // State gets the comprehensive state information for the whole cluster
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-state/
-func (c *Connection) UpdateSetting(args map[string]interface{}, filter_indices ...string) (ClusterStateResponse, error) {
+func (c *Conn) UpdateSetting(args map[string]interface{}, filter_indices ...string) (ClusterStateResponse, error) {
 	var url string
 	var retval ClusterStateResponse
 

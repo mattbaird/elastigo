@@ -30,7 +30,7 @@ const (
 	DefaultDecayDuration = 0
 )
 
-type Connection struct {
+type Conn struct {
 	// Maintain these for backwards compatibility
 	Protocol       string
 	Domain         string
@@ -49,8 +49,8 @@ type Connection struct {
 	DecayDuration time.Duration
 }
 
-func NewConnection() *Connection {
-	return &Connection{
+func NewConn() *Conn {
+	return &Conn{
 		// Maintain these for backwards compatibility
 		Protocol:       DefaultProtocol,
 		Domain:         DefaultDomain,
@@ -60,7 +60,7 @@ func NewConnection() *Connection {
 	}
 }
 
-func (c *Connection) SetHosts(newhosts []string) {
+func (c *Conn) SetHosts(newhosts []string) {
 
 	// Store the new host list
 	c.Hosts = newhosts
@@ -71,7 +71,7 @@ func (c *Connection) SetHosts(newhosts []string) {
 }
 
 // Set up the host pool to be used
-func (c *Connection) initializeHostPool() {
+func (c *Conn) initializeHostPool() {
 
 	// If no hosts are set, fallback to defaults
 	if len(c.Hosts) == 0 {
@@ -93,7 +93,7 @@ func (c *Connection) initializeHostPool() {
 		c.Hosts, c.DecayDuration, &hostpool.LinearEpsilonValueCalculator{})
 }
 
-func (c *Connection) NewRequest(method, path, query string) (*Request, error) {
+func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	// Setup the hostpool on our first run
 	c.once.Do(c.initializeHostPool)
 

@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-func (c *Connection) DoCommand(method string, url string, args map[string]interface{}, data interface{}) ([]byte, error) {
+func (c *Conn) DoCommand(method string, url string, args map[string]interface{}, data interface{}) ([]byte, error) {
 	var response map[string]interface{}
 	var body []byte
 	var httpStatusCode int
@@ -82,7 +82,7 @@ func (e ESError) Error() string {
 // Exists allows the caller to check for the existance of a document using HEAD
 // This appears to be broken in the current version of elasticsearch 0.19.10, currently
 // returning nothing
-func (c *Connection) Exists(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
+func (c *Conn) Exists(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
 	var response map[string]interface{}
 	var body []byte
 	var url string

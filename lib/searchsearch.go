@@ -39,7 +39,7 @@ func Search(index string) *SearchDsl {
 }
 
 type SearchDsl struct {
-	connection    *Connection
+	conn    *Conn
 	args          map[string]interface{}
 	types         []string
 	FromVal       int                      `json:"from,omitempty"`
@@ -53,7 +53,7 @@ type SearchDsl struct {
 }
 
 func (s *SearchDsl) Bytes() ([]byte, error) {
-	return s.connection.DoCommand("POST", s.url(), s.args, s)
+	return s.conn.DoCommand("POST", s.url(), s.args, s)
 }
 
 func (s *SearchDsl) Result() (*SearchResult, error) {
@@ -104,7 +104,7 @@ func (s *SearchDsl) From(from string) *SearchDsl {
 // Search is a simple interface to search, doesn't have the power of query
 // but uses a simple query_string search
 func (s *SearchDsl) Search(srch string) *SearchDsl {
-	s.QueryVal = s.connection.Query().Search(srch)
+	s.QueryVal = s.conn.Query().Search(srch)
 	return s
 }
 

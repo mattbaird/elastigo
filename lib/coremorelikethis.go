@@ -18,7 +18,7 @@ import (
 
 // MoreLikeThis allows the caller to get documents that are “like” a specified document.
 // http://www.elasticsearch.org/guide/reference/api/more-like-this.html
-func (c *Connection) MoreLikeThis(index string, _type string, id string, args map[string]interface{}, query MoreLikeThisQuery) (BaseResponse, error) {
+func (c *Conn) MoreLikeThis(index string, _type string, id string, args map[string]interface{}, query MoreLikeThisQuery) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	url = fmt.Sprintf("/%s/%s/%s/_mlt", index, _type, id)

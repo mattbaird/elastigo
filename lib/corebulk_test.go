@@ -42,7 +42,7 @@ func init() {
 }
 
 // take two ints, compare, need to be within 5%
-func CloseInt(a, b int) bool {
+func closeInt(a, b int) bool {
 	c := float64(a) / float64(b)
 	if c >= .95 && c <= 1.05 {
 		return true
@@ -52,13 +52,14 @@ func CloseInt(a, b int) bool {
 
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
-	indexer := NewBulkIndexer(3)
+	c := NewConn()
+	indexer := c.NewBulkIndexer(3)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
 		//		log.Printf("buffer:%s", string(buf.Bytes()))
-		return BulkSend(buf)
+		return c.BulkSend(buf)
 	}
 	done := make(chan bool)
 	indexer.Run(done)
@@ -68,7 +69,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 
 	err := indexer.Index("users", "user", "1", "", &date, data, true)
 
-	WaitFor(func() bool {
+	waitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
 	// part of request is url, so lets factor that in
@@ -88,7 +89,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 
 	assert.T(t, BulkErrorCt == 0, fmt.Sprintf("Should not have any errors %d", BulkErrorCt))
 	expectedBytes = 282 // with refresh
-	assert.T(t, CloseInt(totalBytesSent, expectedBytes), fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
+	assert.T(t, closeInt(totalBytesSent, expectedBytes), fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	done <- true
 }
@@ -96,13 +97,14 @@ func TestBulkIndexerBasic(t *testing.T) {
 // currently broken in drone.io
 func XXXTestBulkUpdate(t *testing.T) {
 	InitTests(true)
-	api.Port = "9200"
-	indexer := NewBulkIndexer(3)
+	c := NewConn()
+	c.Port = "9200"
+	indexer := c.NewBulkIndexer(3)
 	indexer.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		return BulkSend(buf)
+		return c.BulkSend(buf)
 	}
 	done := make(chan bool)
 	indexer.Run(done)
@@ -113,7 +115,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 	}
 
 	// Lets make sure the data is in the index ...
-	_, err := Index("users", "user", "5", nil, user)
+	_, err := c.Index("users", "user", "5", nil, user)
 
 	// script and params
 	data := map[string]interface{}{
@@ -126,13 +128,13 @@ func XXXTestBulkUpdate(t *testing.T) {
 	//	indexer.Flush()
 	done <- true
 
-	WaitFor(func() bool {
+	waitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
 
 	assert.T(t, BulkErrorCt == 0 && err == nil, fmt.Sprintf("Should not have any errors, bulkErrorCt:%v, err:%v", BulkErrorCt, err))
 
-	response, err := Get("users", "user", "5", nil)
+	response, err := c.Get("users", "user", "5", nil)
 	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
 	newCount := response.Source.(map[string]interface{})["count"]
 	assert.T(t, newCount.(float64) == 3,
@@ -141,6 +143,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 
 func TestBulkSmallBatch(t *testing.T) {
 	InitTests(true)
+	c := NewConn()
 
 	done := make(chan bool)
 
@@ -148,13 +151,13 @@ func TestBulkSmallBatch(t *testing.T) {
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
 
 	// Now tests small batches
-	indexersm := NewBulkIndexer(1)
+	indexersm := c.NewBulkIndexer(1)
 	indexersm.BufferDelayMax = 100 * time.Millisecond
 	indexersm.BulkMaxDocs = 2
 	messageSets = 0
 	indexersm.BulkSender = func(buf *bytes.Buffer) error {
 		messageSets += 1
-		return BulkSend(buf)
+		return c.BulkSend(buf)
 	}
 	indexersm.Run(done)
 	<-time.After(time.Millisecond * 20)
@@ -170,13 +173,14 @@ func TestBulkSmallBatch(t *testing.T) {
 }
 
 func XXXTestBulkErrors(t *testing.T) {
-	// lets set a bad port, and hope we get a connection refused error?
-	api.Port = "27845"
+	// lets set a bad port, and hope we get a conn refused error?
+	c := NewConn()
+	c.Port = "27845"
 	defer func() {
-		api.Port = "9200"
+		c.Port = "9200"
 	}()
 	BulkDelaySeconds = 1
-	indexer := NewBulkIndexerErrors(10, 1)
+	indexer := c.NewBulkIndexerErrors(10, 1)
 	done := make(chan bool)
 	indexer.Run(done)
 	errorCt := 0
@@ -209,6 +213,7 @@ BenchmarkBulkSend	18:33:00 bulk_test.go:131: Sent 1 messages in 0 sets totaling 
 */
 func BenchmarkBulkSend(b *testing.B) {
 	InitTests(true)
+	c := NewConn()
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
@@ -216,7 +221,7 @@ func BenchmarkBulkSend(b *testing.B) {
 		totalBytes += buf.Len()
 		sets += 1
 		//log.Println("got bulk")
-		return BulkSend(buf)
+		return c.BulkSend(buf)
 	}
 	for i := 0; i < b.N; i++ {
 		about := make([]byte, 1000)
@@ -241,6 +246,7 @@ BenchmarkBulkSendBytes	18:33:05 bulk_test.go:169: Sent 1 messages in 0 sets tota
 */
 func BenchmarkBulkSendBytes(b *testing.B) {
 	InitTests(true)
+	c := NewConn()
 	about := make([]byte, 1000)
 	rand.Read(about)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0), "about": about}
@@ -251,7 +257,7 @@ func BenchmarkBulkSendBytes(b *testing.B) {
 	GlobalBulkIndexer.BulkSender = func(buf *bytes.Buffer) error {
 		totalBytes += buf.Len()
 		sets += 1
-		return BulkSend(buf)
+		return c.BulkSend(buf)
 	}
 	for i := 0; i < b.N; i++ {
 		IndexBulk("users", "user", strconv.Itoa(i), nil, body, true)

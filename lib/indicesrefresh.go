@@ -22,7 +22,7 @@ import (
 // For example, the robin one requires refresh to be called, but by default a refresh is scheduled periodically.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-refresh.html
 // TODO: add Shards to response
-func (c *Connection) Refresh(indices ...string) (BaseResponse, error) {
+func (c *Conn) Refresh(indices ...string) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	if len(indices) > 0 {

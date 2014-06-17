@@ -19,7 +19,7 @@ import (
 
 // Status lists status details of all indices or the specified index.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
-func (c *Connection) Status(args map[string]interface{}, indices ...string) (BaseResponse, error) {
+func (c *Conn) Status(args map[string]interface{}, indices ...string) (BaseResponse, error) {
 	var retval BaseResponse
 	var url string
 	if len(indices) > 0 {

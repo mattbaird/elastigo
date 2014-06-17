@@ -18,7 +18,7 @@ import (
 
 // Delete API allows to delete a typed JSON document from a specific index based on its id.
 // http://www.elasticsearch.org/guide/reference/api/delete.html
-func (c *Connection) Delete(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
+func (c *Conn) Delete(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	url = fmt.Sprintf("/%s/%s/%s", index, _type, id)

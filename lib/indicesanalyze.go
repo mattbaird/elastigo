@@ -19,7 +19,7 @@ import (
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze/
-func (c *Connection) AnalyzeIndices(index string, args map[string]interface{}) (AnalyzeResponse, error) {
+func (c *Conn) AnalyzeIndices(index string, args map[string]interface{}) (AnalyzeResponse, error) {
 	var retval AnalyzeResponse
 	if len(args["text"].(string)) == 0 {
 		return retval, errors.New("text to analyze must not be blank")

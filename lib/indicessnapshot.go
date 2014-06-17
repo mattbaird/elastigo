@@ -20,7 +20,7 @@ import (
 // Snapshot  allows to explicitly perform a snapshot through the gateway of one or more indices (backup them).
 // By default, each index gateway periodically snapshot changes, though it can be disabled and be controlled completely through this API.
 // see http://www.elasticsearch.org/guide/reference/api/admin-indices-gateway-snapshot/
-func (c *Connection) Snapshot(indices ...string) (ExtendedStatus, error) {
+func (c *Conn) Snapshot(indices ...string) (ExtendedStatus, error) {
 	var retval ExtendedStatus
 	var url string
 	if len(indices) > 0 {

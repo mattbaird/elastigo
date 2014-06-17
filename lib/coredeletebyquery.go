@@ -21,7 +21,7 @@ import (
 // The query can either be provided using a simple query string as a parameter, or using the Query DSL defined within
 // the request body.
 // see: http://www.elasticsearch.org/guide/reference/api/delete-by-query.html
-func (c *Connection) DeleteByQuery(indices []string, types []string, args map[string]interface{}, query interface{}) (BaseResponse, error) {
+func (c *Conn) DeleteByQuery(indices []string, types []string, args map[string]interface{}, query interface{}) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	if len(indices) > 0 && len(types) > 0 {

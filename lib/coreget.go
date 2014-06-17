@@ -22,7 +22,7 @@ import (
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
 // TODO: make this implement an interface
-func (c *Connection) get(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
+func (c *Conn) get(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
 	var url string
 	retval := BaseResponse{Source: source}
 	if len(_type) > 0 {
@@ -49,17 +49,17 @@ func (c *Connection) get(index string, _type string, id string, args map[string]
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
 // TODO: make this implement an interface
-func (c *Connection) Get(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
+func (c *Conn) Get(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
 	return c.get(index, _type, id, args, nil)
 }
 
 // Same as Get but with custom source type.
-func (c *Connection) GetCustom(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
+func (c *Conn) GetCustom(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
 	return c.get(index, _type, id, args, source)
 }
 
 // GetSource retrieves the document by id and converts it to provided interface
-func (c *Connection) GetSource(index string, _type string, id string, args map[string]interface{}, source interface{}) error {
+func (c *Conn) GetSource(index string, _type string, id string, args map[string]interface{}, source interface{}) error {
 	url := fmt.Sprintf("/%s/%s/%s/_source", index, _type, id)
 	body, err := c.DoCommand("GET", url, args, nil)
 	if err == nil {
@@ -71,7 +71,7 @@ func (c *Connection) GetSource(index string, _type string, id string, args map[s
 // ExistsBool allows caller to check for the existance of a document using HEAD
 // TODO(shutej): This looks redundant with the Exists function in
 // baserequest.go, check with mattbaird@.
-func (c *Connection) ExistsBool(index string, _type string, id string, args map[string]interface{}) (bool, error) {
+func (c *Conn) ExistsBool(index string, _type string, id string, args map[string]interface{}) (bool, error) {
 
 	var url string
 
@@ -106,7 +106,7 @@ func (c *Connection) ExistsBool(index string, _type string, id string, args map[
 }
 
 // ExistsIndex allows caller to check for the existance of an index or a type using HEAD
-func (c *Connection) ExistsIndex(index string, _type string, args map[string]interface{}) (bool, error) {
+func (c *Conn) ExistsIndex(index string, _type string, args map[string]interface{}) (bool, error) {
 	var url string
 
 	query, err := Escape(args)

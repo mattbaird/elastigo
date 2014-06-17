@@ -20,7 +20,7 @@ import (
 // The cluster health API allows to get a very simple status on the health of the cluster.
 // see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
 // information returned. Defaults to cluster.)
-func (c *Connection) Reroute(dryRun bool, commands Commands) (ClusterHealthResponse, error) {
+func (c *Conn) Reroute(dryRun bool, commands Commands) (ClusterHealthResponse, error) {
 	var url string
 	var retval ClusterHealthResponse
 

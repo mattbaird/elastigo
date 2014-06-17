@@ -19,7 +19,7 @@ import (
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze/
-func (c *Connection) OptimizeIndices(args map[string]interface{}, indices ...string) (OptimizeResponse, error) {
+func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (OptimizeResponse, error) {
 	var retval OptimizeResponse
 	var optimizeUrl string = "/_optimize"
 	if len(indices) > 0 {

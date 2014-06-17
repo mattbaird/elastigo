@@ -13,34 +13,19 @@ package elastigo
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/bmizerany/assert"
 	"testing"
 )
 
-func TestSearchRequest(t *testing.T) {
-	qry := map[string]interface{}{
-		"query": map[string]interface{}{
-			"wildcard": map[string]string{"actor": "a*"},
-		},
-	}
-	var args map[string]interface{}
-	out, err := SearchRequest("github", "", args, qry)
-	//log.Println(out)
-	assert.T(t, &out != nil && err == nil, fmt.Sprintf("Should get docs"))
-	assert.T(t, out.Hits.Len() == 10, fmt.Sprintf("Should have 10 docs but was %v", out.Hits.Len()))
-	expectedHits := 621
-	assert.T(t, CloseInt(out.Hits.Total, expectedHits), fmt.Sprintf("Should have %v hits but was %v", expectedHits, out.Hits.Total))
-}
-
 func TestSearchResultToJSON(t *testing.T) {
+	c := NewConn()
+
 	qry := map[string]interface{}{
 		"query": map[string]interface{}{
 			"wildcard": map[string]string{"actor": "a*"},
 		},
 	}
 	var args map[string]interface{}
-	out, err := SearchRequest("github", "", args, qry)
+	out, err := c.Search("github", "", args, qry)
 
 	if err != nil {
 		t.Error(err)

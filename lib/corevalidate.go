@@ -18,7 +18,7 @@ import (
 
 // Validate allows a user to validate a potentially expensive query without executing it.
 // see http://www.elasticsearch.org/guide/reference/api/validate.html
-func (c *Connection) Validate(index string, _type string, args map[string]interface{}) (BaseResponse, error) {
+func (c *Conn) Validate(index string, _type string, args map[string]interface{}) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	if len(_type) > 0 {

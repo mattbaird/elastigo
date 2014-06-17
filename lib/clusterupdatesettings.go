@@ -19,7 +19,7 @@ import (
 // UpdateSettings allows to update cluster wide specific settings. Defaults to Transient setting
 // Settings updated can either be persistent (applied cross restarts) or transient (will not survive a full cluster restart).
 // http://www.elasticsearch.org/guide/reference/api/admin-cluster-update-settings.html
-func (c *Connection) UpdateSettings(settingType string, key string, value int) (ClusterSettingsResponse, error) {
+func (c *Conn) UpdateSettings(settingType string, key string, value int) (ClusterSettingsResponse, error) {
 	var retval ClusterSettingsResponse
 	if settingType != "transient" && settingType != "persistent" {
 		return retval, fmt.Errorf("settingType must be one of transient or persistent, you passed %s", settingType)

@@ -32,7 +32,7 @@ import (
 //   out, err := Search(true, "github", map[string]interface{} {"from" : 10}, qryType)
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func (c *Connection) Search(index string, _type string, args map[string]interface{}, query interface{}) (SearchResult, error) {
+func (c *Conn) Search(index string, _type string, args map[string]interface{}, query interface{}) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
 	if len(_type) > 0 && _type != "*" {
@@ -65,7 +65,7 @@ func (c *Connection) Search(index string, _type string, args map[string]interfac
 // produces a request like this:    host:9200/github/_search?q=user:kimchy"
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func (c *Connection) SearchUri(index, _type string, args map[string]interface{}) (SearchResult, error) {
+func (c *Conn) SearchUri(index, _type string, args map[string]interface{}) (SearchResult, error) {
 	var uriVal string
 	var retval SearchResult
 	if len(_type) > 0 && _type != "*" {
@@ -88,7 +88,7 @@ func (c *Connection) SearchUri(index, _type string, args map[string]interface{})
 	return retval, err
 }
 
-func (c *Connection) Scroll(args map[string]interface{}, scroll_id string) (SearchResult, error) {
+func (c *Conn) Scroll(args map[string]interface{}, scroll_id string) (SearchResult, error) {
 	var url string
 	var retval SearchResult
 

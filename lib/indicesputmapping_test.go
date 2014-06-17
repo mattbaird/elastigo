@@ -26,17 +26,20 @@ var (
 	server *httptest.Server
 )
 
-func setup(t *testing.T) {
+func setup(t *testing.T) *Conn {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
+	c := NewConn()
 
 	serverURL, err := url.Parse(server.URL)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
 
-	api.Domain = strings.Split(serverURL.Host, ":")[0]
-	api.Port = strings.Split(serverURL.Host, ":")[1]
+	c.Domain = strings.Split(serverURL.Host, ":")[0]
+	c.Port = strings.Split(serverURL.Host, ":")[1]
+
+	return c
 }
 
 func teardown() {
@@ -67,7 +70,7 @@ type NestedStruct struct {
 }
 
 func TestPutMapping(t *testing.T) {
-	setup(t)
+	c := setup(t)
 	defer teardown()
 
 	options := MappingOptions{
@@ -137,7 +140,7 @@ func TestPutMapping(t *testing.T) {
 		}
 	})
 
-	err := PutMapping("myIndex", "myType", TestStruct{}, options)
+	err := c.PutMapping("myIndex", "myType", TestStruct{}, options)
 	if err != nil {
 		t.Errorf("Error: %v", err)
 	}

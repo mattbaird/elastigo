@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.Ltime | log.Lshortfile)
 
-	c := elastigo.NewConnection()
+	c := elastigo.NewConn()
 	c.Domain = *eshost
 	response, _ := c.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	c.Flush()
