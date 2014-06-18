@@ -17,26 +17,20 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	//	"log"
 	"strconv"
 	"sync"
 	"time"
 )
 
-var (
+const (
 	// Max buffer size in bytes before flushing to elasticsearch
 	BulkMaxBuffer = 1048576
 	// Max number of Docs to hold in buffer before forcing flush
 	BulkMaxDocs = 100
 	// Max delay before forcing a flush to Elasticearch
 	BulkDelaySeconds = 5
-	// Keep a running total of errors seen, since it is in the background
-	BulkErrorCt uint64
 	// maximum wait shutdown seconds
 	MAX_SHUTDOWN_SECS = 5
-
-	// There is one Global Bulk Indexer for convenience
-	GlobalBulkIndexer *BulkIndexer
 )
 
 type ErrorBuffer struct {
@@ -51,7 +45,7 @@ type BulkIndexer struct {
 
 	// We are creating a variable defining the func responsible for sending
 	// to allow a mock sendor for test purposes
-	BulkSender func(*bytes.Buffer) error
+	Sender func(*bytes.Buffer) error
 
 	// If we encounter an error in sending, we are going to retry for this long
 	// before returning an error
@@ -63,6 +57,9 @@ type BulkIndexer struct {
 
 	// channel for sending to background indexer
 	bulkChannel chan []byte
+
+	// numErrors is a running total of errors seen
+	numErrors uint64
 
 	// shutdown channel
 	shutdownChan chan bool
@@ -95,6 +92,10 @@ type BulkIndexer struct {
 	mu sync.Mutex
 	// Wait Group for the http sends
 	sendWg *sync.WaitGroup
+}
+
+func (b *BulkIndexer) NumErrors() uint64 {
+	return b.numErrors
 }
 
 func (c *Conn) NewBulkIndexer(maxConns int) *BulkIndexer {
@@ -131,8 +132,9 @@ func (c *Conn) NewBulkIndexerErrors(maxConns, retrySeconds int) *BulkIndexer {
 func (b *BulkIndexer) Run(done chan bool) {
 
 	go func() {
-		if b.BulkSender == nil {
-			b.BulkSender = b.conn.BulkSend
+		// XXX(j): Refactor this stuff to use an interface.
+		if b.Sender == nil {
+			b.Sender = b.Send
 		}
 		// Backwards compatibility
 		b.shutdownChan = done
@@ -190,7 +192,7 @@ func (b *BulkIndexer) startHttpSender() {
 				select {
 				case buf := <-b.sendBuf:
 					b.sendWg.Add(1)
-					err := b.BulkSender(buf)
+					err := b.Sender(buf)
 
 					// Perhaps a b.FailureStrategy(err)  ??  with different types of strategies
 					//  1.  Retry, then panic
@@ -199,7 +201,7 @@ func (b *BulkIndexer) startHttpSender() {
 					if err != nil {
 						if b.RetryForSeconds > 0 {
 							time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
-							err = b.BulkSender(buf)
+							err = b.Sender(buf)
 							if err == nil {
 								// Successfully re-sent with no error
 								b.sendWg.Done()
@@ -314,10 +316,10 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
-func (c *Conn) BulkSend(buf *bytes.Buffer) error {
-	_, err := c.DoCommand("POST", "/_bulk", nil, buf)
+func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
+	_, err := b.conn.DoCommand("POST", "/_bulk", nil, buf)
 	if err != nil {
-		BulkErrorCt += 1
+		b.numErrors += 1
 		return err
 	}
 	return nil
@@ -380,70 +382,4 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 	}
 	buf.WriteRune('\n')
 	return buf.Bytes(), nil
-}
-
-// The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
-// it operates by buffering requests, and ocassionally flushing to elasticsearch
-//
-// This uses the one Global Bulk Indexer, you can also create your own non-global indexers and use the
-// Index functions of that
-//
-// http://www.elasticsearch.org/guide/reference/api/bulk.html
-func IndexBulk(index string, _type string, id string, date *time.Time, data interface{}, refresh bool) error {
-	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if GlobalBulkIndexer == nil {
-		panic("Must have Global Bulk Indexer to use this Func")
-	}
-	by, err := WriteBulkBytes("index", index, _type, id, "", date, data, refresh)
-	if err != nil {
-		return err
-	}
-	GlobalBulkIndexer.bulkChannel <- by
-	return nil
-}
-
-func UpdateBulk(index string, _type string, id string, date *time.Time, data interface{}, refresh bool) error {
-	//{ "update" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if GlobalBulkIndexer == nil {
-		panic("Must have Global Bulk Indexer to use this Func")
-	}
-	by, err := WriteBulkBytes("update", index, _type, id, "", date, data, refresh)
-	if err != nil {
-		return err
-	}
-	GlobalBulkIndexer.bulkChannel <- by
-	return nil
-}
-
-// The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
-// it operates by buffering requests, and ocassionally flushing to elasticsearch.
-//
-// This uses the one Global Bulk Indexer, you can also create your own non-global indexers and use the
-// IndexTtl functions of that
-//
-// http://www.elasticsearch.org/guide/reference/api/bulk.html
-func IndexBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
-	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if GlobalBulkIndexer == nil {
-		panic("Must have Global Bulk Indexer to use this Func")
-	}
-	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data, refresh)
-	if err != nil {
-		return err
-	}
-	GlobalBulkIndexer.bulkChannel <- by
-	return nil
-}
-
-func UpdateBulkTtl(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
-	//{ "update" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	if GlobalBulkIndexer == nil {
-		panic("Must have Global Bulk Indexer to use this Func")
-	}
-	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data, refresh)
-	if err != nil {
-		return err
-	}
-	GlobalBulkIndexer.bulkChannel <- by
-	return nil
 }

@@ -74,7 +74,7 @@ func ExampleBulkIndexer_responses() {
 
 	indexer := c.NewBulkIndexer(10)
 	// Create a custom Sender Func, to allow inspection of response/error
-	indexer.BulkSender = func(buf *bytes.Buffer) error {
+	indexer.Sender = func(buf *bytes.Buffer) error {
 		// @buf is the buffer of docs about to be written
 		respJson, err := c.DoCommand("POST", "/_bulk", nil, buf)
 		if err != nil {
