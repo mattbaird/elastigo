@@ -35,10 +35,10 @@ usage:
 */
 
 var (
-	bulkStarted   bool
+	bulkStarted       bool
 	hasStartedTesting bool
-	hasLoadedData bool
-	loadData      *bool = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
+	hasLoadedData     bool
+	loadData          *bool = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
 )
 
 func InitTests(startIndexer bool) *Conn {
@@ -51,7 +51,6 @@ func InitTests(startIndexer bool) *Conn {
 		c.Domain = *eshost
 	}
 	if startIndexer && !bulkStarted {
-		BulkDelaySeconds = 1
 		bulkStarted = true
 		b := c.NewBulkIndexer(100)
 		b.Run(make(chan bool))
@@ -99,7 +98,6 @@ func waitFor(check func() bool, timeoutSecs int) {
 }
 
 func TestFake(t *testing.T) {
-
 }
 
 type GithubEvent struct {
@@ -115,8 +113,8 @@ func LoadTestData() {
 	docCt := 0
 	errCt := 0
 	indexer := c.NewBulkIndexer(1)
-	indexer.BulkSender = func(buf *bytes.Buffer) error {
-		//		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
+	indexer.Sender = func(buf *bytes.Buffer) error {
+		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := c.NewRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
@@ -133,7 +131,7 @@ func LoadTestData() {
 			return err
 		}
 		if httpStatusCode != 200 {
-			log.Fatalf("Not 200! %d \n", httpStatusCode)
+			log.Fatalf("Not 200! %d %q\n", httpStatusCode, buf.String())
 		}
 		return err
 	}
