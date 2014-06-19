@@ -56,6 +56,7 @@ func SearchRequest(index string, _type string, args map[string]interface{}, quer
 			return retval, jsonErr
 		}
 	}
+	retval.RawJSON = body
 	return retval, err
 }
 
@@ -90,6 +91,7 @@ func SearchUri(index, _type string, args map[string]interface{}) (SearchResult, 
 			return retval, jsonErr
 		}
 	}
+	retval.RawJSON = body
 	return retval, err
 }
 
@@ -118,6 +120,7 @@ func Scroll(args map[string]interface{}, scroll_id string) (SearchResult, error)
 }
 
 type SearchResult struct {
+	RawJSON      []byte
 	Took         int             `json:"took"`
 	TimedOut     bool            `json:"timed_out"`
 	ShardStatus  api.Status      `json:"_shards"`
