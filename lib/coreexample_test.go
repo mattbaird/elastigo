@@ -12,9 +12,9 @@
 package elastigo_test
 
 import (
-	elastigo "github.com/shutej/elastigo/lib"
 	"bytes"
 	"fmt"
+	elastigo "github.com/shutej/elastigo/lib"
 	"strconv"
 	"time"
 )

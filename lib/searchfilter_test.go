@@ -19,11 +19,13 @@ import (
 )
 
 func TestFilters(t *testing.T) {
+	c := NewConn()
+
 	// search for docs that are missing repository.name
 	qry := Search("github").Filter(
 		Filter().Exists("repository.name"),
 	)
-	out, err := qry.Result()
+	out, err := qry.Result(c)
 	assert.T(t, err == nil, t, "should not have error")
 	expectedDocs := 10
 	expectedHits := 7695
@@ -33,7 +35,7 @@ func TestFilters(t *testing.T) {
 		Filter().Missing("repository.name"),
 	)
 	expectedHits = 389
-	out, _ = qry.Result()
+	out, _ = qry.Result(c)
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
 
@@ -41,7 +43,7 @@ func TestFilters(t *testing.T) {
 	qry = Search("github").Filter(
 		Filter().Terms("actor_attributes.location", "portland"),
 	)
-	out, _ = qry.Result()
+	out, _ = qry.Result(c)
 	expectedDocs = 10
 	expectedHits = 71
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
@@ -54,7 +56,7 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("actor_attributes.location", "portland"),
 		Filter().Terms("repository.has_wiki", true),
 	)
-	out, err = qry.Result()
+	out, err = qry.Result(c)
 	expectedDocs = 10
 	expectedHits = 44
 	assert.T(t, err == nil, t, "should not have error")
@@ -68,7 +70,7 @@ func TestFilters(t *testing.T) {
 	qry.Filter(
 		Filter().Terms("repository.has_wiki", true),
 	)
-	out, err = qry.Result()
+	out, err = qry.Result(c)
 	//gou.Debug(out)
 	assert.T(t, err == nil, t, "should not have error")
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
@@ -79,7 +81,7 @@ func TestFilters(t *testing.T) {
 		Filter().Terms("actor_attributes.location", "portland"),
 		Filter().Terms("repository.has_wiki", true),
 	)
-	out, err = qry.Result()
+	out, err = qry.Result(c)
 	expectedHits = 6676
 	assert.T(t, err == nil, t, "should not have error")
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
@@ -87,11 +89,12 @@ func TestFilters(t *testing.T) {
 }
 
 func TestFilterRange(t *testing.T) {
+	c := NewConn()
 
 	// now lets filter range for repositories with more than 100 forks
 	out, _ := Search("github").Size("25").Filter(
 		Range().Field("repository.forks").From("100"),
-	).Result()
+	).Result(c)
 	if out == nil || &out.Hits == nil {
 		t.Fail()
 		return

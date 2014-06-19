@@ -278,7 +278,8 @@ func (b *BulkIndexer) startDocChannel() {
 func (b *BulkIndexer) send(buf *bytes.Buffer) {
 	//b2 := *b.buf
 	b.sendBuf <- buf
-	b.buf.Reset()
+	// TODO(j): Why doesn't b.buf.Reset() work here?
+	b.buf = new(bytes.Buffer)
 	b.docCt = 0
 }
 

@@ -12,9 +12,10 @@
 package elastigo
 
 type SearchRequest struct {
-	From   int   `json:"from,omitempty"`
-	Size   int   `json:"size,omitempty"`
-	Query  Query `json:"query,omitempty"`
+	From  int          `json:"from,omitempty"`
+	Size  int          `json:"size,omitempty"`
+	Query OneTermQuery `json:"query,omitempty"`
+
 	Filter struct {
 		Term Term `json:"term"`
 	} `json:"filter,omitempty"`
