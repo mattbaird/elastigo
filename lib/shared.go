@@ -11,12 +11,8 @@
 
 package elastigo
 
-type Query struct {
+type OneTermQuery struct {
 	Query struct {
 		Term string `json:"term"`
 	} `json:"query"`
-}
-
-func (q Query) setQuery(query string) {
-	q.Query.Term = query
 }

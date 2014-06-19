@@ -16,13 +16,15 @@ import (
 	"fmt"
 )
 
-// RegisterPercolate allows the caller to register queries against an index, and then send percolate requests which include a doc, and
-// getting back the queries that match on that doc out of the set of registered queries.
-// Think of it as the reverse operation of indexing and then searching. Instead of sending docs, indexing them,
-// and then running queries. One sends queries, registers them, and then sends docs and finds out which queries
-// match that doc.
+// RegisterPercolate allows the caller to register queries against an index,
+// and then send percolate requests which include a doc, and getting back the
+// queries that match on that doc out of the set of registered queries.  Think
+// of it as the reverse operation of indexing and then searching. Instead of
+// sending docs, indexing them, and then running queries. One sends queries,
+// registers them, and then sends docs and finds out which queries match that
+// doc.
 // see http://www.elasticsearch.org/guide/reference/api/percolate.html
-func (c *Conn) RegisterPercolate(index string, name string, args map[string]interface{}, query Query) (BaseResponse, error) {
+func (c *Conn) RegisterPercolate(index string, name string, args map[string]interface{}, query OneTermQuery) (BaseResponse, error) {
 	var url string
 	var retval BaseResponse
 	url = fmt.Sprintf("/_percolator/%s/%s", index, name)

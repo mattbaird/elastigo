@@ -39,7 +39,6 @@ func Search(index string) *SearchDsl {
 }
 
 type SearchDsl struct {
-	conn    *Conn
 	args          map[string]interface{}
 	types         []string
 	FromVal       int                      `json:"from,omitempty"`
@@ -52,13 +51,13 @@ type SearchDsl struct {
 	AggregatesVal map[string]*AggregateDsl `json:"aggregations,omitempty"`
 }
 
-func (s *SearchDsl) Bytes() ([]byte, error) {
-	return s.conn.DoCommand("POST", s.url(), s.args, s)
+func (s *SearchDsl) Bytes(conn *Conn) ([]byte, error) {
+	return conn.DoCommand("POST", s.url(), s.args, s)
 }
 
-func (s *SearchDsl) Result() (*SearchResult, error) {
+func (s *SearchDsl) Result(conn *Conn) (*SearchResult, error) {
 	var retval SearchResult
-	body, err := s.Bytes()
+	body, err := s.Bytes(conn)
 	if err != nil {
 		u.Errorf("%v", err)
 		return nil, err
@@ -104,7 +103,7 @@ func (s *SearchDsl) From(from string) *SearchDsl {
 // Search is a simple interface to search, doesn't have the power of query
 // but uses a simple query_string search
 func (s *SearchDsl) Search(srch string) *SearchDsl {
-	s.QueryVal = s.conn.Query().Search(srch)
+	s.QueryVal = Query().Search(srch)
 	return s
 }
 

@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	_                 = log.Ldate
-	eshost            *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
-	logLevel          *string = flag.String("logging", "info", "Which log level: [debug,info,warn,error,fatal]")
+	_                = log.Ldate
+	eshost   *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
+	logLevel *string = flag.String("logging", "info", "Which log level: [debug,info,warn,error,fatal]")
 )

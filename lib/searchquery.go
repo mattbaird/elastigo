@@ -18,9 +18,9 @@ import (
 	"strings"
 )
 
-// QueryDsl creates a new Query Dsl
-func (c *Conn) Query() *QueryDsl {
-	return &QueryDsl{conn: c}
+// Query creates a new Query Dsl
+func Query() *QueryDsl {
+	return &QueryDsl{}
 }
 
 /*
@@ -55,7 +55,6 @@ some ways to serialize
 },
 */
 type QueryDsl struct {
-	conn *Conn
 	QueryEmbed
 	FilterVal *FilterOp `json:"filter,omitempty"`
 }
