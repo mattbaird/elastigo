@@ -10,3 +10,32 @@
 // limitations under the License.
 
 package indices
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/mattbaird/elastigo/api"
+)
+
+func CreateIndex(index string) (api.BaseResponse, error) {
+	var url string
+	var retval api.BaseResponse
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s", index)
+	} else {
+		return retval, fmt.Errorf("You must specify an index to create")
+	}
+
+	body, err := api.DoCommand("PUT", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, err
+}
