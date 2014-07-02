@@ -79,8 +79,8 @@ func TestPutMapping(t *testing.T) {
 			"multi_analyze": map[string]interface{}{
 				"type": "multi_field",
 				"fields": map[string]map[string]string{
-					"ma_analyzed":   {"type": "string", "index": "analyzed"},
-					"ma_unanalyzed": {"type": "string", "index": "un_analyzed"},
+					"ma_analyzed":    {"type": "string", "index": "analyzed"},
+					"ma_notanalyzed": {"type": "string", "index": "not_analyzed"},
 				},
 			},
 		},
@@ -98,8 +98,8 @@ func TestPutMapping(t *testing.T) {
 			"multi_analyze": map[string]interface{}{
 				"type": "multi_field",
 				"fields": map[string]map[string]string{
-					"ma_analyzed":   {"type": "string", "index": "analyzed"},
-					"ma_unanalyzed": {"type": "string", "index": "un_analyzed"},
+					"ma_analyzed":    {"type": "string", "index": "analyzed"},
+					"ma_notanalyzed": {"type": "string", "index": "not_analyzed"},
 				},
 			},
 			"nested": map[string]map[string]map[string]string{
