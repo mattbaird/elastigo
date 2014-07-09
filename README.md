@@ -1,5 +1,8 @@
 elastigo v2.0
---------
+-------------
+
+A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
+
 [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 
 [![Build Status][1]][2]
@@ -8,7 +11,43 @@ elastigo v2.0
 [2]: https://drone.io/github.com/mattbaird/elastigo/latest
 
 
-A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
+NOTE: Based on the great work from Jeremy Shute, Elastigo now supports multiple connections. We attempted to make this backwards compatible, however in the end it wasn't possible, so we tagged the older single connection code as v1.0 and started work on v2.0.
+
+If you want to use v1.0, you can use a tool like GoDep to make that possible. See http://bit.ly/VLG2et for full details.
+
+The godep tool saves the exact version of the dependencies you’re building your project against, which means that upstream modifications in third-party dependencies won’t break your build.
+
+```bash
+go get github.com/tools/godep
+```
+
+Now, to pull in an existing project with godep:
+```bash
+	godep go get github.com/myuser/myproject
+```
+
+When your code compiles in your workspace, ala:
+
+```bash
+cd $HOME/gopath/src/github.com/myuser/myproject
+# hack hack hack
+go build ./...
+```
+
+You can freeze your dependencies thusly:
+
+```bash
+godep save github.com/myuser/myproject
+git add Godeps
+```
+
+The godep tool will examine your code to find and save the transitive closure of your dependencies in the current directory, observing their versions.  If you want to restore or update these versions, see the documentation for the tool.
+
+Note, in particular, that if your current directory contains a group of binaries or packages, you may save all of them at once:
+
+```bash
+godep save ./...
+```
 
 To get the Chef based Vagrantfile working, be sure to pull like so::
 
@@ -48,26 +87,12 @@ cd ..
 go test -v ./...
 ```
 
-status updates
-========================
-
-* *2014-07-09* Version 2.0 development started. Focused on multi-connection support, using Dial idiom.
-* *2014-5-21* Note: Drone.io tests are failing, I don't know why because the build and tests are working fine for me on my ubuntu box running the docker elasticsearch image. It's possible there is a timing issue. Any Ideas?
-* *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
-* *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
-         Search dsl supports And/Or/Not
-    * *SearchDsl* should still be considered beta at this
-         point, there will be minor breaking changes as more of the
-         elasticsearch feature set is implemented.
-* *2013-1-26* expansion of search dsl for greater coverage
-* *2012-12-30* new bulk indexing and search dsl
-* *2012-10-12* early in development, not ready for production yet.
-
+Usage Examples
+--------------
 
 Adding content to Elasticsearch
 ----------------------------------------------
 
-examples:
 ```go
 import "github.com/mattbaird/elastigo/api"
 import "github.com/mattbaird/elastigo/core"
@@ -104,9 +129,6 @@ if len(out.Hits.Hits) == 1 {
   fmt.Println(string(out.Hits.Hits[0].Source))
 }
 ```
-
-Search DSL Examples
--------------------------
 
 A Faceted, ranged Search using the `Search DSL` :
 
@@ -171,8 +193,6 @@ out, err := Search("github").Filter(
 Adding content to Elasticsearch in Bulk
 ----------------------------------------------
 
-example:
-
 ```go
 import "github.com/mattbaird/elastigo/api"
 import "github.com/mattbaird/elastigo/core"
@@ -198,6 +218,21 @@ done <- true
 // Indexing might take a while. So make sure the program runs
 // a little longer when trying this in main.
 ```
+
+status updates
+========================
+
+* *2014-07-09* Version 2.0 development started. Focused on multi-connection support, using Dial idiom.
+* *2014-5-21* Note: Drone.io tests are failing, I don't know why because the build and tests are working fine for me on my ubuntu box running the docker elasticsearch image. It's possible there is a timing issue. Any Ideas?
+* *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
+* *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
+         Search dsl supports And/Or/Not
+    * *SearchDsl* should still be considered beta at this
+         point, there will be minor breaking changes as more of the
+         elasticsearch feature set is implemented.
+* *2013-1-26* expansion of search dsl for greater coverage
+* *2012-12-30* new bulk indexing and search dsl
+* *2012-10-12* early in development, not ready for production yet.
 
 license
 =======
