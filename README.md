@@ -87,11 +87,11 @@ cd ..
 go test -v ./...
 ```
 
-Usage Examples
---------------
+Usage Examples - Currently out of date, being rewritten for v2.0
+----------------------------------------------------------------
 
 Adding content to Elasticsearch
-----------------------------------------------
+-------------------------------
 
 ```go
 import "github.com/mattbaird/elastigo/api"
