@@ -14,8 +14,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	elastigo "github.com/shutej/elastigo/lib"
 	"log"
 	"os"
 )
@@ -25,24 +24,24 @@ var (
 )
 
 func main() {
-	core.DebugRequests = true
+	c := elastigo.NewConn()
 	log.SetFlags(log.LstdFlags)
 	flag.Parse()
 
 	fmt.Println("host = ", *host)
 	// Set the Elasticsearch Host to Connect to
-	api.Domain = *host
+	c.Domain = *host
 
 	// Index a document
-	_, err := core.Index("testindex", "user", "docid_1", nil, `{"name":"bob"}`)
+	_, err := c.Index("testindex", "user", "docid_1", nil, `{"name":"bob"}`)
 	exitIfErr(err)
 
 	// Index a doc using a map of values
-	_, err = core.Index("testindex", "user", "docid_2", nil, map[string]string{"name": "venkatesh"})
+	_, err = c.Index("testindex", "user", "docid_2", nil, map[string]string{"name": "venkatesh"})
 	exitIfErr(err)
 
 	// Index a doc using Structs
-	_, err = core.Index("testindex", "user", "docid_3", nil, MyUser{"wanda", 22})
+	_, err = c.Index("testindex", "user", "docid_3", nil, MyUser{"wanda", 22})
 	exitIfErr(err)
 
 	// Search Using Raw json String
@@ -51,7 +50,7 @@ func main() {
 	        "term" : { "Name" : "wanda" }
 	    }
 	}`
-	out, err := core.SearchRequest("testindex", "user", nil, searchJson)
+	out, err := c.Search("testindex", "user", nil, searchJson)
 	if len(out.Hits.Hits) == 1 {
 		fmt.Println("%v", out.Hits.Hits[0].Source)
 	}
