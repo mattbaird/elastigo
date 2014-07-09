@@ -1,4 +1,4 @@
-elastigo
+elastigo v2.0
 --------
 [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 
@@ -51,6 +51,7 @@ go test -v ./...
 status updates
 ========================
 
+* *2014-07-09* Version 2.0 development started. Focused on multi-connection support, using Dial idiom.
 * *2014-5-21* Note: Drone.io tests are failing, I don't know why because the build and tests are working fine for me on my ubuntu box running the docker elasticsearch image. It's possible there is a timing issue. Any Ideas?
 * *2013-9-27* Fleshing out cluster and indices APIs, updated vagrant image to 0.90.3
 * *2013-7-10* Improvements/changes to bulk indexer (includes breaking changes to support TTL),
