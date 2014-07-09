@@ -1,6 +1,8 @@
-elastigo v2.0 [![Build Status][1]][2] [1]: https://drone.io/github.com/mattbaird/elastigo/status.png [2]: https://drone.io/github.com/mattbaird/elastigo/latest
-
+elastigo v2.0 
 -------------
+
+[![Build Status][1]][2] [1]: https://drone.io/github.com/mattbaird/elastigo/status.png [2]: https://drone.io/github.com/mattbaird/elastigo/latest
+
 
 A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
