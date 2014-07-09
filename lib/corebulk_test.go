@@ -61,8 +61,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 		//		log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
-	done := make(chan bool)
-	indexer.Run(done)
+	indexer.Start()
 
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(time.RFC1123Z)}
@@ -91,7 +90,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	expectedBytes = 282 // with refresh
 	assert.T(t, closeInt(totalBytesSent, expectedBytes), fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
-	done <- true
+	indexer.Stop()
 }
 
 // currently broken in drone.io
@@ -106,8 +105,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 		buffers = append(buffers, buf)
 		return indexer.Send(buf)
 	}
-	done := make(chan bool)
-	indexer.Run(done)
+	indexer.Start()
 
 	date := time.Unix(1257894000, 0)
 	user := map[string]interface{}{
@@ -126,11 +124,12 @@ func XXXTestBulkUpdate(t *testing.T) {
 	// channel a moment to recieve the message ...
 	//	<- time.After(time.Millisecond * 20)
 	//	indexer.Flush()
-	done <- true
 
 	waitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
+
+	indexer.Stop()
 
 	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors, bulkErrorCt:%v, err:%v", indexer.NumErrors(), err))
 
@@ -145,8 +144,6 @@ func TestBulkSmallBatch(t *testing.T) {
 	InitTests(true)
 	c := NewConn()
 
-	done := make(chan bool)
-
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
 
@@ -159,7 +156,7 @@ func TestBulkSmallBatch(t *testing.T) {
 		messageSets += 1
 		return indexer.Send(buf)
 	}
-	indexer.Run(done)
+	indexer.Start()
 	<-time.After(time.Millisecond * 20)
 
 	indexer.Index("users", "user", "2", "", &date, data, true)
@@ -167,7 +164,7 @@ func TestBulkSmallBatch(t *testing.T) {
 	indexer.Index("users", "user", "4", "", &date, data, true)
 	<-time.After(time.Millisecond * 200)
 	//	indexer.Flush()
-	done <- true
+	indexer.Stop()
 	assert.T(t, messageSets == 2, fmt.Sprintf("Should have sent 2 message sets %d", messageSets))
 
 }
@@ -180,8 +177,7 @@ func XXXTestBulkErrors(t *testing.T) {
 		c.Port = "9200"
 	}()
 	indexer := c.NewBulkIndexerErrors(10, 1)
-	done := make(chan bool)
-	indexer.Run(done)
+	indexer.Start()
 	errorCt := 0
 	go func() {
 		for i := 0; i < 20; i++ {
@@ -199,7 +195,7 @@ func XXXTestBulkErrors(t *testing.T) {
 		gou.Debug(errBuf.Err)
 	}
 	assert.T(t, errorCt > 0, fmt.Sprintf("ErrorCt should be > 0 %d", errorCt))
-	done <- true
+	indexer.Stop()
 }
 
 /*

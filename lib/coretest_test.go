@@ -53,12 +53,13 @@ func InitTests(startIndexer bool) *Conn {
 	if startIndexer && !bulkStarted {
 		bulkStarted = true
 		b := c.NewBulkIndexer(100)
-		b.Run(make(chan bool))
+		b.Start()
 		if *loadData && !hasLoadedData {
 			log.Println("loading test data ")
 			hasLoadedData = true
 			LoadTestData()
 		}
+		b.Stop()
 	}
 
 	return c
@@ -135,8 +136,7 @@ func LoadTestData() {
 		}
 		return err
 	}
-	done := make(chan bool)
-	indexer.Run(done)
+	indexer.Start()
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
 	if err != nil || resp == nil {
 		panic("Could not download data")
@@ -181,7 +181,7 @@ func LoadTestData() {
 		log.Println("FATAL, could not load ", errCt)
 	}
 	// lets wait a bit to ensure that elasticsearch finishes?
-	time.Sleep(time.Second * 5)
+	indexer.Stop()
 	if len(docsm) != docCt {
 		panic(fmt.Sprintf("Docs didn't match?   %d:%d", len(docsm), docCt))
 	}

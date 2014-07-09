@@ -24,7 +24,7 @@ import (
 
 const (
 	// Max buffer size in bytes before flushing to elasticsearch
-	BulkMaxBuffer = 1048576
+	BulkMaxBuffer = 16384
 	// Max number of Docs to hold in buffer before forcing flush
 	BulkMaxDocs = 100
 	// Max delay before forcing a flush to Elasticearch
@@ -62,7 +62,7 @@ type BulkIndexer struct {
 	numErrors uint64
 
 	// shutdown channel
-	shutdownChan chan bool
+	shutdownChan chan chan struct{}
 	// Channel to shutdown http send go-routines
 	httpDoneChan chan bool
 	// channel to shutdown timer
@@ -129,7 +129,8 @@ func (c *Conn) NewBulkIndexerErrors(maxConns, retrySeconds int) *BulkIndexer {
 
 // Starts this bulk Indexer running, this Run opens a go routine so is
 // Non blocking
-func (b *BulkIndexer) Run(done chan bool) {
+func (b *BulkIndexer) Start() {
+	b.shutdownChan = make(chan chan struct{})
 
 	go func() {
 		// XXX(j): Refactor this stuff to use an interface.
@@ -137,14 +138,23 @@ func (b *BulkIndexer) Run(done chan bool) {
 			b.Sender = b.Send
 		}
 		// Backwards compatibility
-		b.shutdownChan = done
 		b.startHttpSender()
 		b.startDocChannel()
 		b.startTimer()
-		<-b.shutdownChan
+		ch := <-b.shutdownChan
 		b.Flush()
 		b.shutdown()
+		ch <- struct{}{}
+		close(ch)
 	}()
+}
+
+// Stop stops the bulk indexer, blocking the caller until it is complete.
+func (b *BulkIndexer) Stop() {
+	ch := make(chan struct{})
+	b.shutdownChan <- ch
+	<-ch
+	close(b.shutdownChan)
 }
 
 // Make a channel that will close when the given WaitGroup is done.

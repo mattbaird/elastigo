@@ -24,12 +24,9 @@ func ExampleBulkIndexer_simple() {
 	c := elastigo.NewConn()
 
 	indexer := c.NewBulkIndexerErrors(10, 60)
-	done := make(chan bool)
-	indexer.Run(done)
-
+	indexer.Start()
 	indexer.Index("twitter", "user", "1", "", nil, `{"name":"bob"}`, true)
-
-	<-done // wait forever
+	indexer.Stop()
 }
 
 // The simplest usage of background bulk indexing with error channel
@@ -37,8 +34,7 @@ func ExampleBulkIndexer_errorsmarter() {
 	c := elastigo.NewConn()
 
 	indexer := c.NewBulkIndexerErrors(10, 60)
-	done := make(chan bool)
-	indexer.Run(done)
+	indexer.Start()
 
 	errorCt := 0 // use sync.atomic or something if you need
 	timer := time.NewTicker(time.Minute * 3)
@@ -49,6 +45,9 @@ func ExampleBulkIndexer_errorsmarter() {
 				if errorCt < 2 {
 					errorCt = 0
 				}
+			// XXX(j): Totally unsure what this thing thought it was doing in the
+			// first place, looks like it was stealing the stop message from the
+			// indexer.  Don't trust this example!
 			case _ = <-done:
 				return
 			}
@@ -65,7 +64,11 @@ func ExampleBulkIndexer_errorsmarter() {
 	for i := 0; i < 20; i++ {
 		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
-	done <- true // send shutdown signal
+
+	reply := make(chan struct{})
+	done <- reply
+	<-reply
+	close(done)
 }
 
 // The inspecting the response
@@ -83,11 +86,9 @@ func ExampleBulkIndexer_responses() {
 		}
 		return err
 	}
-	done := make(chan bool)
-	indexer.Run(done)
-
+	indexer.Start()
 	for i := 0; i < 20; i++ {
 		indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, true)
 	}
-	done <- true // send shutdown signal
+	indexer.Stop()
 }
