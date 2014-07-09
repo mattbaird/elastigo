@@ -4,12 +4,11 @@ elastigo v2.0
 [![Build Status][1]][2] 
 [1]: https://drone.io/github.com/mattbaird/elastigo/status.png 
 [2]: https://drone.io/github.com/mattbaird/elastigo/latest
-
-
-A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
-
 [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 
+
+A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   
+GoDoc http://godoc.org/github.com/mattbaird/elastigo
 
 
 NOTE: Based on the great work from Jeremy Shute, Elastigo now supports multiple connections. We attempted to make this backwards compatible, however in the end it wasn't possible, so we tagged the older single connection code as v1.0 and started work on v2.0.
