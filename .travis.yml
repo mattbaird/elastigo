@@ -9,8 +9,7 @@ install:
   - sudo service elasticsearch start
 
 script:
-  - cd core
   - go get -t
-  - go build
+  - go build ./...
   - go test -v -eshost localhost -loaddata
   - go install
