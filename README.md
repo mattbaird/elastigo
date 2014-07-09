@@ -1,4 +1,4 @@
-elastigo v2.0[![Build Status][1]][2] [1]: https://drone.io/github.com/mattbaird/elastigo/status.png [2]: https://drone.io/github.com/mattbaird/elastigo/latest
+elastigo v2.0 [![Build Status][1]][2] [1]: https://drone.io/github.com/mattbaird/elastigo/status.png [2]: https://drone.io/github.com/mattbaird/elastigo/latest
 
 -------------
 
