@@ -10,3 +10,32 @@
 // limitations under the License.
 
 package elastigo
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+// The create API allows you to create an indices through an API.
+func (c *Conn) CreateIndex(index string) (BaseResponse, error) {
+	var url string
+	var retval BaseResponse
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s", index)
+	} else {
+		return retval, fmt.Errorf("You must specify an index to create")
+	}
+
+	body, err := c.DoCommand("PUT", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, err
+}
