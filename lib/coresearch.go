@@ -51,6 +51,7 @@ func (c *Conn) Search(index string, _type string, args map[string]interface{}, q
 			return retval, jsonErr
 		}
 	}
+	retval.RawJSON = body
 	return retval, err
 }
 
@@ -85,6 +86,7 @@ func (c *Conn) SearchUri(index, _type string, args map[string]interface{}) (Sear
 			return retval, jsonErr
 		}
 	}
+	retval.RawJSON = body
 	return retval, err
 }
 
@@ -113,6 +115,7 @@ func (c *Conn) Scroll(args map[string]interface{}, scroll_id string) (SearchResu
 }
 
 type SearchResult struct {
+	RawJSON      []byte
 	Took         int             `json:"took"`
 	TimedOut     bool            `json:"timed_out"`
 	ShardStatus  Status          `json:"_shards"`
