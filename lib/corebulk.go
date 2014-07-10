@@ -328,10 +328,27 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
 func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
-	_, err := b.conn.DoCommand("POST", "/_bulk", nil, buf)
+	type responseStruct struct {
+		Took   int64                    `json:"took"`
+		Errors bool                     `json:"errors"`
+		Items  []map[string]interface{} `json:"items"`
+	}
+
+	response := responseStruct{}
+
+	body, err := b.conn.DoCommand("POST", "/_bulk", nil, buf)
+
 	if err != nil {
 		b.numErrors += 1
 		return err
+	}
+	// check for response errors, bulk insert will give 200 OK but then include errors in response
+	jsonErr := json.Unmarshal(body, &response)
+	if jsonErr == nil {
+		if response.Errors {
+			b.numErrors += uint64(len(response.Items))
+			return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
+		}
 	}
 	return nil
 }
