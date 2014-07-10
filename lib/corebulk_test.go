@@ -64,7 +64,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	indexer.Start()
 
 	date := time.Unix(1257894000, 0)
-	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(time.RFC1123Z)}
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(time.RFC3339)}
 
 	err := indexer.Index("users", "user", "1", "", &date, data, true)
 
@@ -74,8 +74,8 @@ func TestBulkIndexerBasic(t *testing.T) {
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
-	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. BulkErroCt: %v, err:%v", indexer.NumErrors(), err))
-	expectedBytes := 166
+	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. NumErrors: %v, err:%v", indexer.NumErrors(), err))
+	expectedBytes := 160
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data, true)
