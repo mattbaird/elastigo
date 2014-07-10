@@ -18,6 +18,7 @@ import (
 )
 
 func TestGetAll(t *testing.T) {
+	InitTests(true)
 	c := NewConn()
 	nodesInfo, err := c.AllNodesInfo()
 	//log.Println(out)

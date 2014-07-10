@@ -72,10 +72,10 @@ func TestBulkIndexerBasic(t *testing.T) {
 		return len(buffers) > 0
 	}, 5)
 	// part of request is url, so lets factor that in
-	//totalBytesSent = totalBytesSent - len(*eshost)
+	totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
 	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. NumErrors: %v, err:%v", indexer.NumErrors(), err))
-	expectedBytes := 160
+	expectedBytes := 151
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data, true)
