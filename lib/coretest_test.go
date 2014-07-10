@@ -61,7 +61,7 @@ func InitTests(startIndexer bool) *Conn {
 		}
 		b.Stop()
 	}
-
+	c.Refresh()
 	return c
 }
 
