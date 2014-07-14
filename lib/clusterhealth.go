@@ -44,6 +44,33 @@ func (c *Conn) Health(indices ...string) (ClusterHealthResponse, error) {
 	return retval, err
 }
 
+func (c *Conn) WaitForStatus(status string, timeout int, indices ...string) (ClusterHealthResponse, error) {
+	var url string
+	var retval ClusterHealthResponse
+	if len(indices) > 0 {
+		url = fmt.Sprintf("/_cluster/health/%s", strings.Join(indices, ","))
+	} else {
+		url = "/_cluster/health"
+	}
+
+	body, err := c.DoCommand("GET", url, map[string]interface{}{
+		"wait_for_status": status,
+		"timout":          timeout,
+	}, nil)
+
+	if err != nil {
+		return retval, err
+	}
+
+	if err == nil {
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	return retval, err
+}
+
 type ClusterStateFilter struct {
 	FilterNodes        bool
 	FilterRoutingTable bool
