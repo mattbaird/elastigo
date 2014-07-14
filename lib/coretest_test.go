@@ -61,7 +61,7 @@ func InitTests(startIndexer bool) *Conn {
 		}
 		b.Stop()
 	}
-	c.Refresh()
+	c.Refresh("_all")
 	return c
 }
 
