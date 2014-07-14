@@ -86,6 +86,10 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 		return nil, nil, err
 	}
 
+	if res.StatusCode == 404 {
+		return nil, bodyBytes, RecordNotFound
+	}
+
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
