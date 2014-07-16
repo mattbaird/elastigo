@@ -114,6 +114,21 @@ func (c *Conn) Scroll(args map[string]interface{}, scroll_id string) (SearchResu
 	return retval, err
 }
 
+type SuggestionOption struct {
+	Payload json.RawMessage `json:"payload"`
+	Score   Float32Nullable `json:"score,omitempty"`
+	Text    string          `json:"text"`
+}
+
+type Suggestion struct {
+	Length  int                `json:"length"`
+	Offset  int                `json:"offset"`
+	Options []SuggestionOption `json:"options"`
+	Text    string             `json:"text"`
+}
+
+type Suggestions map[string][]Suggestion
+
 type SearchResult struct {
 	RawJSON      []byte
 	Took         int             `json:"took"`
@@ -123,6 +138,7 @@ type SearchResult struct {
 	Facets       json.RawMessage `json:"facets,omitempty"` // structure varies on query
 	ScrollId     string          `json:"_scroll_id,omitempty"`
 	Aggregations json.RawMessage `json:"aggregations,omitempty"` // structure varies on query
+	Suggestions  *Suggestions    `json:"suggest,omitempty"`
 }
 
 func (s *SearchResult) String() string {
