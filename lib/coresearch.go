@@ -139,6 +139,8 @@ func (h *Hits) Len() int {
 	return len(h.Hits)
 }
 
+type Highlight map[string][]string
+
 type Hit struct {
 	Index       string           `json:"_index"`
 	Type        string           `json:"_type,omitempty"`
@@ -147,6 +149,7 @@ type Hit struct {
 	Source      *json.RawMessage `json:"_source"`          // marshalling left to consumer
 	Fields      *json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
 	Explanation *Explanation     `json:"_explanation,omitempty"`
+	Highlight   []Highlight      `json:"highlight,omitempty"`
 }
 
 func (e *Explanation) String(indent string) string {
