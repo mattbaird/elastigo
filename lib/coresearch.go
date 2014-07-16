@@ -149,7 +149,7 @@ type Hit struct {
 	Source      *json.RawMessage `json:"_source"`          // marshalling left to consumer
 	Fields      *json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
 	Explanation *Explanation     `json:"_explanation,omitempty"`
-	Highlight   []Highlight      `json:"highlight,omitempty"`
+	Highlight   *Highlight       `json:"highlight,omitempty"`
 }
 
 func (e *Explanation) String(indent string) string {
