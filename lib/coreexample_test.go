@@ -14,7 +14,7 @@ package elastigo_test
 import (
 	"bytes"
 	"fmt"
-	elastigo "github.com/mattbaird/elastigo/lib"
+	elastigo "github.com/shutej/elastigo/lib"
 	"strconv"
 )
 

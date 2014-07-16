@@ -16,7 +16,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	elastigo "github.com/mattbaird/elastigo/lib"
+	elastigo "github.com/shutej/elastigo/lib"
 	"log"
 	"time"
 )
