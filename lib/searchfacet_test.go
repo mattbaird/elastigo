@@ -20,7 +20,7 @@ import (
 )
 
 func TestFacetRegex(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// This is a possible solution for auto-complete
 	fmt.Print("before")

@@ -19,7 +19,7 @@ import (
 
 func TestGetAll(t *testing.T) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 	nodesInfo, err := c.AllNodesInfo()
 	//log.Println(out)
 	assert.T(t, err == nil, fmt.Sprintf("should not have gotten error, received :%v", err))
