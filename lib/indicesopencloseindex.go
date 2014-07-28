@@ -10,3 +10,58 @@
 // limitations under the License.
 
 package elastigo
+
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func (c *Conn) OpenIndex(index string) (BaseResponse, error) {
+
+	var url string
+	var retval BaseResponse
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s/_open", index)
+	} else {
+		url = fmt.Sprintf("/_open")
+	}
+
+	body, errDo := c.DoCommand("POST", url, nil, nil)
+	if errDo != nil {
+		return retval, errDo
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, errDo
+}
+
+
+
+func (c *Conn) CloseIndex(index string) (BaseResponse, error) {
+
+	var url string
+	var retval BaseResponse
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s/_close", index)
+	} else {
+		url = fmt.Sprintf("/_close")
+	}
+
+	body, errDo := c.DoCommand("POST", url, nil, nil)
+	if errDo != nil {
+		return retval, errDo
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+	return retval, errDo
+}
