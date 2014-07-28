@@ -19,7 +19,7 @@ import (
 )
 
 func TestFilters(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// search for docs that are missing repository.name
 	qry := Search("github").Filter(
@@ -89,7 +89,7 @@ func TestFilters(t *testing.T) {
 }
 
 func TestFilterRange(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// now lets filter range for repositories with more than 100 forks
 	out, _ := Search("github").Size("25").Filter(

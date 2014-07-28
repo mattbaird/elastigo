@@ -29,7 +29,7 @@ var (
 func setup(t *testing.T) *Conn {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
-	c := NewConn()
+	c := NewTestConn()
 
 	serverURL, err := url.Parse(server.URL)
 	if err != nil {

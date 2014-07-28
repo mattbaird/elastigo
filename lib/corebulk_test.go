@@ -52,7 +52,7 @@ func closeInt(a, b int) bool {
 
 func TestBulkIndexerBasic(t *testing.T) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 	indexer := c.NewBulkIndexer(3)
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
@@ -72,10 +72,10 @@ func TestBulkIndexerBasic(t *testing.T) {
 		return len(buffers) > 0
 	}, 5)
 	// part of request is url, so lets factor that in
-	totalBytesSent = totalBytesSent - len(*eshost)
+	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
 	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. NumErrors: %v, err:%v", indexer.NumErrors(), err))
-	expectedBytes := 151
+	expectedBytes := 160
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index("users", "user", "2", "", nil, data, true)
@@ -96,7 +96,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 // currently broken in drone.io
 func XXXTestBulkUpdate(t *testing.T) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 	c.Port = "9200"
 	indexer := c.NewBulkIndexer(3)
 	indexer.Sender = func(buf *bytes.Buffer) error {
@@ -142,7 +142,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 
 func TestBulkSmallBatch(t *testing.T) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
@@ -171,7 +171,7 @@ func TestBulkSmallBatch(t *testing.T) {
 
 func XXXTestBulkErrors(t *testing.T) {
 	// lets set a bad port, and hope we get a conn refused error?
-	c := NewConn()
+	c := NewTestConn()
 	c.Port = "27845"
 	defer func() {
 		c.Port = "9200"
@@ -208,7 +208,7 @@ BenchmarkSend	18:33:00 bulk_test.go:131: Sent 1 messages in 0 sets totaling 0 by
 */
 func BenchmarkSend(b *testing.B) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 	b.StartTimer()
 	totalBytes := 0
 	sets := 0
@@ -242,7 +242,7 @@ BenchmarkSendBytes	18:33:05 bulk_test.go:169: Sent 1 messages in 0 sets totaling
 */
 func BenchmarkSendBytes(b *testing.B) {
 	InitTests(true)
-	c := NewConn()
+	c := NewTestConn()
 	about := make([]byte, 1000)
 	rand.Read(about)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0), "about": about}

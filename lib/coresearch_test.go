@@ -17,7 +17,7 @@ import (
 )
 
 func TestSearchResultToJSON(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	qry := map[string]interface{}{
 		"query": map[string]interface{}{

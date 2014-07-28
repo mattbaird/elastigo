@@ -65,6 +65,12 @@ func InitTests(startIndexer bool) *Conn {
 	return c
 }
 
+func NewTestConn() *Conn {
+	c := NewConn()
+	c.Domain = *eshost
+	return c
+}
+
 // dumb simple assert for testing, printing
 //    Assert(len(items) == 9, t, "Should be 9 but was %d", len(items))
 func Assert(is bool, t *testing.T, format string, args ...interface{}) {

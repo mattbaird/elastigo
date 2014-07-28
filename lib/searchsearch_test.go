@@ -19,7 +19,7 @@ import (
 )
 
 func TestSearchRequest(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	qry := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -36,7 +36,7 @@ func TestSearchRequest(t *testing.T) {
 }
 
 func TestSearchSimple(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// searching without faceting
 	qry := Search("github").Pretty().Query(
@@ -56,7 +56,7 @@ func TestSearchSimple(t *testing.T) {
 }
 
 func TestSearchRequestQueryString(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	out, err := c.SearchUri("github", "", map[string]interface{}{"q": "actor:a*"})
 	expectedHits := 621
@@ -86,7 +86,7 @@ func TestSearchFacetOne(t *testing.T) {
 		 }
 
 	*/
-	c := NewConn()
+	c := NewTestConn()
 
 	qry := Search("github").Pretty().Facet(
 		Facet().Fields("type").Size("25"),
@@ -164,7 +164,7 @@ func TestSearchFacetOne(t *testing.T) {
 }
 
 func TestSearchFacetRange(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// ok, now lets try facet but on actor field with a range
 	qry := Search("github").Pretty().Facet(
@@ -217,7 +217,7 @@ func TestSearchFacetRange(t *testing.T) {
 }
 
 func TestSearchTerm(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// ok, now lets try searching with term query (specific field/term)
 	qry := Search("github").Query(
@@ -232,7 +232,7 @@ func TestSearchTerm(t *testing.T) {
 }
 
 func TestSearchFields(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// same as terms, search using fields:
 	//    how many different docs have jasmine in repository.name?
@@ -247,7 +247,7 @@ func TestSearchFields(t *testing.T) {
 }
 
 func TestSearchMissingExists(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// search for docs that are missing repository.name
 	qry := Search("github").Filter(
@@ -270,7 +270,7 @@ func TestSearchMissingExists(t *testing.T) {
 }
 
 func TestSearchFilterQuery(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// compound query + filter with query being wildcard
 	out, _ := Search("github").Size("25").Query(
@@ -290,7 +290,7 @@ func TestSearchFilterQuery(t *testing.T) {
 }
 
 func TestSearchRange(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// now lets filter by a subset of the total time
 	out, _ := Search("github").Size("25").Query(
@@ -304,7 +304,7 @@ func TestSearchRange(t *testing.T) {
 }
 
 func TestSearchSortOrder(t *testing.T) {
-	c := NewConn()
+	c := NewTestConn()
 
 	// ok, now lets try sorting by repository watchers descending
 	qry := Search("github").Pretty().Query(
