@@ -22,6 +22,7 @@ type BaseResponse struct {
 	Version int         `json:"_version,omitempty"`
 	Found   bool        `json:"found,omitempty"`
 	Exists  bool        `json:"exists,omitempty"`
+	Created bool        `json:"created,omitempty"`
 	Matches []string    `json:"matches,omitempty"` // percolate matches
 }
 
