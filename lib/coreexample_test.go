@@ -14,8 +14,9 @@ package elastigo_test
 import (
 	"bytes"
 	"fmt"
-	elastigo "github.com/mattbaird/elastigo/lib"
 	"strconv"
+
+	elastigo "github.com/fvbock/elastigo/lib"
 )
 
 // The simplest usage of background bulk indexing
