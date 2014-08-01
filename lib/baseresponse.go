@@ -39,7 +39,12 @@ func (self *StatusInt) UnmarshalJSON(b []byte) error {
 			*self = StatusInt(i)
 		}
 	}
-	return json.Unmarshal(b, self)
+	i := 0
+	err := json.Unmarshal(b, &i)
+	if err == nil {
+		*self = StatusInt(i)
+	}
+	return err
 }
 
 func (self *StatusInt) MarshalJSON() ([]byte, error) {
