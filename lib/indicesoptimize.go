@@ -24,7 +24,7 @@ func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (
 	var retval OptimizeResponse
 	var optimizeUrl string = "/_optimize"
 	if len(indices) > 0 {
-		optimizeUrl = fmt.Sprintf("/%s/%s", strings.Join(indices, ","), optimizeUrl)
+		optimizeUrl = fmt.Sprintf("/%s%s", strings.Join(indices, ","), optimizeUrl)
 	}
 
 	log.Print(optimizeUrl)

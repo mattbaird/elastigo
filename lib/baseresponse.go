@@ -11,7 +11,10 @@
 
 package elastigo
 
-import ()
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
@@ -25,10 +28,28 @@ type BaseResponse struct {
 	Matches []string    `json:"matches,omitempty"` // percolate matches
 }
 
+// StatusInt is required because /_optimize, at least, returns its status as
+// strings instead of integers.
+type StatusInt int
+
+func (self *StatusInt) UnmarshalJSON(b []byte) error {
+	s := ""
+	if json.Unmarshal(b, &s) == nil {
+		if i, err := strconv.Atoi(s); err == nil {
+			*self = StatusInt(i)
+		}
+	}
+	return json.Unmarshal(b, self)
+}
+
+func (self *StatusInt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(*self)
+}
+
 type Status struct {
-	Total      int `json:"total"`
-	Successful int `json:"successful"`
-	Failed     int `json:"failed"`
+	Total      StatusInt `json:"total"`
+	Successful StatusInt `json:"successful"`
+	Failed     StatusInt `json:"failed"`
 }
 
 type ExtendedStatus struct {
