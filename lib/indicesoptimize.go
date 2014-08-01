@@ -14,6 +14,7 @@ package elastigo
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -26,10 +27,13 @@ func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (
 		optimizeUrl = fmt.Sprintf("/%s/%s", strings.Join(indices, ","), optimizeUrl)
 	}
 
+	log.Print(optimizeUrl)
+
 	body, err := c.DoCommand("POST", optimizeUrl, args, nil)
 	if err != nil {
 		return retval, err
 	}
+	log.Print(string(body))
 	if err == nil {
 		// marshall into json
 		jsonErr := json.Unmarshal(body, &retval)
