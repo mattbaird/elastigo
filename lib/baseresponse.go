@@ -37,6 +37,7 @@ func (self *StatusInt) UnmarshalJSON(b []byte) error {
 	if json.Unmarshal(b, &s) == nil {
 		if i, err := strconv.Atoi(s); err == nil {
 			*self = StatusInt(i)
+			return nil
 		}
 	}
 	i := 0
