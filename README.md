@@ -170,7 +170,7 @@ A Direct Search using the api :
 ```go
 qry := map[string]interface{}{
   "query":map[string]interface{}{
-     "term":map[string]string{"user:"kimchy"},
+     "term":map[string]string{"user": "kimchy"},
   },
 }
 core.SearchRequest(true, "github", "Issues", qry, "", 0)
