@@ -19,11 +19,11 @@ import (
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-analyze/
-func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (OptimizeResponse, error) {
-	var retval OptimizeResponse
+func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (ExtendedStatus, error) {
+	var retval ExtendedStatus
 	var optimizeUrl string = "/_optimize"
 	if len(indices) > 0 {
-		optimizeUrl = fmt.Sprintf("/%s/%s", strings.Join(indices, ","), optimizeUrl)
+		optimizeUrl = fmt.Sprintf("/%s%s", strings.Join(indices, ","), optimizeUrl)
 	}
 
 	body, err := c.DoCommand("POST", optimizeUrl, args, nil)
@@ -38,9 +38,4 @@ func (c *Conn) OptimizeIndices(args map[string]interface{}, indices ...string) (
 		}
 	}
 	return retval, err
-}
-
-type OptimizeResponse struct {
-	Ok     bool   `json:"ok"`
-	Shards Status `json:"_shards"`
 }

@@ -11,7 +11,10 @@
 
 package elastigo
 
-import ()
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type BaseResponse struct {
 	Ok      bool        `json:"ok"`
@@ -25,15 +28,68 @@ type BaseResponse struct {
 	Matches []string    `json:"matches,omitempty"` // percolate matches
 }
 
+// StatusInt is required because /_optimize, at least, returns its status as
+// strings instead of integers.
+type StatusInt int
+
+func (self *StatusInt) UnmarshalJSON(b []byte) error {
+	s := ""
+	if json.Unmarshal(b, &s) == nil {
+		if i, err := strconv.Atoi(s); err == nil {
+			*self = StatusInt(i)
+			return nil
+		}
+	}
+	i := 0
+	err := json.Unmarshal(b, &i)
+	if err == nil {
+		*self = StatusInt(i)
+	}
+	return err
+}
+
+func (self *StatusInt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(*self)
+}
+
+// StatusBool is required because /_optimize, at least, returns its status as
+// strings instead of booleans.
+type StatusBool bool
+
+func (self *StatusBool) UnmarshalJSON(b []byte) error {
+	s := ""
+	if json.Unmarshal(b, &s) == nil {
+		switch s {
+		case "true":
+			*self = StatusBool(true)
+			return nil
+		case "false":
+			*self = StatusBool(false)
+			return nil
+		default:
+		}
+	}
+	b2 := false
+	err := json.Unmarshal(b, &b2)
+	if err == nil {
+		*self = StatusBool(b2)
+	}
+	return err
+}
+
+func (self *StatusBool) MarshalJSON() ([]byte, error) {
+	return json.Marshal(*self)
+}
+
 type Status struct {
-	Total      int `json:"total"`
-	Successful int `json:"successful"`
-	Failed     int `json:"failed"`
+	Total      StatusInt `json:"total"`
+	Successful StatusInt `json:"successful"`
+	Failed     StatusInt `json:"failed"`
 }
 
 type ExtendedStatus struct {
-	Ok           bool   `json:"ok"`
-	ShardsStatus Status `json:"_shards"`
+	Ok           StatusBool `json:"ok"`
+	ShardsStatus Status     `json:"_shards"`
 }
 
 type Match struct {

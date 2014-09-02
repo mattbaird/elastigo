@@ -114,6 +114,21 @@ func (c *Conn) Scroll(args map[string]interface{}, scroll_id string) (SearchResu
 	return retval, err
 }
 
+type SuggestionOption struct {
+	Payload json.RawMessage `json:"payload"`
+	Score   Float32Nullable `json:"score,omitempty"`
+	Text    string          `json:"text"`
+}
+
+type Suggestion struct {
+	Length  int                `json:"length"`
+	Offset  int                `json:"offset"`
+	Options []SuggestionOption `json:"options"`
+	Text    string             `json:"text"`
+}
+
+type Suggestions map[string][]Suggestion
+
 type SearchResult struct {
 	RawJSON      []byte
 	Took         int             `json:"took"`
@@ -123,6 +138,7 @@ type SearchResult struct {
 	Facets       json.RawMessage `json:"facets,omitempty"` // structure varies on query
 	ScrollId     string          `json:"_scroll_id,omitempty"`
 	Aggregations json.RawMessage `json:"aggregations,omitempty"` // structure varies on query
+	Suggestions  Suggestions     `json:"suggest,omitempty"`
 }
 
 func (s *SearchResult) String() string {
@@ -139,6 +155,8 @@ func (h *Hits) Len() int {
 	return len(h.Hits)
 }
 
+type Highlight map[string][]string
+
 type Hit struct {
 	Index       string           `json:"_index"`
 	Type        string           `json:"_type,omitempty"`
@@ -147,6 +165,7 @@ type Hit struct {
 	Source      *json.RawMessage `json:"_source"`          // marshalling left to consumer
 	Fields      *json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
 	Explanation *Explanation     `json:"_explanation,omitempty"`
+	Highlight   *Highlight       `json:"highlight,omitempty"`
 }
 
 func (e *Explanation) String(indent string) string {
