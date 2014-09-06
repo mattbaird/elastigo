@@ -26,11 +26,11 @@ type CountResponse struct {
 // The query can either be provided using a simple query string as a parameter,
 // or using the Query DSL defined within the request body.
 // http://www.elasticsearch.org/guide/reference/api/count.html
-func (c *Conn) Count(index string, _type string, args map[string]interface{}) (CountResponse, error) {
+func (c *Conn) Count(index string, _type string, args map[string]interface{}, query interface{}) (CountResponse, error) {
 	var url string
 	var retval CountResponse
 	url = fmt.Sprintf("/%s/%s/_count", index, _type)
-	body, err := c.DoCommand("GET", url, args, nil)
+	body, err := c.DoCommand("GET", url, args, query)
 	if err != nil {
 		return retval, err
 	}
