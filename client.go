@@ -53,7 +53,8 @@ func main() {
 	exists, _ := c.Exists("twitter", "tweet", "1", nil)
 	log.Printf("Exists: %v", exists)
 	c.Flush()
-	countResponse, _ := c.Count("twitter", "tweet", nil)
+	countResponse, _ := c.Count("twitter", "tweet", nil, nil)
+
 	log.Printf("Count: %v", countResponse.Count)
 	response, _ = c.Delete("twitter", "tweet", "1", map[string]interface{}{"version": -1, "routing": ""})
 	log.Printf("Delete OK: %v", response.Ok)
