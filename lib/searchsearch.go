@@ -58,6 +58,7 @@ func (s *SearchDsl) Bytes(conn *Conn) ([]byte, error) {
 func (s *SearchDsl) Result(conn *Conn) (*SearchResult, error) {
 	var retval SearchResult
 	body, err := s.Bytes(conn)
+	retval.RawJSON = body
 	if err != nil {
 		u.Errorf("%v", err)
 		return nil, err
