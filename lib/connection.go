@@ -25,7 +25,7 @@ const (
 	Version         = "0.0.2"
 	DefaultProtocol = "http"
 	DefaultDomain   = "localhost"
-	DefaultPort     = "9200"
+	DefaultPort     = "9201"
 	// A decay duration of zero results in the default behaviour
 	DefaultDecayDuration = 0
 )
