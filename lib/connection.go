@@ -60,6 +60,10 @@ func NewConn() *Conn {
 	}
 }
 
+func (c *Conn) SetPort(port string) {
+    c.Port = port
+}
+
 func (c *Conn) SetHosts(newhosts []string) {
 
 	// Store the new host list
