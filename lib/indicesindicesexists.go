@@ -25,12 +25,7 @@ func (c *Conn) IndicesExists(indices ...string) (bool, error) {
 	}
 	_, err := c.DoCommand("HEAD", url, nil, nil)
 	if err != nil {
-		eserror := err.(ESError)
-		if eserror.Code == 404 {
-			return false, err
-		} else {
-			return eserror.Code == 200, err
-		}
+		return true, err
 	}
 	return true, nil
 }
