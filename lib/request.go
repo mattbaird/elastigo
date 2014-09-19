@@ -73,13 +73,16 @@ func (r *Request) Do(v interface{}) (int, []byte, error) {
 
 func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	res, err := http.DefaultClient.Do(r.Request)
+
+	// Be sure to close the Body, even on error
+	defer res.Body.Close()
+
 	// Inform the HostPool of what happened to the request and allow it to update
 	r.hostResponse.Mark(err)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	defer res.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
