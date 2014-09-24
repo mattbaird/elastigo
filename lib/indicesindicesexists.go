@@ -16,7 +16,9 @@ import (
 	"strings"
 )
 
-// IndicesExists checks for the existance of indices. uses http 404 if it does not exist, and 200 if it does
+// IndicesExists checks for the existance of indices. uses RecordNotFound message if it doesn't exist and
+// "no error" situation if it exists. If there is some other error, gives the error and says it exists
+// just in case
 // see http://www.elasticsearch.org/guide/reference/api/admin-indices-indices-exists/
 func (c *Conn) IndicesExists(indices ...string) (bool, error) {
 	var url string
@@ -25,7 +27,11 @@ func (c *Conn) IndicesExists(indices ...string) (bool, error) {
 	}
 	_, err := c.DoCommand("HEAD", url, nil, nil)
 	if err != nil {
-		return true, err
+        if (err == RecordNotFound) {
+            return false, nil
+        } else {
+            return true, err
+        }
 	}
 	return true, nil
 }
