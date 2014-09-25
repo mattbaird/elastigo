@@ -14,6 +14,7 @@ package elastigo
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 )
 
 // The create API allows you to create an indices through an API.
@@ -28,6 +29,41 @@ func (c *Conn) CreateIndex(index string) (BaseResponse, error) {
 	}
 
 	body, err := c.DoCommand("PUT", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, err
+}
+
+// The create API allows you to create an indices through an API.
+func (c *Conn) CreateIndexWithSettings(index string, settings interface{}) (BaseResponse, error) {
+	var url string
+	var retval BaseResponse
+
+	settingsType := reflect.TypeOf(settings)
+	if settingsType.Kind() != reflect.Struct {
+		return retval, fmt.Errorf("Settings kind was not struct")
+	}
+
+	requestBody, err := json.Marshal(settings)
+
+	if err != nil {
+		return retval, err
+	}
+
+	if len(index) > 0 {
+		url = fmt.Sprintf("/%s", index)
+	} else {
+		return retval, fmt.Errorf("You must specify an index to create")
+	}
+
+	body, err := c.DoCommand("PUT", url, nil, requestBody)
 	if err != nil {
 		return retval, err
 	}
