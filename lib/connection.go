@@ -13,12 +13,12 @@ package elastigo
 
 import (
 	"fmt"
-	hostpool "github.com/bitly/go-hostpool"
+	//hostpool "github.com/bitly/go-hostpool"
 	"net/http"
 	"runtime"
 	"strings"
-	"sync"
-	"time"
+	//"sync"
+	//"time"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 	DefaultDomain   = "localhost"
 	DefaultPort     = "9200"
 	// A decay duration of zero results in the default behaviour
-	DefaultDecayDuration = 0
+	//DefaultDecayDuration = 0
 )
 
 type Conn struct {
@@ -39,14 +39,14 @@ type Conn struct {
 	Username       string
 	Password       string
 	Hosts          []string
-	hp             hostpool.HostPool
-	once           sync.Once
+	//hp             hostpool.HostPool
+	//once           sync.Once
 
 	// To compute the weighting scores, we perform a weighted average of recent response times,
 	// over the course of `DecayDuration`. DecayDuration may be set to 0 to use the default
 	// value of 5 minutes. The EpsilonValueCalculator uses this to calculate a score
 	// from the weighted average response time.
-	DecayDuration time.Duration
+	//DecayDuration time.Duration
 }
 
 func NewConn() *Conn {
@@ -56,12 +56,12 @@ func NewConn() *Conn {
 		Domain:         DefaultDomain,
 		ClusterDomains: []string{DefaultDomain},
 		Port:           DefaultPort,
-		DecayDuration:  time.Duration(DefaultDecayDuration * time.Second),
+		//DecayDuration:  time.Duration(DefaultDecayDuration * time.Second),
 	}
 }
 
 func (c *Conn) SetPort(port string) {
-    c.Port = port
+	c.Port = port
 }
 
 func (c *Conn) SetHosts(newhosts []string) {
@@ -93,19 +93,20 @@ func (c *Conn) initializeHostPool() {
 	// stop the implicitly running request timer.
 	//
 	// A good overview of Epsilon Greedy is here http://stevehanov.ca/blog/index.php?id=132
-	c.hp = hostpool.NewEpsilonGreedy(
-		c.Hosts, c.DecayDuration, &hostpool.LinearEpsilonValueCalculator{})
+	//c.hp = hostpool.NewEpsilonGreedy(
+	//	c.Hosts, c.DecayDuration, &hostpool.LinearEpsilonValueCalculator{})
 }
 
 func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	// Setup the hostpool on our first run
-	c.once.Do(c.initializeHostPool)
+	//c.once.Do(c.initializeHostPool)
 
 	// Get a host from the host pool
-	hr := c.hp.Get()
+	//hr := c.hp.Get()
 
 	// Get the final host and port
-	host, portNum := splitHostnamePartsFromHost(hr.Host(), c.Port)
+	//host, portNum := splitHostnamePartsFromHost(hr.Host(), c.Port)
+	host, portNum := splitHostnamePartsFromHost(c.Hosts[0], c.Port)
 
 	// Build request
 	var uri string
@@ -128,8 +129,8 @@ func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	}
 
 	newRequest := &Request{
-		Request:      req,
-		hostResponse: hr,
+		Request: req,
+		//hostResponse: hr,
 	}
 	return newRequest, nil
 }

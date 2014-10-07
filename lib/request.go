@@ -15,7 +15,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	hostpool "github.com/bitly/go-hostpool"
+	//hostpool "github.com/bitly/go-hostpool"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +26,7 @@ import (
 
 type Request struct {
 	*http.Request
-	hostResponse hostpool.HostPoolResponse
+	//hostResponse hostpool.HostPoolResponse
 }
 
 func (r *Request) SetBodyJson(data interface{}) error {
@@ -74,7 +74,7 @@ func (r *Request) Do(v interface{}) (int, []byte, error) {
 func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	res, err := http.DefaultClient.Do(r.Request)
 	// Inform the HostPool of what happened to the request and allow it to update
-	r.hostResponse.Mark(err)
+	//r.hostResponse.Mark(err)
 	if err != nil {
 		return nil, nil, err
 	}
