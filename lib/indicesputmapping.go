@@ -27,9 +27,9 @@ type MappingOptions struct {
 }
 
 type TimestampOptions struct {
-	Enabled bool   `json:"enabled"`
-	Store   bool   `json:"store"`
-	Path    string `json:"path"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Store   bool   `json:"store,omitempty"`
+	Path    string `json:"path,omitempty"`
 }
 
 type IdOptions struct {
