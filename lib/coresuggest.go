@@ -32,9 +32,9 @@ import (
 //   out, err := Search(true, "github", map[string]interface{} {"from" : 10}, qryType)
 //
 // http://www.elasticsearch.org/guide/reference/api/search/uri-request.html
-func (c *Conn) Suggest(index string, _type string, args map[string]interface{}, query interface{}) (SearchResult, error) {
+func (c *Conn) Suggest(index string, _type string, args map[string]interface{}, query interface{}) (SuggestResult, error) {
 	var uriVal string
-	var retval SearchResult
+	var retval SuggestResult
 	if len(_type) > 0 && _type != "*" {
 		uriVal = fmt.Sprintf("/%s/%s/_suggest", index, _type)
 	} else {
@@ -51,8 +51,12 @@ func (c *Conn) Suggest(index string, _type string, args map[string]interface{}, 
 			return retval, jsonErr
 		}
 	}
-	retval.RawJSON = body
 	return retval, err
+}
+
+type SuggestResult struct {
+	Suggestions []Suggestion `json:"suggestions"`
+	ShardStatus Status       `json:"_shards"`
 }
 
 /*
