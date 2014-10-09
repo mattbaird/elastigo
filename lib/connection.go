@@ -106,6 +106,9 @@ func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 
 	// Get the final host and port
 	//host, portNum := splitHostnamePartsFromHost(hr.Host(), c.Port)
+	if len(c.Hosts) == 0 {
+		c.initializeHostPool()
+	}
 	host, portNum := splitHostnamePartsFromHost(c.Hosts[0], c.Port)
 
 	// Build request
