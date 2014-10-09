@@ -10,3 +10,66 @@
 // limitations under the License.
 
 package elastigo
+
+import (
+	"encoding/json"
+)
+
+type AliasOption struct {
+	Actions []AliasAction `json:"actions"`
+}
+
+type AliasAction map[string]AliasActionItem
+
+type AliasActionItem struct {
+	Alias string `json:"alias"`
+	Index string `json:"index"`
+}
+
+type Aliases map[string]interface{}
+
+func (c *Conn) PutAliases(oldIndex, newIndex, alias string) (BaseResponse, error) {
+	var retval BaseResponse
+
+	actions := make([]AliasAction, 0)
+	aliasOption := AliasOption{
+		Actions: actions,
+	}
+
+	if len(oldIndex) > 0 {
+		action := AliasAction{
+			"remove": AliasActionItem{
+				Alias: alias,
+				Index: oldIndex,
+			},
+		}
+		actions = append(actions, action)
+	}
+
+	if len(newIndex) > 0 {
+		action := AliasAction{
+			"add": AliasActionItem{
+				Alias: alias,
+				Index: newIndex,
+			},
+		}
+		actions = append(actions, action)
+	}
+
+	requestBody, err := json.Marshal(aliasOption)
+	if err != nil {
+		return retval, err
+	}
+
+	body, err := c.DoCommand("POST", "/_aliases", nil, requestBody)
+	if err != nil {
+		return retval, err
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, nil
+}

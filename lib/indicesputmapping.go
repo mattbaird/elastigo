@@ -21,13 +21,15 @@ import (
 type Mapping map[string]MappingOptions
 
 type MappingOptions struct {
-	Id         IdOptions              `json:"_id"`
-	Timestamp  TimestampOptions       `json:"_timestamp"`
-	Properties map[string]interface{} `json:"properties"`
+	Id         IdOptions              `json:"_id,omitempty"`
+	Timestamp  TimestampOptions       `json:"_timestamp,omitempty"`
+	Properties map[string]interface{} `json:"properties,omitempty"`
 }
 
 type TimestampOptions struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Store   bool   `json:"store,omitempty"`
+	Path    string `json:"path,omitempty"`
 }
 
 type IdOptions struct {

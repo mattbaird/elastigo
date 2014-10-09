@@ -6,6 +6,11 @@ import (
 	"reflect"
 )
 
+type Setting struct {
+	NumberOfShards   int `json:"number_of_shards"`
+	NumberOfReplicas int `json:"number_of_replicas"`
+}
+
 func (c *Conn) PutSettings(index string, settings interface{}) (BaseResponse, error) {
 
 	var url string
