@@ -21,9 +21,9 @@ import (
 type Mapping map[string]MappingOptions
 
 type MappingOptions struct {
-	Id         IdOptions              `json:"_id"`
-	Timestamp  TimestampOptions       `json:"_timestamp"`
-	Properties map[string]interface{} `json:"properties"`
+	Id         IdOptions              `json:"_id,omitempty"`
+	Timestamp  TimestampOptions       `json:"_timestamp,omitempty"`
+	Properties map[string]interface{} `json:"properties,omitempty"`
 }
 
 type TimestampOptions struct {

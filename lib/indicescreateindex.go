@@ -44,6 +44,7 @@ func (c *Conn) CreateIndex(index string) (BaseResponse, error) {
 type IndexConfig struct {
 	Settings Setting `json:"settings"`
 	Mappings Mapping `json:"mappings"`
+	Aliases  Aliases `json:"aliases,omitempty"`
 }
 
 // The create API allows you to create an indices with config
