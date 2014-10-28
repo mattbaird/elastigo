@@ -202,6 +202,8 @@ func (b *BulkIndexer) startHttpSender() {
 				select {
 				case buf := <-b.sendBuf:
 					b.sendWg.Add(1)
+					// Copy for the potential re-send.
+					bufCopy := bytes.NewBuffer(buf.Bytes())
 					err := b.Sender(buf)
 
 					// Perhaps a b.FailureStrategy(err)  ??  with different types of strategies
@@ -211,7 +213,7 @@ func (b *BulkIndexer) startHttpSender() {
 					if err != nil {
 						if b.RetryForSeconds > 0 {
 							time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
-							err = b.Sender(buf)
+							err = b.Sender(bufCopy)
 							if err == nil {
 								// Successfully re-sent with no error
 								b.sendWg.Done()
