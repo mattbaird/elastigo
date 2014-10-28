@@ -59,6 +59,8 @@ func (r *Request) SetBody(body io.Reader) {
 			r.ContentLength = int64(v.Len())
 		case *bytes.Reader:
 			r.ContentLength = int64(v.Len())
+		case *bytes.Buffer:
+			r.ContentLength = int64(v.Len())
 		}
 	}
 }
