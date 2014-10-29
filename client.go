@@ -16,9 +16,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	elastigo "github.com/mattbaird/elastigo/lib"
 	"log"
 	"time"
+
+	elastigo "github.com/mattbaird/elastigo/lib"
 )
 
 var (

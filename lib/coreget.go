@@ -22,7 +22,7 @@ import (
 // HEAD - checks for existence of the doc
 // http://www.elasticsearch.org/guide/reference/api/get.html
 // TODO: make this implement an interface
-func (c *Conn) get(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
+func (c *Conn) get(index string, _type string, id string, args map[string]interface{}, source *json.RawMessage) (BaseResponse, error) {
 	var url string
 	retval := BaseResponse{Source: source}
 	if len(_type) > 0 {
@@ -54,7 +54,7 @@ func (c *Conn) Get(index string, _type string, id string, args map[string]interf
 }
 
 // Same as Get but with custom source type.
-func (c *Conn) GetCustom(index string, _type string, id string, args map[string]interface{}, source interface{}) (BaseResponse, error) {
+func (c *Conn) GetCustom(index string, _type string, id string, args map[string]interface{}, source *json.RawMessage) (BaseResponse, error) {
 	return c.get(index, _type, id, args, source)
 }
 

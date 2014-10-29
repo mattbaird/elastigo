@@ -17,12 +17,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
 	"log"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 )
 
 //  go test -bench=".*"
@@ -135,9 +136,11 @@ func XXXTestBulkUpdate(t *testing.T) {
 
 	response, err := c.Get("users", "user", "5", nil)
 	assert.T(t, err == nil, fmt.Sprintf("Should not have any errors  %v", err))
-	newCount := response.Source.(map[string]interface{})["count"]
+	m := make(map[string]interface{})
+	json.Unmarshal([]byte(*response.Source), &m)
+	newCount := m["count"]
 	assert.T(t, newCount.(float64) == 3,
-		fmt.Sprintf("Should have update count: %#v ... %#v", response.Source.(map[string]interface{})["count"], response))
+		fmt.Sprintf("Should have update count: %#v ... %#v", m["count"], response))
 }
 
 func TestBulkSmallBatch(t *testing.T) {
