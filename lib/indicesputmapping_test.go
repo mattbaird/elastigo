@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -143,5 +144,17 @@ func TestPutMapping(t *testing.T) {
 	err := c.PutMapping("myIndex", "myType", TestStruct{}, options)
 	if err != nil {
 		t.Errorf("Error: %v", err)
+	}
+}
+
+type StructWithEmptyElasticTag struct {
+	Field string `json:"field" elastic:""`
+}
+
+func TestPutMapping_empty_elastic_tag_is_accepted(t *testing.T) {
+	properties := map[string]interface{}{}
+	getProperties(reflect.TypeOf(StructWithEmptyElasticTag{}), properties)
+	if len(properties) != 0 {
+		t.Errorf("Expected empty properites but got: %v", properties)
 	}
 }
