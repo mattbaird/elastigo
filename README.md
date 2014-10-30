@@ -81,7 +81,7 @@ docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
 git clone git@github.com:mattbaird/elastigo.git
 cd elastigo
 go get -u ./...
-cd core
+cd lib
 go test -v -host localhost -loaddata
 cd ..
 go test -v ./...
