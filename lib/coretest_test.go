@@ -38,7 +38,9 @@ var (
 	bulkStarted       bool
 	hasStartedTesting bool
 	hasLoadedData     bool
+	sleepAfterLoad    bool
 	loadData          *bool = flag.Bool("loaddata", false, "This loads a bunch of test data into elasticsearch for testing")
+	sleep             *int  = flag.Int("sleep", 0, "Post bulk loading sleep test to make drone.io work")
 )
 
 func InitTests(startIndexer bool) *Conn {
@@ -61,7 +63,12 @@ func InitTests(startIndexer bool) *Conn {
 		}
 		b.Stop()
 	}
+	c.Flush("_all")
 	c.Refresh("_all")
+	if !sleepAfterLoad {
+		time.Sleep(time.Duration(*sleep) * time.Second)
+	}
+	sleepAfterLoad = true
 	return c
 }
 
