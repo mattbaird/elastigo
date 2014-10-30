@@ -87,7 +87,8 @@ func getProperties(t reflect.Type, prop map[string]interface{}) {
 			keyvalue := strings.Split(attr, ":")
 			attrMap[keyvalue[0]] = keyvalue[1]
 		}
-		if len(attrMap) == 0 {
+
+		if len(attrMap) == 0 || attrMap["type"] == "nested" {
 
 			// We are looking for tags on any inner struct, independently of
 			// whether the field is a struct, a pointer to struct, or a slice of structs
@@ -96,7 +97,6 @@ func getProperties(t reflect.Type, prop map[string]interface{}) {
 				targetType.Kind() == reflect.Slice {
 				targetType = field.Type.Elem()
 			}
-
 			if targetType.Kind() == reflect.Struct {
 				if field.Anonymous {
 					getProperties(targetType, prop)

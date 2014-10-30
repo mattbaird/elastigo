@@ -60,6 +60,7 @@ type TestStruct struct {
 	InnerP       *InnerStruct  `json:"pointer_to_inner"`
 	InnerS       []InnerStruct `json:"slice_of_inner"`
 	MultiAnalyze string        `json:"multi_analyze"`
+	NestedObject NestedStruct  `json:"nestedObject" elastic:"type:nested"`
 }
 
 type Embedded struct {
@@ -67,6 +68,10 @@ type Embedded struct {
 }
 
 type InnerStruct struct {
+	InnerField string `json:"innerField" elastic:"type:date"`
+}
+
+type NestedStruct struct {
 	InnerField string `json:"innerField" elastic:"type:date"`
 }
 
@@ -117,6 +122,12 @@ func TestPutMapping(t *testing.T) {
 			},
 			"slice_of_inner": map[string]map[string]map[string]string{
 				"properties": {
+					"innerField": {"type": "date"},
+				},
+			},
+			"nestedObject": map[string]interface{}{
+				"type": "nested",
+				"properties": map[string]map[string]string{
 					"innerField": {"type": "date"},
 				},
 			},
