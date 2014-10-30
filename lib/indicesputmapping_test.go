@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -55,18 +56,23 @@ type TestStruct struct {
 	unexported    string
 	JsonOmitEmpty string `json:"jsonOmitEmpty,omitempty" elastic:"type:string"`
 	Embedded
-	Nested       NestedStruct   `json:"nested"`
-	NestedP      *NestedStruct  `json:"pointer_to_nested"`
-	NestedS      []NestedStruct `json:"slice_of_nested"`
-	MultiAnalyze string         `json:"multi_analyze"`
+	Inner        InnerStruct   `json:"inner"`
+	InnerP       *InnerStruct  `json:"pointer_to_inner"`
+	InnerS       []InnerStruct `json:"slice_of_inner"`
+	MultiAnalyze string        `json:"multi_analyze"`
+	NestedObject NestedStruct  `json:"nestedObject" elastic:"type:nested"`
 }
 
 type Embedded struct {
 	EmbeddedField string `json:"embeddedField" elastic:"type:string"`
 }
 
+type InnerStruct struct {
+	InnerField string `json:"innerField" elastic:"type:date"`
+}
+
 type NestedStruct struct {
-	NestedField string `json:"nestedField" elastic:"type:date"`
+	InnerField string `json:"innerField" elastic:"type:date"`
 }
 
 func TestPutMapping(t *testing.T) {
@@ -104,19 +110,25 @@ func TestPutMapping(t *testing.T) {
 					"ma_notanalyzed": {"type": "string", "index": "not_analyzed"},
 				},
 			},
-			"nested": map[string]map[string]map[string]string{
+			"inner": map[string]map[string]map[string]string{
 				"properties": {
-					"nestedField": {"type": "date"},
+					"innerField": {"type": "date"},
 				},
 			},
-			"pointer_to_nested": map[string]map[string]map[string]string{
+			"pointer_to_inner": map[string]map[string]map[string]string{
 				"properties": {
-					"nestedField": {"type": "date"},
+					"innerField": {"type": "date"},
 				},
 			},
-			"slice_of_nested": map[string]map[string]map[string]string{
+			"slice_of_inner": map[string]map[string]map[string]string{
 				"properties": {
-					"nestedField": {"type": "date"},
+					"innerField": {"type": "date"},
+				},
+			},
+			"nestedObject": map[string]interface{}{
+				"type": "nested",
+				"properties": map[string]map[string]string{
+					"innerField": {"type": "date"},
 				},
 			},
 		},
@@ -143,5 +155,17 @@ func TestPutMapping(t *testing.T) {
 	err := c.PutMapping("myIndex", "myType", TestStruct{}, options)
 	if err != nil {
 		t.Errorf("Error: %v", err)
+	}
+}
+
+type StructWithEmptyElasticTag struct {
+	Field string `json:"field" elastic:""`
+}
+
+func TestPutMapping_empty_elastic_tag_is_accepted(t *testing.T) {
+	properties := map[string]interface{}{}
+	getProperties(reflect.TypeOf(StructWithEmptyElasticTag{}), properties)
+	if len(properties) != 0 {
+		t.Errorf("Expected empty properites but got: %v", properties)
 	}
 }
