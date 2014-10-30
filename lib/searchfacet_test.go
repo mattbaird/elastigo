@@ -23,11 +23,9 @@ func TestFacetRegex(t *testing.T) {
 	c := NewTestConn()
 
 	// This is a possible solution for auto-complete
-	fmt.Print("before")
 	out, _ := Search("github").Size("0").Facet(
 		Facet().Regex("repository.name", "no.*").Size("8"),
 	).Result(c)
-	fmt.Print("after")
 	if out == nil || &out.Hits == nil {
 		t.Fail()
 		return
