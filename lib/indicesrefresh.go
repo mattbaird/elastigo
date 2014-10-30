@@ -19,7 +19,7 @@ import (
 
 // Refresh explicitly refreshes one or more index, making all operations performed since
 // the last refresh available for search. The (near) real-time capabilities depend on the index engine used.
-// For example, the robin one requires refresh to be called, but by default a refresh is scheduled periodically.
+// For example, the internal one requires refresh to be called, but by default a refresh is scheduled periodically.
 // http://www.elasticsearch.org/guide/reference/api/admin-indices-refresh.html
 // TODO: add Shards to response
 func (c *Conn) Refresh(indices ...string) (BaseResponse, error) {
