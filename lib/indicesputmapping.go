@@ -81,36 +81,43 @@ func getProperties(t reflect.Type, prop map[string]interface{}) {
 			name = field.Name
 		}
 
-		attrMap := make(map[string]string)
-		tag := field.Tag.Get("elastic")
-		if tag == "" {
+		attrMap := make(map[string]interface{})
+		attrs := splitTag(field.Tag.Get("elastic"))
+		for _, attr := range attrs {
+			keyvalue := strings.Split(attr, ":")
+			attrMap[keyvalue[0]] = keyvalue[1]
+		}
 
-			// We are looking for tags on any nested struct, independently of
+		if len(attrMap) == 0 || attrMap["type"] == "nested" {
+
+			// We are looking for tags on any inner struct, independently of
 			// whether the field is a struct, a pointer to struct, or a slice of structs
 			targetType := field.Type
 			if targetType.Kind() == reflect.Ptr ||
 				targetType.Kind() == reflect.Slice {
 				targetType = field.Type.Elem()
 			}
-
 			if targetType.Kind() == reflect.Struct {
 				if field.Anonymous {
 					getProperties(targetType, prop)
 				} else {
-					nestedProp := make(map[string]interface{})
-					getProperties(targetType, nestedProp)
-					prop[name] = map[string]interface{}{
-						"properties": nestedProp,
-					}
+					innerStructProp := make(map[string]interface{})
+					getProperties(targetType, innerStructProp)
+					attrMap["properties"] = innerStructProp
 				}
 			}
-			continue
 		}
-		attrs := strings.Split(tag, ",")
-		for _, attr := range attrs {
-			keyvalue := strings.Split(attr, ":")
-			attrMap[keyvalue[0]] = keyvalue[1]
+		if len(attrMap) != 0 {
+			prop[name] = attrMap
 		}
-		prop[name] = attrMap
+	}
+}
+
+func splitTag(tag string) []string {
+	tag = strings.Trim(tag, " ")
+	if tag == "" {
+		return []string{}
+	} else {
+		return strings.Split(tag, ",")
 	}
 }
