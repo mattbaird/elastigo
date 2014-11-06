@@ -23,6 +23,7 @@ type Mapping map[string]MappingOptions
 type MappingOptions struct {
 	Id         IdOptions              `json:"_id"`
 	Timestamp  TimestampOptions       `json:"_timestamp"`
+	Routing    RoutingOptions         `json:"_routing"`
 	Properties map[string]interface{} `json:"properties"`
 }
 
@@ -33,6 +34,11 @@ type TimestampOptions struct {
 type IdOptions struct {
 	Index string `json:"index,omitempty"`
 	Path  string `json:"path,omitempty"`
+}
+
+type RoutingOptions struct {
+	Required bool   `json:"required,omitempty"`
+	Path     string `json:"path,omitempty"`
 }
 
 func (m_ Mapping) Options() MappingOptions {
