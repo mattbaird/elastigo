@@ -28,3 +28,4 @@ elastigo
 # IDE
 
 *.iml
+.idea/

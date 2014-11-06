@@ -18,6 +18,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -75,6 +76,21 @@ type NestedStruct struct {
 	InnerField string `json:"innerField" elastic:"type:date"`
 }
 
+// Sorting string
+// RuneSlice implements sort.Interface (http://golang.org/pkg/sort/#Interface)
+type RuneSlice []rune
+
+func (p RuneSlice) Len() int           { return len(p) }
+func (p RuneSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p RuneSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// sorted func returns string with sorted characters
+func sorted(s string) string {
+	runes := []rune(s)
+	sort.Sort(RuneSlice(runes))
+	return string(runes)
+}
+
 func TestPutMapping(t *testing.T) {
 	c := setup(t)
 	defer teardown()
@@ -82,6 +98,7 @@ func TestPutMapping(t *testing.T) {
 	options := MappingOptions{
 		Timestamp: TimestampOptions{Enabled: true},
 		Id:        IdOptions{Index: "analyzed", Path: "id"},
+		Parent:    ParentOptions{Type: "testParent"},
 		Properties: map[string]interface{}{
 			// special properties that can't be expressed as tags
 			"multi_analyze": map[string]interface{}{
@@ -96,6 +113,7 @@ func TestPutMapping(t *testing.T) {
 	expValue := MappingForType("myType", MappingOptions{
 		Timestamp: TimestampOptions{Enabled: true},
 		Id:        IdOptions{Index: "analyzed", Path: "id"},
+		Parent:    ParentOptions{Type: "testParent"},
 		Properties: map[string]interface{}{
 			"NoJson":        map[string]string{"type": "string"},
 			"dontIndex":     map[string]string{"index": "no"},
@@ -147,7 +165,7 @@ func TestPutMapping(t *testing.T) {
 			t.Errorf("Got error: %v", err)
 		}
 
-		if string(expValJson) != string(valJson) {
+		if sorted(string(expValJson)) != sorted(string(valJson)) {
 			t.Errorf("Expected %s but got %s", string(expValJson), string(valJson))
 		}
 	})
