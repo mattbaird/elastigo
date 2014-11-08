@@ -23,11 +23,47 @@ type Mapping map[string]MappingOptions
 type MappingOptions struct {
 	Id         IdOptions              `json:"_id"`
 	Timestamp  TimestampOptions       `json:"_timestamp"`
+	Analyzer   AnalyzerOptions        `json:"_analyzer,omitempty"`
+	Parent     ParentOptions          `json:"_parent,omitempty"`
+	Routing    RoutingOptions         `json:"_routing,omitempty"`
+	Size       SizeOptions            `json:"_size,omitempty"`
+	Source     SourceOptions          `json:"_source,omitempty"`
+	Type       TypeOptions            `json:"_type,omitempty"`
 	Properties map[string]interface{} `json:"properties"`
 }
 
 type TimestampOptions struct {
 	Enabled bool `json:"enabled"`
+}
+
+type AnalyzerOptions struct {
+	Path  string `json:"path,omitempty"`
+	Index string `json:"index,omitempty"`
+}
+
+type ParentOptions struct {
+	Type string `json:"type"`
+}
+
+type RoutingOptions struct {
+	Required bool   `json:"required,omitempty"`
+	Path     string `json:"path,omitempty"`
+}
+
+type SizeOptions struct {
+	Enabled bool `json:"enabled,omitempty"`
+	Store   bool `json:"store,omitempty"`
+}
+
+type SourceOptions struct {
+	Enabled  bool     `json:"enabled,omitempty"`
+	Includes []string `json:"includes,omitempty"`
+	Excludes []string `json:"excludes,omitempty"`
+}
+
+type TypeOptions struct {
+	Store bool   `json:"store,omitempty"`
+	Index string `json:"index,omitempty"`
 }
 
 type IdOptions struct {
