@@ -17,16 +17,16 @@ import (
 )
 
 type BaseResponse struct {
-	Ok      bool        `json:"ok"`
-	Index   string      `json:"_index,omitempty"`
-	Type    string      `json:"_type,omitempty"`
-	Id      string      `json:"_id,omitempty"`
-	Source  interface{} `json:"_source,omitempty"` // depends on the schema you've defined
-	Version int         `json:"_version,omitempty"`
-	Found   bool        `json:"found,omitempty"`
-	Exists  bool        `json:"exists,omitempty"`
-	Created bool        `json:"created,omitempty"`
-	Matches []string    `json:"matches,omitempty"` // percolate matches
+	Ok      bool             `json:"ok"`
+	Index   string           `json:"_index,omitempty"`
+	Type    string           `json:"_type,omitempty"`
+	Id      string           `json:"_id,omitempty"`
+	Source  *json.RawMessage `json:"_source,omitempty"` // depends on the schema you've defined
+	Version int              `json:"_version,omitempty"`
+	Found   bool             `json:"found,omitempty"`
+	Exists  bool             `json:"exists,omitempty"`
+	Created bool             `json:"created,omitempty"`
+	Matches []string         `json:"matches,omitempty"` // percolate matches
 }
 
 // StatusInt is required because /_optimize, at least, returns its status as
