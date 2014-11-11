@@ -17,7 +17,7 @@ type ClusterStateResponse struct {
 	ClusterName string                              `json:"cluster_name"`
 	MasterNode  string                              `json:"master_node"`
 	Nodes       map[string]ClusterStateNodeResponse `json:"nodes"`
-	// TODO: Metadata
+	Metadata    ClusterStateMetadataResponse        `json:"metadata"`
 	// TODO: Routing Table
 	// TODO: Routing Nodes
 	// TODO: Allocations
@@ -32,7 +32,11 @@ type ClusterStateNodeResponse struct {
 
 type ClusterStateMetadataResponse struct {
 	// TODO: templates
-	// TODO: indices
+	Indices map[string]ClusterStateIndiceResponse `json:"indices"`
+}
+
+type ClusterStateIndiceResponse struct {
+	State string `json:"state"`
 }
 
 type ClusterStateRoutingTableResponse struct {
