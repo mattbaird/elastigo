@@ -23,12 +23,12 @@ type Mapping map[string]MappingOptions
 type MappingOptions struct {
 	Id         IdOptions              `json:"_id"`
 	Timestamp  TimestampOptions       `json:"_timestamp"`
-	Analyzer   *AnalyzerOptions        `json:"_analyzer,omitempty"`
-	Parent     *ParentOptions          `json:"_parent,omitempty"`
-	Routing    *RoutingOptions         `json:"_routing,omitempty"`
-	Size       *SizeOptions            `json:"_size,omitempty"`
-	Source     *SourceOptions          `json:"_source,omitempty"`
-	Type       *TypeOptions            `json:"_type,omitempty"`
+	Analyzer   *AnalyzerOptions       `json:"_analyzer,omitempty"`
+	Parent     *ParentOptions         `json:"_parent,omitempty"`
+	Routing    *RoutingOptions        `json:"_routing,omitempty"`
+	Size       *SizeOptions           `json:"_size,omitempty"`
+	Source     *SourceOptions         `json:"_source,omitempty"`
+	Type       *TypeOptions           `json:"_type,omitempty"`
 	Properties map[string]interface{} `json:"properties"`
 }
 
