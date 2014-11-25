@@ -13,8 +13,9 @@ package indices
 
 import (
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // IndicesExists checks for the existance of indices. uses http 404 if it does not exist, and 200 if it does

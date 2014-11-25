@@ -14,10 +14,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
 	"log"
 	"os"
+
+	"github.com/splicers/elastigo/api"
+	"github.com/splicers/elastigo/core"
 )
 
 var (

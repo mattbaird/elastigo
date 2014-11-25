@@ -14,8 +14,9 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Snapshot  allows to explicitly perform a snapshot through the gateway of one or more indices (backup them).

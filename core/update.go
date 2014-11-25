@@ -14,7 +14,8 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Update updates a document based on a script provided. The operation gets the document

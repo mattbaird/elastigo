@@ -14,8 +14,9 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // AnalyzeIndices performs the analysis process on a text and return the tokens breakdown of the text.

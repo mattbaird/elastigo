@@ -13,11 +13,12 @@ package search
 
 import (
 	"flag"
-	"github.com/araddon/gou"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
 	"log"
 	"os"
+
+	"github.com/araddon/gou"
+	"github.com/splicers/elastigo/api"
+	"github.com/splicers/elastigo/core"
 	//"testing"
 )
 

@@ -14,7 +14,8 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Explain computes a score explanation for a query and a specific document.

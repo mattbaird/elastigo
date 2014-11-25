@@ -15,7 +15,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // The cluster health API allows to get a very simple status on the health of the cluster.

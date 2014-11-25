@@ -14,8 +14,9 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Refresh explicitly refreshes one or more index, making all operations performed since

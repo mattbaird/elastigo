@@ -14,8 +14,9 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // ClearCache allows to clear either all caches or specific cached associated with one ore more indices.

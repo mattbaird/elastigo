@@ -19,13 +19,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/splicers/elastigo/api"
 )
 
 /*

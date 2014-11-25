@@ -14,8 +14,9 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // DeleteByQuery allows the caller to delete documents from one or more indices and one or more types based on a query.

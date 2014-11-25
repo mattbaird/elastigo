@@ -13,13 +13,14 @@ package indices
 
 import (
 	"encoding/json"
-	api "github.com/mattbaird/elastigo/api"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	api "github.com/splicers/elastigo/api"
 )
 
 var (

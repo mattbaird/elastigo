@@ -13,8 +13,9 @@ package cluster
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // The cluster nodes info API allows to retrieve one or more (or all) of the cluster nodes information.

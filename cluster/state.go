@@ -13,7 +13,8 @@ package cluster
 
 import (
 	"encoding/json"
-	"github.com/mattbaird/elastigo/api"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // State gets the comprehensive state information for the whole cluster

@@ -13,10 +13,11 @@ package cluster
 
 import (
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // NodesShutdown allows the caller to shutdown between one and all nodes in the cluster

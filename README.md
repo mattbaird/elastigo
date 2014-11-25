@@ -1,19 +1,29 @@
 elastigo
 --------
-[![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
+[![Total views](https://sourcegraph.com/api/repos/github.com/splicers/elastigo/counters/views.png)](https://sourcegraph.com/github.com/splicers/elastigo)
 
 [![Build Status][1]][2]
 
-[1]: https://drone.io/github.com/mattbaird/elastigo/status.png
-[2]: https://drone.io/github.com/mattbaird/elastigo/latest
+[1]: https://drone.io/github.com/splicers/elastigo/status.png
+[2]: https://drone.io/github.com/splicers/elastigo/latest
 
 
-A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/mattbaird/elastigo
+----------------
+
+**NOTE**: This is a temporary fork of mattbaird/elastigo because:
+
+1. Master no longer does updates. https://github.com/mattbaird/elastigo/blob/369f0d5e34a6559b0aaba9a4a75b2711dc77471d/lib/coreupdate.go#L29-L46
+2. We need MultiMatch on the QueryDsl, but it's not supported. Can't submit a PR because we need to stay on the older commit.
+
+----------------
+
+
+A Go (Golang) based Elasticsearch client, implements core api for Indexing and searching.   GoDoc http://godoc.org/github.com/splicers/elastigo
 
 To get the Chef based Vagrantfile working, be sure to pull like so::
 
     # This will pull submodules.
-    git clone --recursive git@github.com:mattbaird/elastigo.git
+    git clone --recursive git@github.com:splicers/elastigo.git
 
 It's easier to use the ElasticSearch provided Docker image found here: https://github.com/dockerfile/elasticsearch
 
@@ -39,7 +49,7 @@ The following will allow you to get the code, and run the tests against your doc
 
 ```bash
 docker run -d -p 9200:9200 -p 9300:9300 dockerfile/elasticsearch
-git clone git@github.com:mattbaird/elastigo.git
+git clone git@github.com:splicers/elastigo.git
 cd elastigo
 go get -u ./...
 cd core
@@ -68,8 +78,8 @@ Adding content to Elasticsearch
 
 examples:
 ```go
-import "github.com/mattbaird/elastigo/api"
-import "github.com/mattbaird/elastigo/core"
+import "github.com/splicers/elastigo/api"
+import "github.com/splicers/elastigo/core"
 
 type Tweet struct {
   User     string    `json:"user"`
@@ -110,8 +120,8 @@ Search DSL Examples
 A Faceted, ranged Search using the `Search DSL` :
 
 ```go
-import "github.com/mattbaird/elastigo/api"
-import "github.com/mattbaird/elastigo/core"
+import "github.com/splicers/elastigo/api"
+import "github.com/splicers/elastigo/core"
 
 // Set the Elasticsearch Host to Connect to
 api.Domain = "localhost"
@@ -173,8 +183,8 @@ Adding content to Elasticsearch in Bulk
 example:
 
 ```go
-import "github.com/mattbaird/elastigo/api"
-import "github.com/mattbaird/elastigo/core"
+import "github.com/splicers/elastigo/api"
+import "github.com/splicers/elastigo/core"
 
 // Set the Elasticsearch Host to Connect to
 api.Domain = "localhost"

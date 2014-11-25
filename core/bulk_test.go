@@ -17,13 +17,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
-	"github.com/mattbaird/elastigo/api"
 	"log"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
+	"github.com/splicers/elastigo/api"
 )
 
 //  go test -bench=".*"

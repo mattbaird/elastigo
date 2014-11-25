@@ -14,8 +14,9 @@ package indices
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"strings"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Flush flushes one or more indices through an API. The flush process of an index basically

@@ -14,8 +14,9 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
 	"net/http"
+
+	"github.com/splicers/elastigo/api"
 )
 
 // Get allows caller to get a typed JSON document from the index based on its id.
