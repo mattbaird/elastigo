@@ -61,9 +61,10 @@ type QueryDsl struct {
 
 // The core Query Syntax can be embedded as a child of a variety of different parents
 type QueryEmbed struct {
-	MatchAll *MatchAll         `json:"match_all,omitempty"`
-	Terms    map[string]string `json:"term,omitempty"`
-	Qs       *QueryString      `json:"query_string,omitempty"`
+	MatchAll   *MatchAll         `json:"match_all,omitempty"`
+	Terms      map[string]string `json:"term,omitempty"`
+	Qs         *QueryString      `json:"query_string,omitempty"`
+	MultiMatch *MultiMatch       `json:"multi_match,omitempty"`
 	//Exist    string            `json:"_exists_,omitempty"`
 }
 
@@ -72,7 +73,7 @@ type QueryEmbed struct {
 func (qd *QueryDsl) MarshalJSON() ([]byte, error) {
 	q := qd.QueryEmbed
 	hasQuery := false
-	if q.Qs != nil || len(q.Terms) > 0 || q.MatchAll != nil {
+	if q.Qs != nil || len(q.Terms) > 0 || q.MatchAll != nil || q.MultiMatch != nil {
 		hasQuery = true
 	}
 	// If a query has a
@@ -159,8 +160,19 @@ func (q *QueryDsl) Filter(f *FilterOp) *QueryDsl {
 	return q
 }
 
+func (q *QueryDsl) MultiMatch(s string, fields []string) *QueryDsl {
+	mm := MultiMatch{Query: s, Fields: fields}
+	q.QueryEmbed.MultiMatch = &mm
+	return q
+}
+
 type MatchAll struct {
 	All string `json:"-"`
+}
+
+type MultiMatch struct {
+	Query  string   `json:"query"`
+	Fields []string `json:"fields"`
 }
 
 // should we reuse QueryDsl here?
