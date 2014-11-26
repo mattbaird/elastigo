@@ -61,10 +61,11 @@ type QueryDsl struct {
 
 // The core Query Syntax can be embedded as a child of a variety of different parents
 type QueryEmbed struct {
-	MatchAll   *MatchAll         `json:"match_all,omitempty"`
-	Terms      map[string]string `json:"term,omitempty"`
-	Qs         *QueryString      `json:"query_string,omitempty"`
-	MultiMatch *MultiMatch       `json:"multi_match,omitempty"`
+	MatchAll      *MatchAll              `json:"match_all,omitempty"`
+	Terms         map[string]string      `json:"term,omitempty"`
+	Qs            *QueryString           `json:"query_string,omitempty"`
+	MultiMatch    *MultiMatch            `json:"multi_match,omitempty"`
+	FunctionScore map[string]interface{} `json:"function_score,omitempty"`
 	//Exist    string            `json:"_exists_,omitempty"`
 }
 
@@ -89,6 +90,15 @@ func (qd *QueryDsl) MarshalJSON() ([]byte, error) {
 		return []byte(fmt.Sprintf(`{"filtered":{"query":%s,"filter":%s}}`, queryB, filterB)), nil
 	}
 	return json.Marshal(q)
+}
+
+// Functions adds custom scoring functions to the query.
+func (q *QueryDsl) FunctionScore(mode string, functions ...map[string]interface{}) *QueryDsl {
+	q.QueryEmbed.FunctionScore = map[string]interface{}{
+		"functions":  functions,
+		"score_mode": mode,
+	}
+	return q
 }
 
 // get all
