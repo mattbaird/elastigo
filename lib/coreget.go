@@ -68,7 +68,7 @@ func (c *Conn) GetSource(index string, _type string, id string, args map[string]
 	return err
 }
 
-// ExistsBool allows caller to check for the existance of a document using HEAD
+// ExistsBool allows caller to check for the existence of a document using HEAD
 // TODO(shutej): This looks redundant with the Exists function in
 // baserequest.go, check with mattbaird@.
 func (c *Conn) ExistsBool(index string, _type string, id string, args map[string]interface{}) (bool, error) {
@@ -81,28 +81,25 @@ func (c *Conn) ExistsBool(index string, _type string, id string, args map[string
 	}
 
 	if len(_type) > 0 {
-		url = fmt.Sprintf("/%s/%s/%s?fields=_id", index, _type, id)
+		url = fmt.Sprintf("/%s/%s/%s", index, _type, id)
 	} else {
-		url = fmt.Sprintf("/%s/%s?fields=_id", index, id)
+		url = fmt.Sprintf("/%s/%s", index, id)
 	}
 
 	req, err := c.NewRequest("HEAD", url, query)
-
 	if err != nil {
 		return false, err
 	}
 
 	httpStatusCode, _, err := req.Do(nil)
 
-	if err != nil {
-		return false, err
+	// RecordNotFound is the expected response for a non-existent document,
+	// so we don't return an error to our caller
+	if err == RecordNotFound {
+		return false, nil
 	}
 
-	if httpStatusCode == http.StatusOK {
-		return true, err
-	}
-
-	return false, err
+	return httpStatusCode == http.StatusOK, err
 }
 
 // ExistsIndex allows caller to check for the existance of an index or a type using HEAD
