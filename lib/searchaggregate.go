@@ -16,6 +16,7 @@ type AggregateDsl struct {
 
 type FieldAggregate struct {
 	Field string `json:"field"`
+	Size  int    `json:"size,omitempty"`
 }
 
 /**
@@ -150,6 +151,12 @@ func (d *AggregateDsl) Terms(field string) *AggregateDsl {
 	return d
 }
 
+func (d *AggregateDsl) TermsWithSize(field string, size int) *AggregateDsl {
+	d.Type = FieldAggregate{Field: field, Size: size}
+	d.TypeName = "terms"
+	return d
+}
+
 func (d *AggregateDsl) SignificantTerms(field string) *AggregateDsl {
 	d.Type = FieldAggregate{Field: field}
 	d.TypeName = "significant_terms"
@@ -206,6 +213,7 @@ func (d *AggregateDsl) toMap() map[string]interface{} {
 	return root
 
 }
+
 func (d *AggregateDsl) aggregatesMap() map[string]interface{} {
 	root := map[string]interface{}{}
 
