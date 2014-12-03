@@ -21,9 +21,9 @@ func TestGetAll(t *testing.T) {
 	InitTests(true)
 	c := NewTestConn()
 	nodesInfo, err := c.AllNodesInfo()
-	//log.Println(out)
-	assert.T(t, err == nil, fmt.Sprintf("should not have gotten error, received :%v", err))
-	assert.T(t, nodesInfo.ClusterName == "elasticsearch", fmt.Sprintf("clustername should have been elasticsearch, received :%v", err))
+	assert.T(t, err == nil, fmt.Sprintf("should not have gotten error, received: %v", err))
+	clustername := "elasticsearch"
+	assert.T(t, nodesInfo.ClusterName == clustername, fmt.Sprintf("clustername should have been %q, received: %q", clustername, nodesInfo.ClusterName))
 	for _, node := range nodesInfo.Nodes {
 		assert.T(t, node.Settings != nil, fmt.Sprintf("Settings should not have been null"))
 		assert.T(t, node.OS != nil, fmt.Sprintf("OS should not have been null"))

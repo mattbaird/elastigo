@@ -22,7 +22,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"testing"
 	"time"
 )
 
@@ -78,21 +77,12 @@ func NewTestConn() *Conn {
 	return c
 }
 
-// dumb simple assert for testing, printing
-//    Assert(len(items) == 9, t, "Should be 9 but was %d", len(items))
-func Assert(is bool, t *testing.T, format string, args ...interface{}) {
-	if is == false {
-		log.Printf(format, args...)
-		t.Fail()
-	}
-}
-
 // Wait for condition (defined by func) to be true, a utility to create a ticker
 // checking every 100 ms to see if something (the supplied check func) is done
 //
-//   WaitFor(func() bool {
+//   waitFor(func() bool {
 //      return ctr.Ct == 0
-//   },10)
+//   }, 10)
 //
 // @timeout (in seconds) is the last arg
 func waitFor(check func() bool, timeoutSecs int) {
@@ -109,9 +99,6 @@ func waitFor(check func() bool, timeoutSecs int) {
 		}
 		tryct++
 	}
-}
-
-func TestFake(t *testing.T) {
 }
 
 type GithubEvent struct {
@@ -132,7 +119,7 @@ func LoadTestData() {
 		req, err := c.NewRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
-			log.Fatalf("ERROR: ", err)
+			log.Fatalf("ERROR: %v", err)
 			return err
 		}
 		req.SetBody(buf)
@@ -147,7 +134,7 @@ func LoadTestData() {
 		if httpStatusCode != 200 {
 			log.Fatalf("Not 200! %d %q\n", httpStatusCode, buf.String())
 		}
-		return err
+		return nil
 	}
 	indexer.Start()
 	resp, err := http.Get("http://data.githubarchive.org/2012-12-10-15.json.gz")
@@ -170,11 +157,12 @@ func LoadTestData() {
 	h := md5.New()
 	for {
 		line, err := r.ReadBytes('\n')
-		if err != nil && err != io.EOF {
-			log.Println("FATAL:  could not read line? ", err)
-		} else if err != nil {
-			indexer.Flush()
-			break
+		if err != nil {
+			if err == io.EOF {
+				indexer.Flush()
+				break
+			}
+			log.Fatalf("could not read line: %v", err)
 		}
 		if err := json.Unmarshal(line, &ge); err == nil {
 			// create an "ID"

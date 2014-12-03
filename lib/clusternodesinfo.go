@@ -17,7 +17,7 @@ import (
 )
 
 // The cluster nodes info API allows to retrieve one or more (or all) of the cluster nodes information.
-// informatino can be one of jvm, process
+// information can be one of jvm, process
 func (c *Conn) AllNodesInfo() (NodeInfo, error) {
 	return c.NodesInfo([]string{"_all"}, "_all")
 }
@@ -30,12 +30,10 @@ func (c *Conn) NodesInfo(information []string, nodes ...string) (NodeInfo, error
 	if err != nil {
 		return retval, err
 	}
-	if err == nil {
-		// marshall into json
-		jsonErr := json.Unmarshal(body, &retval)
-		if jsonErr != nil {
-			return retval, jsonErr
-		}
+	// marshall into json
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
 	}
 	return retval, err
 }

@@ -110,7 +110,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 
 	date := time.Unix(1257894000, 0)
 	user := map[string]interface{}{
-		"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0), "count": 1,
+		"name": "smurfs", "age": 22, "date": date, "count": 1,
 	}
 
 	// Lets make sure the data is in the index ...
@@ -148,7 +148,7 @@ func TestBulkSmallBatch(t *testing.T) {
 	c := NewTestConn()
 
 	date := time.Unix(1257894000, 0)
-	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
 
 	// Now tests small batches
 	indexer := c.NewBulkIndexer(1)
@@ -185,7 +185,7 @@ func XXXTestBulkErrors(t *testing.T) {
 	go func() {
 		for i := 0; i < 20; i++ {
 			date := time.Unix(1257894000, 0)
-			data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0)}
+			data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
 			indexer.Index("users", "user", strconv.Itoa(i), "", &date, data, true)
 		}
 	}()
