@@ -33,6 +33,10 @@ usage:
 
 */
 
+const (
+	testIndex = "github"
+)
+
 var (
 	bulkStarted       bool
 	hasStartedTesting bool
@@ -111,11 +115,13 @@ type GithubEvent struct {
 func LoadTestData() {
 	c := NewConn()
 
+	c.DeleteIndex(testIndex)
+
 	docCt := 0
 	errCt := 0
 	indexer := c.NewBulkIndexer(1)
 	indexer.Sender = func(buf *bytes.Buffer) error {
-		log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
+		// log.Printf("Sent %d bytes total %d docs sent", buf.Len(), docCt)
 		req, err := c.NewRequest("POST", "/_bulk", "")
 		if err != nil {
 			errCt += 1
@@ -172,7 +178,7 @@ func LoadTestData() {
 				log.Println("HM, already exists? ", ge.Url)
 			}
 			docsm[id] = true
-			indexer.Index("github", ge.Type, id, "", &ge.Created, line, true)
+			indexer.Index(testIndex, ge.Type, id, "", &ge.Created, line, true)
 			docCt++
 		} else {
 			log.Println("ERROR? ", string(line))
@@ -186,4 +192,6 @@ func LoadTestData() {
 	if len(docsm) != docCt {
 		panic(fmt.Sprintf("Docs didn't match?   %d:%d", len(docsm), docCt))
 	}
+	c.Flush(testIndex)
+	c.Refresh(testIndex)
 }
