@@ -146,11 +146,11 @@ type ThreadPool struct {
 }
 
 type ThreadPoolConfig struct {
-	Type      string `json:"type,omitempty"`
-	Min       int    `json:"min,omitempty"`
-	Max       int    `json:"max,omitempty"`
-	QueueSize string `json:"queue_size,omitempty"`
-	KeepAlive string `json:"keep_alive,omitempty"`
+	Type      string      `json:"type,omitempty"`
+	Min       int         `json:"min,omitempty"`
+	Max       int         `json:"max,omitempty"`
+	QueueSize interface{} `json:"queue_size,omitempty"` // Either string or -1
+	KeepAlive string      `json:"keep_alive,omitempty"`
 }
 
 type Network struct {
