@@ -29,12 +29,6 @@ import (
 //  go test -bench=".*"
 //  go test -bench="Bulk"
 
-var (
-	buffers        = make([]*bytes.Buffer, 0)
-	totalBytesSent int
-	messageSets    int
-)
-
 func init() {
 	flag.Parse()
 	if testing.Verbose() {
@@ -52,6 +46,13 @@ func closeInt(a, b int) bool {
 }
 
 func TestBulkIndexerBasic(t *testing.T) {
+	testIndex := "users"
+	var (
+		buffers        = make([]*bytes.Buffer, 0)
+		totalBytesSent int
+		messageSets    int
+	)
+
 	InitTests(true)
 	c := NewTestConn()
 	indexer := c.NewBulkIndexer(3)
@@ -59,7 +60,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
-		//		log.Printf("buffer:%s", string(buf.Bytes()))
+		// log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
 	indexer.Start()
@@ -67,7 +68,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": time.Unix(1257894000, 0).Format(time.RFC3339)}
 
-	err := indexer.Index("users", "user", "1", "", &date, data, true)
+	err := indexer.Index(testIndex, "user", "1", "", &date, data, true)
 
 	waitFor(func() bool {
 		return len(buffers) > 0
@@ -79,7 +80,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	expectedBytes := 160
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
-	err = indexer.Index("users", "user", "2", "", nil, data, true)
+	err = indexer.Index(testIndex, "user", "2", "", nil, data, true)
 	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
 	// this will test to ensure that Flush actually catches a doc
 	indexer.Flush()
@@ -96,6 +97,12 @@ func TestBulkIndexerBasic(t *testing.T) {
 
 // currently broken in drone.io
 func XXXTestBulkUpdate(t *testing.T) {
+	var (
+		buffers        = make([]*bytes.Buffer, 0)
+		totalBytesSent int
+		messageSets    int
+	)
+
 	InitTests(true)
 	c := NewTestConn()
 	c.Port = "9200"
@@ -144,6 +151,10 @@ func XXXTestBulkUpdate(t *testing.T) {
 }
 
 func TestBulkSmallBatch(t *testing.T) {
+	var (
+		messageSets int
+	)
+
 	InitTests(true)
 	c := NewTestConn()
 
