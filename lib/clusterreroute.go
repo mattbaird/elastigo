@@ -47,8 +47,6 @@ func (c *Conn) Reroute(dryRun bool, commands Commands) (ClusterHealthResponse, e
 func dryRunOption(isDryRun bool) string {
 	if isDryRun {
 		return "dry_run"
-	} else {
-		return ""
 	}
 	return ""
 }
