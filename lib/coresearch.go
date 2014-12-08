@@ -55,6 +55,32 @@ func (c *Conn) Search(index string, _type string, args map[string]interface{}, q
 	return retval, err
 }
 
+func (c *Conn) Suggest(index string, args map[string]interface{}, query interface{}) (SuggestResults, error) {
+	uriVal := fmt.Sprintf("/%s/_suggest", index)
+	body, err := c.DoCommand("POST", uriVal, args, query)
+	var retval SuggestResults
+	if err != nil {
+		return retval, err
+	}
+	jsonErr := json.Unmarshal([]byte(body), &retval)
+	return retval, jsonErr
+}
+
+type SuggestResults map[string]json.RawMessage
+
+func (s SuggestResults) Result(suggestName string) ([]Suggestion, error) {
+	var suggestions []Suggestion
+	query := s[suggestName]
+	if query == nil {
+		return suggestions, nil
+	}
+	err := json.Unmarshal(query, &suggestions)
+	if err != nil {
+		return nil, err
+	}
+	return suggestions, nil
+}
+
 // SearchUri performs the simplest possible query in url string
 // params:
 //   @index:  the elasticsearch index
