@@ -77,6 +77,7 @@ func TestSuggest(t *testing.T) {
 	ok(t, err)
 
 	first := opts[0]
+	assert.T(t, len(first.Options) > 0, "Length of first.Options was 0.")
 	text := first.Options[0].Text
 	assert.T(t, text == "foobar", fmt.Sprintf("Expected foobar, got: %s", text))
 }
