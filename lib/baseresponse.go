@@ -13,7 +13,9 @@ package elastigo
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
+	"strings"
 )
 
 type BaseResponse struct {
@@ -86,6 +88,29 @@ type Status struct {
 	Total      StatusInt `json:"total"`
 	Successful StatusInt `json:"successful"`
 	Failed     StatusInt `json:"failed"`
+	Failures   []Failure `json:"failures,omitempty"`
+}
+
+type Failure struct {
+	Index  string    `json:"index"`
+	Shard  StatusInt `json:"shard"`
+	Reason string    `json:"reason"`
+}
+
+func (f Failure) String() string {
+	return fmt.Sprintf("Failed on shard %d on index %s:\n%s", f.Shard, f.Index, f.Reason)
+}
+
+// failures is a convenience type to allow []Failure formated easily in the
+// library
+type failures []Failure
+
+func (f failures) String() string {
+	message := make([]string, len(f))
+	for i, failure := range f {
+		message[i] = failure.String()
+	}
+	return strings.Join(message, "\n")
 }
 
 type ExtendedStatus struct {

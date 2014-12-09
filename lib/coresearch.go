@@ -55,6 +55,49 @@ func (c *Conn) Search(index string, _type string, args map[string]interface{}, q
 	return retval, err
 }
 
+func (c *Conn) Suggest(index string, args map[string]interface{}, query interface{}) (SuggestResults, error) {
+	uriVal := fmt.Sprintf("/%s/_suggest", index)
+	body, err := c.DoCommand("POST", uriVal, args, query)
+	var retval SuggestResults
+	if err != nil {
+		return retval, err
+	}
+	jsonErr := json.Unmarshal([]byte(body), &retval.body)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+	shards := retval.body["_shards"]
+	if shards == nil {
+		return retval, fmt.Errorf("Expect response to contain _shards field, got: %s", body)
+	}
+	jsonErr = json.Unmarshal(shards, &retval.ShardStatus)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+	if len(retval.ShardStatus.Failures) > 0 {
+		return retval, fmt.Errorf("Got the following errors:\n%s", failures(retval.ShardStatus.Failures))
+	}
+	return retval, nil
+}
+
+type SuggestResults struct {
+	body        map[string]json.RawMessage
+	ShardStatus Status
+}
+
+func (s SuggestResults) Result(suggestName string) ([]Suggestion, error) {
+	var suggestions []Suggestion
+	query := s.body[suggestName]
+	if query == nil {
+		return nil, fmt.Errorf("No such suggest name found")
+	}
+	err := json.Unmarshal(query, &suggestions)
+	if err != nil {
+		return nil, err
+	}
+	return suggestions, nil
+}
+
 // SearchUri performs the simplest possible query in url string
 // params:
 //   @index:  the elasticsearch index
