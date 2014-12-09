@@ -1,9 +1,7 @@
 elastigo v2.0 
 -------------
 
-[![Build Status][1]][2] 
-[1]: https://drone.io/github.com/mattbaird/elastigo/status.png 
-[2]: https://drone.io/github.com/mattbaird/elastigo/latest
+(https://drone.io/github.com/mattbaird/elastigo/status.png)
 [![Total views](https://sourcegraph.com/api/repos/github.com/mattbaird/elastigo/counters/views.png)](https://sourcegraph.com/github.com/mattbaird/elastigo)
 
 Big thanks to @alicebob for helping to get the drone.io CI working.
