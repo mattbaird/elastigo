@@ -34,7 +34,7 @@ func TestFilters(t *testing.T) {
 	qry = Search("github").Filter(
 		Filter().Missing("repository.name"),
 	)
-	expectedHits = 389
+	expectedHits = 390
 	out, _ = qry.Result(c)
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))

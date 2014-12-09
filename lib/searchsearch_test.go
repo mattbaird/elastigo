@@ -264,7 +264,7 @@ func TestSearchMissingExists(t *testing.T) {
 	)
 	out, _ = qry.Result(c)
 	expectedDocs = 10
-	expectedTotal = 389
+	expectedTotal = 390
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedTotal, fmt.Sprintf("Should have %v total= %v", expectedTotal, out.Hits.Total))
 }
@@ -316,7 +316,7 @@ func TestSearchSortOrder(t *testing.T) {
 
 	// how many different docs used the word "add", during entire time range
 	expectedDocs := 10
-	expectedTotal := 8084
+	expectedTotal := 8085
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedTotal, fmt.Sprintf("Should have %v total= %v", expectedTotal, out.Hits.Total))
 	b, err := out.Hits.Hits[0].Source.MarshalJSON()
