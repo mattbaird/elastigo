@@ -20,7 +20,7 @@ import (
 
 func ok(t *testing.T, err error) {
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 

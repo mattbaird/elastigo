@@ -62,17 +62,34 @@ func (c *Conn) Suggest(index string, args map[string]interface{}, query interfac
 	if err != nil {
 		return retval, err
 	}
-	jsonErr := json.Unmarshal([]byte(body), &retval)
-	return retval, jsonErr
+	jsonErr := json.Unmarshal([]byte(body), &retval.body)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+	shards := retval.body["_shards"]
+	if shards == nil {
+		return retval, fmt.Errorf("Expect response to contain _shards field, got: %s", body)
+	}
+	jsonErr = json.Unmarshal(shards, &retval.ShardStatus)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+	if len(retval.ShardStatus.Failures) > 0 {
+		return retval, fmt.Errorf("Got the following errors:\n%s", failures(retval.ShardStatus.Failures))
+	}
+	return retval, nil
 }
 
-type SuggestResults map[string]json.RawMessage
+type SuggestResults struct {
+	body        map[string]json.RawMessage
+	ShardStatus Status
+}
 
 func (s SuggestResults) Result(suggestName string) ([]Suggestion, error) {
 	var suggestions []Suggestion
-	query := s[suggestName]
+	query := s.body[suggestName]
 	if query == nil {
-		return suggestions, nil
+		return nil, fmt.Errorf("No such suggest name found")
 	}
 	err := json.Unmarshal(query, &suggestions)
 	if err != nil {
