@@ -44,6 +44,10 @@ func (f *FilterWrap) String() string {
 	return fmt.Sprintf(`fopv: %d:%v`, len(f.filters), f.filters)
 }
 
+func (f *FilterWrap) Bool(s string) {
+	f.boolClause = s
+}
+
 // Custom marshalling to support the query dsl
 func (f *FilterWrap) addFilters(fl []interface{}) {
 	if len(fl) > 1 {
