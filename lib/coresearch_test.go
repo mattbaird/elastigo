@@ -67,6 +67,9 @@ func TestSuggest(t *testing.T) {
 		},
 	}}
 
+	_, err = c.Refresh("github")
+	ok(t, err)
+
 	res, err := c.Suggest("github", nil, query)
 	ok(t, err)
 
