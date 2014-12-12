@@ -181,8 +181,12 @@ func (f *FilterOp) To(to string) *FilterOp {
 	f.Range[f.curField]["to"] = to
 	return f
 }
-func (f *FilterOp) Gt(gt int) *FilterOp {
-	f.Range[f.curField]["gt"] = float64(gt)
+func (f *FilterOp) Gt(gt interface{}) *FilterOp {
+	f.Range[f.curField]["gt"] = gt
+	return f
+}
+func (f *FilterOp) Lt(lt interface{}) *FilterOp {
+	f.Range[f.curField]["lt"] = lt
 	return f
 }
 func (f *FilterOp) Exists(name string) *FilterOp {
