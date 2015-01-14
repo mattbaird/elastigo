@@ -13,6 +13,7 @@ type NodeStatsNodeResponse struct {
 	Indices          NodeStatsIndicesResponse                   `json:"indices"`
 	OS               NodeStatsOSResponse                        `json:"os"`
 	Network          NodeStatsNetworkResponse                   `json:"network"`
+	FS               NodeStatsFSResponse                        `json:"fs"`
 	ThreadPool       map[string]NodeStatsThreadPoolPoolResponse `json:"thread_pool"`
 }
 
@@ -151,8 +152,8 @@ type NodeStatsHTTPResponse struct {
 }
 
 type NodeStatsFSResponse struct {
-	Timestamp int64                              `json:"timestamp"`
-	Data      map[string]NodeStatsFSDataResponse `json:"data"`
+	Timestamp int64                     `json:"timestamp"`
+	Data      []NodeStatsFSDataResponse `json:"data"`
 }
 
 type NodeStatsFSDataResponse struct {
