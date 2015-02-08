@@ -25,9 +25,9 @@ import (
 )
 
 type Request struct {
-	*http.Client
 	*http.Request
 	hostResponse hostpool.HostPoolResponse
+	client       *http.Client
 }
 
 func (r *Request) SetBodyJson(data interface{}) error {
@@ -75,12 +75,7 @@ func (r *Request) Do(v interface{}) (int, []byte, error) {
 }
 
 func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
-	var client = r.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
-
-	res, err := client.Do(r.Request)
+	res, err := r.client.Do(r.Request)
 	// Inform the HostPool of what happened to the request and allow it to update
 	r.hostResponse.Mark(err)
 	if err != nil {

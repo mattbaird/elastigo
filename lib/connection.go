@@ -14,6 +14,7 @@ package elastigo
 import (
 	"fmt"
 	hostpool "github.com/bitly/go-hostpool"
+	"net"
 	"net/http"
 	"runtime"
 	"strings"
@@ -42,6 +43,8 @@ type Conn struct {
 	RequestTracer  func(method, url, body string)
 	hp             hostpool.HostPool
 	once           sync.Once
+	client         *http.Client
+	transport      *http.Transport
 
 	// To compute the weighting scores, we perform a weighted average of recent response times,
 	// over the course of `DecayDuration`. DecayDuration may be set to 0 to use the default
@@ -51,6 +54,18 @@ type Conn struct {
 }
 
 func NewConn() *Conn {
+	// Copied from http.DefaultTransport for consistency
+	//
+	// See http://golang.org/pkg/net/http/#DefaultTransport
+	t := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
 	return &Conn{
 		// Maintain these for backwards compatibility
 		Protocol:       DefaultProtocol,
@@ -58,6 +73,9 @@ func NewConn() *Conn {
 		ClusterDomains: []string{DefaultDomain},
 		Port:           DefaultPort,
 		DecayDuration:  time.Duration(DefaultDecayDuration * time.Second),
+
+		client:    &http.Client{Transport: t},
+		transport: t,
 	}
 }
 
@@ -73,6 +91,14 @@ func (c *Conn) SetHosts(newhosts []string) {
 	// Reinitialise the host pool Pretty naive as this will nuke the current
 	// hostpool, and therefore reset any scoring
 	c.initializeHostPool()
+}
+
+func (c *Conn) SetMaxIdleConnsPerHost(n int) {
+	if n < 0 {
+		n = 0
+	}
+
+	c.transport.MaxIdleConnsPerHost = n
 }
 
 // Set up the host pool to be used
@@ -138,6 +164,7 @@ func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	newRequest := &Request{
 		Request:      req,
 		hostResponse: hr,
+		client:       c.client,
 	}
 	return newRequest, nil
 }
