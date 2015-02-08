@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -51,6 +52,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 		buffers        = make([]*bytes.Buffer, 0)
 		totalBytesSent int
 		messageSets    int
+		mu             sync.RWMutex
 	)
 
 	InitTests(true)
@@ -60,9 +62,11 @@ func TestBulkIndexerBasic(t *testing.T) {
 
 	indexer := c.NewBulkIndexer(3)
 	indexer.Sender = func(buf *bytes.Buffer) error {
+		mu.Lock()
 		messageSets += 1
 		totalBytesSent += buf.Len()
 		buffers = append(buffers, buf)
+		mu.Unlock()
 		// log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
@@ -78,6 +82,8 @@ func TestBulkIndexerBasic(t *testing.T) {
 	err := indexer.Index(testIndex, "user", "1", "", &date, data, true)
 
 	waitFor(func() bool {
+		mu.RLock()
+		defer mu.RUnlock()
 		return len(buffers) > 0
 	}, 5)
 	// part of request is url, so lets factor that in
