@@ -53,7 +53,7 @@ func InitTests(startIndexer bool) *Conn {
 		flag.Parse()
 		hasStartedTesting = true
 		log.SetFlags(log.Ltime | log.Lshortfile)
-		c.Domain = *eshost
+		c.SetDomain(*eshost)
 	}
 	if startIndexer && !bulkStarted {
 		bulkStarted = true
@@ -77,7 +77,7 @@ func InitTests(startIndexer bool) *Conn {
 
 func NewTestConn() *Conn {
 	c := NewConn()
-	c.Domain = *eshost
+	c.SetDomain(*eshost)
 	return c
 }
 
@@ -114,7 +114,7 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	c := NewConn()
-	c.Domain = *eshost
+	c.SetDomain(*eshost)
 
 	c.DeleteIndex(testIndex)
 

@@ -38,8 +38,8 @@ func setup(t *testing.T) *Conn {
 		t.Fatalf("Error: %v", err)
 	}
 
-	c.Domain = strings.Split(serverURL.Host, ":")[0]
-	c.Port = strings.Split(serverURL.Host, ":")[1]
+	c.SetDomain(strings.Split(serverURL.Host, ":")[0])
+	c.SetPort(strings.Split(serverURL.Host, ":")[1])
 
 	return c
 }

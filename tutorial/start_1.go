@@ -29,10 +29,10 @@ func main() {
 	flag.Parse()
 
 	// Trace all requests
-	c.RequestTracer = func(method, url, body string) {
+	c.SetRequestTracer(func(method, url, body string) {
 		log.Printf("Requesting %s %s", method, url)
 		log.Printf("Request body: %s", body)
-	}
+	})
 
 	fmt.Println("host = ", *host)
 	// Set the Elasticsearch Host to Connect to

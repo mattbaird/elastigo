@@ -32,25 +32,26 @@ const (
 )
 
 type Conn struct {
-	// Maintain these for backwards compatibility
-	Protocol       string
-	Domain         string
-	ClusterDomains []string
-	Port           string
-	Username       string
-	Password       string
-	Hosts          []string
-	RequestTracer  func(method, url, body string)
-	hp             hostpool.HostPool
-	once           sync.Once
-	client         *http.Client
+	hp     hostpool.HostPool
+	once   sync.Once
+	client *http.Client
+
+	mu             sync.RWMutex // protects following fields
+	protocol       string
+	domain         string
+	clusterDomains []string
+	port           string
+	username       string
+	password       string
+	hosts          []string
 	transport      *http.Transport
+	requestTracer  func(method, url, body string)
 
 	// To compute the weighting scores, we perform a weighted average of recent response times,
 	// over the course of `DecayDuration`. DecayDuration may be set to 0 to use the default
 	// value of 5 minutes. The EpsilonValueCalculator uses this to calculate a score
 	// from the weighted average response time.
-	DecayDuration time.Duration
+	decayDuration time.Duration
 }
 
 func NewConn() *Conn {
@@ -68,25 +69,73 @@ func NewConn() *Conn {
 
 	return &Conn{
 		// Maintain these for backwards compatibility
-		Protocol:       DefaultProtocol,
-		Domain:         DefaultDomain,
-		ClusterDomains: []string{DefaultDomain},
-		Port:           DefaultPort,
-		DecayDuration:  time.Duration(DefaultDecayDuration * time.Second),
+		protocol:       DefaultProtocol,
+		domain:         DefaultDomain,
+		clusterDomains: []string{DefaultDomain},
+		port:           DefaultPort,
+		decayDuration:  time.Duration(DefaultDecayDuration * time.Second),
 
 		client:    &http.Client{Transport: t},
 		transport: t,
 	}
 }
 
+func (c *Conn) SetProtocol(protocol string) {
+	c.mu.Lock()
+	c.protocol = protocol
+	c.mu.Unlock()
+}
+
+func (c *Conn) SetDomain(domain string) {
+	c.mu.Lock()
+	c.domain = domain
+	c.mu.Unlock()
+}
+
+func (c *Conn) SetClusterDomains(domains []string) {
+	c.mu.Lock()
+	c.clusterDomains = domains
+	c.mu.Unlock()
+}
+
 func (c *Conn) SetPort(port string) {
-	c.Port = port
+	c.mu.Lock()
+	c.port = port
+	c.mu.Unlock()
+}
+
+func (c *Conn) SetUsername(username string) {
+	c.mu.Lock()
+	c.username = username
+	c.mu.Unlock()
+}
+
+func (c *Conn) SetPassword(password string) {
+	c.mu.Lock()
+	c.password = password
+	c.mu.Unlock()
 }
 
 func (c *Conn) SetHosts(newhosts []string) {
+	c.mu.Lock()
+	c.hosts = newhosts
+	c.mu.Unlock()
 
-	// Store the new host list
-	c.Hosts = newhosts
+	// Reinitialise the host pool Pretty naive as this will nuke the current
+	// hostpool, and therefore reset any scoring
+	c.initializeHostPool()
+}
+
+func (c *Conn) SetRequestTracer(tracer func(method, url, body string)) {
+	c.mu.Lock()
+	c.requestTracer = tracer
+	c.mu.Unlock()
+}
+
+func (c *Conn) SetDecayDuration(duration time.Duration) {
+	c.mu.Lock()
+	c.decayDuration = duration
+	c.mu.Unlock()
 
 	// Reinitialise the host pool Pretty naive as this will nuke the current
 	// hostpool, and therefore reset any scoring
@@ -98,15 +147,19 @@ func (c *Conn) SetMaxIdleConnsPerHost(n int) {
 		n = 0
 	}
 
+	c.mu.Lock()
 	c.transport.MaxIdleConnsPerHost = n
+	c.mu.Unlock()
 }
 
 // Set up the host pool to be used
 func (c *Conn) initializeHostPool() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	// If no hosts are set, fallback to defaults
-	if len(c.Hosts) == 0 {
-		c.Hosts = append(c.Hosts, fmt.Sprintf("%s:%s", c.Domain, c.Port))
+	if len(c.hosts) == 0 {
+		c.hosts = append(c.hosts, fmt.Sprintf("%s:%s", c.domain, c.port))
 	}
 
 	// Epsilon Greedy is an algorithm that allows HostPool not only to
@@ -124,7 +177,7 @@ func (c *Conn) initializeHostPool() {
 		c.hp.Close()
 	}
 	c.hp = hostpool.NewEpsilonGreedy(
-		c.Hosts, c.DecayDuration, &hostpool.LinearEpsilonValueCalculator{})
+		c.hosts, c.decayDuration, &hostpool.LinearEpsilonValueCalculator{})
 }
 
 func (c *Conn) Close() {
@@ -138,17 +191,20 @@ func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	// Get a host from the host pool
 	hr := c.hp.Get()
 
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	// Get the final host and port
-	host, portNum := splitHostnamePartsFromHost(hr.Host(), c.Port)
+	host, portNum := splitHostnamePartsFromHost(hr.Host(), c.port)
 
 	// Build request
 	var uri string
 	// If query parameters are provided, the add them to the URL,
 	// otherwise, leave them out
 	if len(query) > 0 {
-		uri = fmt.Sprintf("%s://%s:%s%s?%s", c.Protocol, host, portNum, path, query)
+		uri = fmt.Sprintf("%s://%s:%s%s?%s", c.protocol, host, portNum, path, query)
 	} else {
-		uri = fmt.Sprintf("%s://%s:%s%s", c.Protocol, host, portNum, path)
+		uri = fmt.Sprintf("%s://%s:%s%s", c.protocol, host, portNum, path)
 	}
 	req, err := http.NewRequest(method, uri, nil)
 	if err != nil {
@@ -157,8 +213,8 @@ func (c *Conn) NewRequest(method, path, query string) (*Request, error) {
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "elasticSearch/"+Version+" ("+runtime.GOOS+"-"+runtime.GOARCH+")")
 
-	if c.Username != "" || c.Password != "" {
-		req.SetBasicAuth(c.Username, c.Password)
+	if c.username != "" || c.password != "" {
+		req.SetBasicAuth(c.username, c.password)
 	}
 
 	newRequest := &Request{

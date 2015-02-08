@@ -32,7 +32,7 @@ func main() {
 	log.SetFlags(log.Ltime | log.Lshortfile)
 
 	c := elastigo.NewConn()
-	c.Domain = *eshost
+	c.SetDomain(*eshost)
 	response, _ := c.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	c.Flush()
 	log.Printf("Index OK: %v", response.Ok)

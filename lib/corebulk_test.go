@@ -118,7 +118,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 
 	InitTests(true)
 	c := NewTestConn()
-	c.Port = "9200"
+	c.SetPort("9200")
 	indexer := c.NewBulkIndexer(3)
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
@@ -226,9 +226,9 @@ func TestBulkDelete(t *testing.T) {
 func XXXTestBulkErrors(t *testing.T) {
 	// lets set a bad port, and hope we get a conn refused error?
 	c := NewTestConn()
-	c.Port = "27845"
+	c.SetPort("27845")
 	defer func() {
-		c.Port = "9200"
+		c.SetPort("9200")
 	}()
 	indexer := c.NewBulkIndexerErrors(10, 1)
 	indexer.Start()
