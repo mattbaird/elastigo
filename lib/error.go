@@ -1,20 +1,8 @@
 package elastigo
 
 import (
-	"fmt"
+	"errors"
 )
 
 // 404 Response.
-var RecordNotFound = errorf("record not found")
-
-type elastigoError struct {
-	s string
-}
-
-func errorf(s string, args ...interface{}) elastigoError {
-	return elastigoError{s: fmt.Sprintf(s, args...)}
-}
-
-func (err elastigoError) Error() string {
-	return err.s
-}
+var RecordNotFound = errors.New("record not found")
