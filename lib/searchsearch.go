@@ -194,3 +194,8 @@ func (s *SearchDsl) Scroll(duration string) *SearchDsl {
 	s.args["scroll"] = duration
 	return s
 }
+
+func (s *SearchDsl) SearchType(searchType string) *SearchDsl {
+	s.args["search_type"] = searchType
+	return s
+}
