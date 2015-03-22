@@ -85,7 +85,7 @@ func (qd *QueryDsl) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return filterB, err
 		}
-		return []byte(fmt.Sprintf(`{"filtered":{"query":%s,"filter":%s}}`, queryB, filterB)), nil
+		return []byte(fmt.Sprintf(`{"query":{"filtered":{"query":%s,"filter":%s}}}`, queryB, filterB)), nil
 	}
 	return json.Marshal(q)
 }

@@ -135,6 +135,7 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 type FilterOp struct {
 	curField    string
 	TermsMap    map[string][]interface{}          `json:"terms,omitempty"`
+	TermMap     map[string]interface{}            `json:"term,omitempty"`
 	Range       map[string]map[string]interface{} `json:"range,omitempty"`
 	Exist       map[string]string                 `json:"exists,omitempty"`
 	MisssingVal map[string]string                 `json:"missing,omitempty"`
@@ -156,6 +157,17 @@ func (f *FilterOp) Field(fld string) *FilterOp {
 	return f
 }
 
+func (f *FilterOp) Term(field string, value interface{}) *FilterOp {
+	//Multiple terms in a filter may not be compatible with older versions of
+	//ElasticSearch
+	if len(f.TermMap) == 0 {
+		f.TermMap = make(map[string]interface{})
+	}
+
+	f.TermMap[field] = value
+	return f
+}
+
 // Filter Terms
 //
 //   Filter().Terms("user","kimchy")
@@ -164,9 +176,9 @@ func (f *FilterOp) Field(fld string) *FilterOp {
 //   Filter().Terms("user", "kimchy", "elasticsearch")
 //
 func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
-	if len(f.TermsMap) == 0 {
-		f.TermsMap = make(map[string][]interface{})
-	}
+	//You can only have one terms in a filter
+	f.TermsMap = make(map[string][]interface{})
+
 	for _, val := range values {
 		f.TermsMap[field] = append(f.TermsMap[field], val)
 	}
