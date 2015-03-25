@@ -172,6 +172,9 @@ func (f *FilterOp) Term(field string, value interface{}) *FilterOp {
 func (f *FilterOp) And(filter *FilterOp) *FilterOp {
 	if len(f.AndFilters) == 0 {
 		f.AndFilters = []FilterOp{*filter}
+	} else {
+        f.AndFilters = append(f.AndFilters, *filter)
+    }
 
 	return f
 }
