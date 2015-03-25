@@ -139,6 +139,7 @@ type FilterOp struct {
 	Range       map[string]map[string]interface{} `json:"range,omitempty"`
 	Exist       map[string]string                 `json:"exists,omitempty"`
 	MisssingVal map[string]string                 `json:"missing,omitempty"`
+	AndFilters  []FilterOp                        `json:"and,omitempty"`
 }
 
 // A range is a special type of Filter operation
@@ -165,6 +166,13 @@ func (f *FilterOp) Term(field string, value interface{}) *FilterOp {
 	}
 
 	f.TermMap[field] = value
+	return f
+}
+
+func (f *FilterOp) And(filter *FilterOp) *FilterOp {
+	if len(f.AndFilters) == 0 {
+		f.AndFilters = []FilterOp{*filter}
+
 	return f
 }
 
