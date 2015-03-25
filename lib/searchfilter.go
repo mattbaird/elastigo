@@ -140,6 +140,7 @@ type FilterOp struct {
 	Exist       map[string]string                 `json:"exists,omitempty"`
 	MisssingVal map[string]string                 `json:"missing,omitempty"`
 	AndFilters  []FilterOp                        `json:"and,omitempty"`
+	OrFilters   []FilterOp                        `json:"or,omitempty"`
 }
 
 // A range is a special type of Filter operation
@@ -173,8 +174,18 @@ func (f *FilterOp) And(filter *FilterOp) *FilterOp {
 	if len(f.AndFilters) == 0 {
 		f.AndFilters = []FilterOp{*filter}
 	} else {
-        f.AndFilters = append(f.AndFilters, *filter)
-    }
+		f.AndFilters = append(f.AndFilters, *filter)
+	}
+
+	return f
+}
+
+func (f *FilterOp) Or(filter *FilterOp) *FilterOp {
+	if len(f.OrFilters) == 0 {
+		f.OrFilters = []FilterOp{*filter}
+	} else {
+		f.OrFilters = append(f.OrFilters, *filter)
+	}
 
 	return f
 }
