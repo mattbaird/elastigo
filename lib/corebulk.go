@@ -327,6 +327,12 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 	return nil
 }
 
+func (b *BulkIndexer) Delete(index, _type, id string, refresh bool) {
+	queryLine := fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q,\"refresh\":%t}}\n", index, _type, id, refresh)
+	b.bulkChannel <- []byte(queryLine)
+	return
+}
+
 func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, ttl string, date *time.Time, partialDoc interface{}, upsert bool, refresh bool) error {
 
 	var data map[string]interface{} = make(map[string]interface{})

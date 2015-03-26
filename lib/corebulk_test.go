@@ -190,6 +190,33 @@ func TestBulkSmallBatch(t *testing.T) {
 
 }
 
+func TestBulkDelete(t *testing.T) {
+	InitTests(true)
+
+	c := NewTestConn()
+	indexer := c.NewBulkIndexer(1)
+	sentBytes := []byte{}
+
+	indexer.Sender = func(buf *bytes.Buffer) error {
+		sentBytes = append(sentBytes, buf.Bytes()...)
+		return nil
+	}
+
+	indexer.Start()
+
+	indexer.Delete("fake", "fake_type", "1", true)
+
+	indexer.Flush()
+	indexer.Stop()
+
+	sent := string(sentBytes)
+
+	expected := `{"delete":{"_index":"fake","_type":"fake_type","_id":"1","refresh":true}}
+`
+	asExpected := sent == expected
+	assert.T(t, asExpected, fmt.Sprintf("Should have sent '%s' but actually sent '%s'", expected, sent))
+}
+
 func XXXTestBulkErrors(t *testing.T) {
 	// lets set a bad port, and hope we get a conn refused error?
 	c := NewTestConn()

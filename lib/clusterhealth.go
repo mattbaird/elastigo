@@ -17,7 +17,7 @@ import (
 )
 
 // The cluster health API allows to get a very simple status on the health of the cluster.
-// see http://www.elasticsearch.org/guide/reference/api/admin-cluster-health.html
+// see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-health.html
 // TODO: implement wait_for_status, timeout, wait_for_relocating_shards, wait_for_nodes
 // TODO: implement level (Can be one of cluster, indices or shards. Controls the details level of the health
 // information returned. Defaults to cluster.)
@@ -40,7 +40,6 @@ func (c *Conn) Health(indices ...string) (ClusterHealthResponse, error) {
 			return retval, jsonErr
 		}
 	}
-	//fmt.Println(body)
 	return retval, err
 }
 
@@ -126,5 +125,4 @@ func (c *Conn) ClusterState(filter ClusterStateFilter) (ClusterStateResponse, er
 		}
 	}
 	return retval, err
-
 }

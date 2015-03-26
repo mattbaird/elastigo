@@ -114,6 +114,7 @@ type GithubEvent struct {
 // This loads test data from github archives (~6700 docs)
 func LoadTestData() {
 	c := NewConn()
+	c.Domain = *eshost
 
 	c.DeleteIndex(testIndex)
 

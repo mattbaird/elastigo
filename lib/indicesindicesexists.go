@@ -27,11 +27,11 @@ func (c *Conn) IndicesExists(indices ...string) (bool, error) {
 	}
 	_, err := c.DoCommand("HEAD", url, nil, nil)
 	if err != nil {
-        if (err == RecordNotFound) {
-            return false, nil
-        } else {
-            return true, err
-        }
+		if err == RecordNotFound {
+			return false, nil
+		} else {
+			return true, err
+		}
 	}
 	return true, nil
 }
