@@ -20,7 +20,7 @@ import (
 type GetSnapshotsResponse struct {
 	Snapshots []struct {
 		Snapshot  string    `json:"snapshot"`
-		Indices   []string  `json:"indices"""`
+		Indices   []string  `json:"indices"`
 		State     string    `json:"state"`
 		StartTime time.Time `json:"start_time"`
 		EndTime   time.Time `json:"end_time"`
