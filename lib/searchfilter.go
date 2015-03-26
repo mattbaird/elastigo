@@ -134,34 +134,38 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 
 type FilterOp struct {
 	curField    string
-	TermsMap    map[string][]interface{}          `json:"terms,omitempty"`
-	TermMap     map[string]interface{}            `json:"term,omitempty"`
-	Range       map[string]map[string]interface{} `json:"range,omitempty"`
-	Exist       map[string]string                 `json:"exists,omitempty"`
-	MisssingVal map[string]string                 `json:"missing,omitempty"`
-	AndFilters  []FilterOp                        `json:"and,omitempty"`
-	OrFilters   []FilterOp                        `json:"or,omitempty"`
+	TermsMap    map[string][]interface{} `json:"terms,omitempty"`
+	TermMap     map[string]interface{}   `json:"term,omitempty"`
+	RangeMap    map[string]RangeFilter   `json:"range,omitempty"`
+	Exist       map[string]string        `json:"exists,omitempty"`
+	MisssingVal map[string]string        `json:"missing,omitempty"`
+	AndFilters  []FilterOp               `json:"and,omitempty"`
+	OrFilters   []FilterOp               `json:"or,omitempty"`
+	Limit       *LimitFilter             `json:"limit,omitempty"`
+}
+
+type LimitFilter struct {
+	Value int `json:"value,omitempty"`
+}
+
+type RangeFilter struct {
+	Gte      interface{} `json:"gte,omitempty"`
+	Lte      interface{} `json:"lte,omitempty"`
+	Gt       interface{} `json:"gt,omitempty"`
+	Lt       interface{} `json:"lt,omitempty"`
+	TimeZone string      `json:"time_zone,omitempty"` //Ideally this would be an int
 }
 
 // A range is a special type of Filter operation
 //
 //    Range().Exists("repository.name")
 func Range() *FilterOp {
-	return &FilterOp{Range: make(map[string]map[string]interface{})}
+	return &FilterOp{RangeMap: make(map[string]RangeFilter)}
 }
 
-func (f *FilterOp) Field(fld string) *FilterOp {
-	f.curField = fld
-	if _, ok := f.Range[fld]; !ok {
-		m := make(map[string]interface{})
-		f.Range[fld] = m
-	}
-	return f
-}
-
+// Term will add a term to the filter.
+// Multiple Term filters can be added, and ES will OR them.
 func (f *FilterOp) Term(field string, value interface{}) *FilterOp {
-	//Multiple terms in a filter may not be compatible with older versions of
-	//ElasticSearch
 	if len(f.TermMap) == 0 {
 		f.TermMap = make(map[string]interface{})
 	}
@@ -192,11 +196,8 @@ func (f *FilterOp) Or(filter *FilterOp) *FilterOp {
 
 // Filter Terms
 //
-//   Filter().Terms("user","kimchy")
-//
-//   // we use variadics to allow n arguments, first is the "field" rest are values
-//   Filter().Terms("user", "kimchy", "elasticsearch")
-//
+//   Filter().Terms("user","kimchy","stuff")
+//	 Note: you can only have one terms clause in a filter. Use a bool filter to combine
 func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
 	//You can only have one terms in a filter
 	f.TermsMap = make(map[string][]interface{})
@@ -207,42 +208,21 @@ func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
 
 	return f
 }
-func (f *FilterOp) From(from string) *FilterOp {
-	f.Range[f.curField]["from"] = from
-	return f
-}
-func (f *FilterOp) To(to string) *FilterOp {
-	f.Range[f.curField]["to"] = to
-	return f
-}
-func (f *FilterOp) Gt(gt interface{}) *FilterOp {
-	f.Range[f.curField]["gt"] = gt
-	return f
-}
-func (f *FilterOp) Lt(lt interface{}) *FilterOp {
-	f.Range[f.curField]["lt"] = lt
-	return f
-}
-func (f *FilterOp) Exists(name string) *FilterOp {
-	f.Exist = map[string]string{"field": name}
-	return f
-}
-func (f *FilterOp) Missing(name string) *FilterOp {
-	f.MisssingVal = map[string]string{"field": name}
-	return f
-}
 
-// Add another Filterop, "combines" two filter ops into one
-func (f *FilterOp) Add(fop *FilterOp) *FilterOp {
-	// TODO, this is invalid, refactor
-	if len(fop.Exist) > 0 {
-		f.Exist = fop.Exist
+// AddRange adds a range filter for the given field.
+func (f *FilterOp) AddRange(field string, gte interface{},
+	gt interface{}, lte interface{}, lt interface{}, timeZone string) *FilterOp {
+
+	if f.RangeMap == nil {
+		f.RangeMap = make(map[string]RangeFilter)
 	}
-	if len(fop.MisssingVal) > 0 {
-		f.MisssingVal = fop.MisssingVal
-	}
-	if len(fop.Range) > 0 {
-		f.Range = fop.Range
-	}
+
+	f.RangeMap[field] = RangeFilter{
+		Gte:      gte,
+		Gt:       gt,
+		Lte:      lte,
+		Lt:       lt,
+		TimeZone: timeZone}
+
 	return f
 }

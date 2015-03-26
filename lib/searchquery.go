@@ -87,7 +87,9 @@ func (qd *QueryDsl) MarshalJSON() ([]byte, error) {
 		}
 		return []byte(fmt.Sprintf(`{"query":{"filtered":{"query":%s,"filter":%s}}}`, queryB, filterB)), nil
 	}
-	return json.Marshal(q)
+
+	retval, err := json.Marshal(q)
+	return []byte(fmt.Sprintf(`{"query": %s}`, retval)), err
 }
 
 // get all
@@ -103,7 +105,7 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 		return q
 	}
 	// TODO:  this is not valid, refactor
-	q.FilterVal.Add(fop)
+	//q.FilterVal.Add(fop)
 	return q
 }
 
