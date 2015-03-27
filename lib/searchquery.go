@@ -132,6 +132,11 @@ func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
 	return q
 }
 
+func (q *QueryDsl) SetLenient(lenient bool) *QueryDsl {
+	q.QueryEmbed.Qs.Lenient = lenient
+	return q
+}
+
 // Fields in query_string search
 //     Fields("fieldname","search_for","","")
 //
@@ -170,7 +175,7 @@ type QueryWrap struct {
 
 // QueryString based search
 func NewQueryString(field, query string) QueryString {
-	return QueryString{"", field, query, "", "", nil}
+	return QueryString{"", field, query, "", "", nil, false}
 }
 
 type QueryString struct {
@@ -180,6 +185,7 @@ type QueryString struct {
 	Exists          string   `json:"_exists_,omitempty"`
 	Missing         string   `json:"_missing_,omitempty"`
 	Fields          []string `json:"fields,omitempty"`
+	Lenient         bool     `json:"lenient,omitempty"`
 	//_exists_:field1,
 	//_missing_:field1,
 }

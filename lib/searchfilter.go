@@ -145,7 +145,7 @@ type FilterOp struct {
 }
 
 type LimitFilter struct {
-	Value int `json:"value,omitempty"`
+	Value int `json:"value"`
 }
 
 type RangeFilter struct {
@@ -224,5 +224,10 @@ func (f *FilterOp) AddRange(field string, gte interface{},
 		Lt:       lt,
 		TimeZone: timeZone}
 
+	return f
+}
+
+func (f *FilterOp) SetLimit(maxResults int) *FilterOp {
+	f.Limit = &LimitFilter{Value: maxResults}
 	return f
 }
