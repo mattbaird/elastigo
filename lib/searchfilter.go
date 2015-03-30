@@ -133,11 +133,11 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
-	curField    string
-	TermsMap    map[string][]interface{}          `json:"terms,omitempty"`
-	Range       map[string]map[string]interface{} `json:"range,omitempty"`
-	Exist       map[string]string                 `json:"exists,omitempty"`
-	MisssingVal map[string]string                 `json:"missing,omitempty"`
+	curField   string
+	TermsMap   map[string][]interface{}          `json:"terms,omitempty"`
+	Range      map[string]map[string]interface{} `json:"range,omitempty"`
+	Exist      map[string]string                 `json:"exists,omitempty"`
+	MissingVal map[string]string                 `json:"missing,omitempty"`
 }
 
 // A range is a special type of Filter operation
@@ -194,7 +194,7 @@ func (f *FilterOp) Exists(name string) *FilterOp {
 	return f
 }
 func (f *FilterOp) Missing(name string) *FilterOp {
-	f.MisssingVal = map[string]string{"field": name}
+	f.MissingVal = map[string]string{"field": name}
 	return f
 }
 
@@ -204,8 +204,8 @@ func (f *FilterOp) Add(fop *FilterOp) *FilterOp {
 	if len(fop.Exist) > 0 {
 		f.Exist = fop.Exist
 	}
-	if len(fop.MisssingVal) > 0 {
-		f.MisssingVal = fop.MisssingVal
+	if len(fop.MissingVal) > 0 {
+		f.MissingVal = fop.MissingVal
 	}
 	if len(fop.Range) > 0 {
 		f.Range = fop.Range
