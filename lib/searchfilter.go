@@ -14,7 +14,6 @@ package elastigo
 import (
 	"encoding/json"
 	"fmt"
-
 	. "github.com/araddon/gou"
 )
 
@@ -133,19 +132,38 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
-	curField    string
-	TermsMap    map[string][]interface{} `json:"terms,omitempty"`
-	TermMap     map[string]interface{}   `json:"term,omitempty"`
-	RangeMap    map[string]RangeFilter   `json:"range,omitempty"`
-	Exist       map[string]string        `json:"exists,omitempty"`
-	MisssingVal map[string]string        `json:"missing,omitempty"`
-	AndFilters  []FilterOp               `json:"and,omitempty"`
-	OrFilters   []FilterOp               `json:"or,omitempty"`
-	Limit       *LimitFilter             `json:"limit,omitempty"`
+	TermsMap   map[string][]interface{} `json:"terms,omitempty"`
+	TermMap    map[string]interface{}   `json:"term,omitempty"`
+	RangeMap   map[string]RangeFilter   `json:"range,omitempty"`
+	ExistMap   map[string]string        `json:"exists,omitempty"`
+	MissingMap map[string]string        `json:"missing,omitempty"`
+	AndFilters []FilterOp               `json:"and,omitempty"`
+	OrFilters  []FilterOp               `json:"or,omitempty"`
+	NotFilters []FilterOp               `json:"not,omitempty"`
+	Limit      *LimitFilter             `json:"limit,omitempty"`
+	Type       *TypeFilter              `json:"type,omitempty"`
+	Ids        *IdFilter                `json:"ids,omitempty"`
+	Script     *ScriptFilter            `json:"script,omitempty"`
+	GeoDistance *GeoDistanceFilter		`json"geo_distance,omitempty"`
 }
 
 type LimitFilter struct {
 	Value int `json:"value"`
+}
+
+type TypeFilter struct {
+	Value string `json:"value"`
+}
+
+type IdFilter struct {
+	Type   string   `json:"type,omitempty"`
+	Values []string `json:"values,omitempty"`
+}
+
+type ScriptFilter struct {
+	Script   string                 `json:"script"`
+	Params   map[string]interface{} `json:"params,omitempty"`
+	IsCached bool                   `json:"_cache,omitempty"`
 }
 
 type RangeFilter struct {
@@ -156,11 +174,8 @@ type RangeFilter struct {
 	TimeZone string      `json:"time_zone,omitempty"` //Ideally this would be an int
 }
 
-// A range is a special type of Filter operation
-//
-//    Range().Exists("repository.name")
-func Range() *FilterOp {
-	return &FilterOp{RangeMap: make(map[string]RangeFilter)}
+type GeoDistanceFilter struct {
+	Distance string `json:"distance"`
 }
 
 // Term will add a term to the filter.
@@ -209,8 +224,8 @@ func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
 	return f
 }
 
-// AddRange adds a range filter for the given field.
-func (f *FilterOp) AddRange(field string, gte interface{},
+// Range adds a range filter for the given field.
+func (f *FilterOp) Range(field string, gte interface{},
 	gt interface{}, lte interface{}, lt interface{}, timeZone string) *FilterOp {
 
 	if f.RangeMap == nil {
