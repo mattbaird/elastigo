@@ -143,20 +143,20 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
-	TermsMap     map[string][]interface{} `json:"terms,omitempty"`
-	TermMap      map[string]interface{}   `json:"term,omitempty"`
-	RangeMap     map[string]RangeFilter   `json:"range,omitempty"`
-	ExistsProp   *PropertyPathMarker      `json:"exists,omitempty"`
-	MissingProp  *PropertyPathMarker      `json:"missing,omitempty"`
-	AndFilters   []FilterOp               `json:"and,omitempty"`
-	OrFilters    []FilterOp               `json:"or,omitempty"`
-	NotFilters   []FilterOp               `json:"not,omitempty"`
-	Limit        *LimitFilter             `json:"limit,omitempty"`
-	Type         *TypeFilter              `json:"type,omitempty"`
-	Ids          *IdFilter                `json:"ids,omitempty"`
-	Script       *ScriptFilter            `json:"script,omitempty"`
-	GeoDist      map[string]interface{}   `json:"geo_distance,omitempty"`
-	GeoDistRange map[string]interface{}   `json:"geo_distance_range,omitempty"`
+	TermsMap     map[string]interface{} `json:"terms,omitempty"`
+	TermMap      map[string]interface{} `json:"term,omitempty"`
+	RangeMap     map[string]RangeFilter `json:"range,omitempty"`
+	ExistsProp   *PropertyPathMarker    `json:"exists,omitempty"`
+	MissingProp  *PropertyPathMarker    `json:"missing,omitempty"`
+	AndFilters   []FilterOp             `json:"and,omitempty"`
+	OrFilters    []FilterOp             `json:"or,omitempty"`
+	NotFilters   []FilterOp             `json:"not,omitempty"`
+	Limit        *LimitFilter           `json:"limit,omitempty"`
+	Type         *TypeFilter            `json:"type,omitempty"`
+	Ids          *IdFilter              `json:"ids,omitempty"`
+	Script       *ScriptFilter          `json:"script,omitempty"`
+	GeoDist      map[string]interface{} `json:"geo_distance,omitempty"`
+	GeoDistRange map[string]interface{} `json:"geo_distance_range,omitempty"`
 }
 
 type PropertyPathMarker struct {
@@ -266,15 +266,13 @@ func NewGeoField(field string, latitude float32, longitude float32) GeoField {
 //	 Note: you can only have one terms clause in a filter. Use a bool filter to combine
 func (f *FilterOp) Terms(field string, executionMode TermExecutionMode, values ...interface{}) *FilterOp {
 	//You can only have one terms in a filter
-	f.TermsMap = make(map[string][]interface{})
+	f.TermsMap = make(map[string]interface{})
 
 	if executionMode != "" {
 		f.TermsMap["execution"] = executionMode
 	}
 
-	for _, val := range values {
-		f.TermsMap[field] = append(f.TermsMap[field], val)
-	}
+	f.TermsMap[field] = values
 
 	return f
 }
