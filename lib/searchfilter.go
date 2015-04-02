@@ -132,19 +132,20 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
-	TermsMap   map[string][]interface{} `json:"terms,omitempty"`
-	TermMap    map[string]interface{}   `json:"term,omitempty"`
-	RangeMap   map[string]RangeFilter   `json:"range,omitempty"`
-	ExistMap   map[string]string        `json:"exists,omitempty"`
-	MissingMap map[string]string        `json:"missing,omitempty"`
-	AndFilters []FilterOp               `json:"and,omitempty"`
-	OrFilters  []FilterOp               `json:"or,omitempty"`
-	NotFilters []FilterOp               `json:"not,omitempty"`
-	Limit      *LimitFilter             `json:"limit,omitempty"`
-	Type       *TypeFilter              `json:"type,omitempty"`
-	Ids        *IdFilter                `json:"ids,omitempty"`
-	Script     *ScriptFilter            `json:"script,omitempty"`
-	GeoDistance *GeoDistanceFilter		`json"geo_distance,omitempty"`
+	TermsMap     map[string][]interface{} `json:"terms,omitempty"`
+	TermMap      map[string]interface{}   `json:"term,omitempty"`
+	RangeMap     map[string]RangeFilter   `json:"range,omitempty"`
+	ExistMap     map[string]string        `json:"exists,omitempty"`
+	MissingMap   map[string]string        `json:"missing,omitempty"`
+	AndFilters   []FilterOp               `json:"and,omitempty"`
+	OrFilters    []FilterOp               `json:"or,omitempty"`
+	NotFilters   []FilterOp               `json:"not,omitempty"`
+	Limit        *LimitFilter             `json:"limit,omitempty"`
+	Type         *TypeFilter              `json:"type,omitempty"`
+	Ids          *IdFilter                `json:"ids,omitempty"`
+	Script       *ScriptFilter            `json:"script,omitempty"`
+	GeoDist      map[string]interface{}   `json:"geo_distance,omitempty"`
+	GeoDistRange map[string]interface{}   `json:"geo_distance_range,omitempty"`
 }
 
 type LimitFilter struct {
@@ -174,8 +175,14 @@ type RangeFilter struct {
 	TimeZone string      `json:"time_zone,omitempty"` //Ideally this would be an int
 }
 
-type GeoDistanceFilter struct {
-	Distance string `json:"distance"`
+type GeoLocation struct {
+	Latitude  float32 `json:"lat"`
+	Longitude float32 `json:"lon"`
+}
+
+type GeoField struct {
+	GeoLocation
+	Field string
 }
 
 // Term will add a term to the filter.
@@ -207,6 +214,35 @@ func (f *FilterOp) Or(filter *FilterOp) *FilterOp {
 	}
 
 	return f
+}
+
+func (f *FilterOp) GeoDistance(distance string, fields ...GeoField) *FilterOp {
+	f.GeoDist = make(map[string]interface{})
+	f.GeoDist["distance"] = distance
+	for _, val := range fields {
+		f.GeoDist[val.Field] = val.GeoLocation
+	}
+
+	return f
+}
+
+func (f *FilterOp) GeoDistanceRange(from string, to string, fields ...GeoField) *FilterOp {
+	f.GeoDist = make(map[string]interface{})
+	f.GeoDist["from"] = from
+	f.GeoDist["to"] = to
+
+	for _, val := range fields {
+		f.GeoDist[val.Field] = val.GeoLocation
+	}
+
+	return f
+}
+
+// Helper to create values for the GeoDistance filters
+func NewGeoField(field string, latitude float32, longitude float32) GeoField {
+	return GeoField{
+		GeoLocation: GeoLocation{Latitude: latitude, Longitude: longitude},
+		Field:       field}
 }
 
 // Filter Terms
