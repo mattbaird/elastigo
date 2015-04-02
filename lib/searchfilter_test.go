@@ -41,7 +41,7 @@ func TestFilters(t *testing.T) {
 
 	//actor_attributes: {type: "User",
 	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", "portland"),
+		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
 	)
 	out, _ = qry.Result(c)
 	expectedDocs = 10
@@ -53,8 +53,8 @@ func TestFilters(t *testing.T) {
 		Should this be an AND by default?
 	*/
 	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", "portland"),
-		Filter().Terms("repository.has_wiki", true),
+		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
+		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
 	)
 	out, err = qry.Result(c)
 	expectedDocs = 10
@@ -65,10 +65,10 @@ func TestFilters(t *testing.T) {
 
 	// NOW, lets try with two query calls instead of one
 	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", "portland"),
+		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
 	)
 	qry.Filter(
-		Filter().Terms("repository.has_wiki", true),
+		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
 	)
 	out, err = qry.Result(c)
 	//gou.Debug(out)
@@ -78,8 +78,8 @@ func TestFilters(t *testing.T) {
 
 	qry = Search("github").Filter(
 		"or",
-		Filter().Terms("actor_attributes.location", "portland"),
-		Filter().Terms("repository.has_wiki", true),
+		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
+		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
 	)
 	out, err = qry.Result(c)
 	expectedHits = 6676
@@ -92,9 +92,9 @@ func TestFilterRange(t *testing.T) {
 	c := NewTestConn()
 
 	// now lets filter range for repositories with more than 100 forks
-	out, _ := Search("github").Size("25").Filter(
-		Range().Field("repository.forks").From("100"),
-	).Result(c)
+	out, _ := Search("github").Size("25").Filter(Filter().
+		Range("repository.forks", 100, nil, nil, nil, "")).Result(c)
+
 	if out == nil || &out.Hits == nil {
 		t.Fail()
 		return

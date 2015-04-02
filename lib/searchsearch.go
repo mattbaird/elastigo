@@ -47,7 +47,7 @@ type SearchDsl struct {
 	FacetVal      *FacetDsl                `json:"facets,omitempty"`
 	QueryVal      *QueryDsl                `json:"query,omitempty"`
 	SortBody      []*SortDsl               `json:"sort,omitempty"`
-	FilterVal     *FilterWrap              `json:"filter,omitempty"`
+	FilterVal     *FilterOp                `json:"filter,omitempty"`
 	AggregatesVal map[string]*AggregateDsl `json:"aggregations,omitempty"`
 }
 
@@ -173,12 +173,12 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 //         Filter().Exists("repository.name"),
 //         Filter().Terms("repository.has_wiki", true)
 //     )
-func (s *SearchDsl) Filter(fl ...interface{}) *SearchDsl {
+func (s *SearchDsl) Filter(fl FilterOp) *SearchDsl {
 	if s.FilterVal == nil {
 		s.FilterVal = NewFilterWrap()
 	}
 
-	s.FilterVal.addFilters(fl)
+	s.FilterVal = fl
 	return s
 }
 

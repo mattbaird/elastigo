@@ -24,6 +24,17 @@ var (
 // A bool (and/or) clause
 type BoolClause string
 
+type TermExecutionMode string
+
+const (
+	TEM_DEFAULT TermExecutionMode = ""
+	TEM_PLAIN                     = "plain"
+	TEM_FIELD                     = "field_data"
+	TEM_BOOL                      = "bool"
+	TEM_AND                       = "and"
+	TEM_OR                        = "or"
+)
+
 // Filter clause is either a boolClause or FilterOp
 type FilterClause interface {
 	String() string
@@ -135,8 +146,8 @@ type FilterOp struct {
 	TermsMap     map[string][]interface{} `json:"terms,omitempty"`
 	TermMap      map[string]interface{}   `json:"term,omitempty"`
 	RangeMap     map[string]RangeFilter   `json:"range,omitempty"`
-	ExistMap     map[string]string        `json:"exists,omitempty"`
-	MissingMap   map[string]string        `json:"missing,omitempty"`
+	ExistsProp   *PropertyPathMarker      `json:"exists,omitempty"`
+	MissingProp  *PropertyPathMarker      `json:"missing,omitempty"`
 	AndFilters   []FilterOp               `json:"and,omitempty"`
 	OrFilters    []FilterOp               `json:"or,omitempty"`
 	NotFilters   []FilterOp               `json:"not,omitempty"`
@@ -146,6 +157,10 @@ type FilterOp struct {
 	Script       *ScriptFilter            `json:"script,omitempty"`
 	GeoDist      map[string]interface{}   `json:"geo_distance,omitempty"`
 	GeoDistRange map[string]interface{}   `json:"geo_distance_range,omitempty"`
+}
+
+type PropertyPathMarker struct {
+	Field string `json:"field"`
 }
 
 type LimitFilter struct {
@@ -249,9 +264,13 @@ func NewGeoField(field string, latitude float32, longitude float32) GeoField {
 //
 //   Filter().Terms("user","kimchy","stuff")
 //	 Note: you can only have one terms clause in a filter. Use a bool filter to combine
-func (f *FilterOp) Terms(field string, values ...interface{}) *FilterOp {
+func (f *FilterOp) Terms(field string, executionMode TermExecutionMode, values ...interface{}) *FilterOp {
 	//You can only have one terms in a filter
 	f.TermsMap = make(map[string][]interface{})
+
+	if executionMode != "" {
+		f.TermsMap["execution"] = executionMode
+	}
 
 	for _, val := range values {
 		f.TermsMap[field] = append(f.TermsMap[field], val)
@@ -275,6 +294,16 @@ func (f *FilterOp) Range(field string, gte interface{},
 		Lt:       lt,
 		TimeZone: timeZone}
 
+	return f
+}
+
+func (f *FilterOp) Exists(field string) *FilterOp {
+	f.ExistsProp = &PropertyPathMarker{Field: field}
+	return f
+}
+
+func (f *FilterOp) Missing(field string) *FilterOp {
+	f.MissingProp = &PropertyPathMarker{Field: field}
 	return f
 }
 
