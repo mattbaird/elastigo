@@ -16,7 +16,57 @@ import (
 	//"github.com/araddon/gou"
 	"github.com/bmizerany/assert"
 	"testing"
+	"encoding/json"
 )
+
+func GetJson(input interface{}) map[string]interface{} {
+	var result map[string]interface{}
+	bytes, _ := json.Marshal(input)
+
+	json.Unmarshal(bytes, &result)
+	return result
+}
+
+func TestTermsDsl(t *testing.T) {
+	filter := Filter().Terms("Sample", TEM_AND, "asdf", 123, true)
+	actual := GetJson(filter)
+
+	actualTerms := actual["terms"].(map[string]interface{})
+	actualValues := actualTerms["Sample"].([]interface{})
+
+	assert.Equal(t, 1, len(actual), "JSON should only have one key")
+	assert.Equal(t, 3, len(actualValues), "Should have 3 term values")
+	assert.Equal(t, actualValues[0], "asdf")
+	assert.Equal(t, actualValues[1], float64(123))
+	assert.Equal(t, actualValues[2], true)
+	assert.Equal(t, "and", actualTerms["execution"])
+}
+
+func TestTermDsl(t *testing.T) {
+	filter := Filter().Term("Sample", "asdf").Term("field2", 341.4)
+	actual := GetJson(filter)
+
+	actualTerm := actual["term"].(map[string]interface{})
+
+	assert.Equal(t, 1, len(actual), "JSON should only have one key")
+	assert.Equal(t, "asdf", actualTerm["Sample"])
+	assert.Equal(t, float64(341.4), actualTerm["field2"])
+}
+
+func TestRangeDsl(t *testing.T) {
+	filter := Filter().Range("rangefield", 1, 2, 3, 4, "+08:00")
+	actual := GetJson(filter)
+	//A bit lazy, probably should assert keys exist
+	actualRange := actual["range"].(map[string]interface{})["rangefield"].(map[string]interface{})
+
+
+	assert.Equal(t, 1, len(actual), "JSON should only have one key")
+	assert.Equal(t, float64(1), actualRange["gte"])
+	assert.Equal(t, float64(2), actualRange["gt"])
+	assert.Equal(t, float64(3), actualRange["lte"])
+	assert.Equal(t, float64(4), actualRange["lt"])
+	assert.Equal(t, "+08:00", actualRange["time_zone"])
+}
 
 func TestFilters(t *testing.T) {
 	c := NewTestConn()
