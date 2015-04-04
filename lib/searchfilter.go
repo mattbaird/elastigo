@@ -299,7 +299,6 @@ func (f *FilterOp) Exists(field string) *FilterOp {
 	f.ExistsProp = &PropertyPathMarker{Field: field}
 	return f
 }
-<<<<<<< HEAD
 
 func (f *FilterOp) Missing(field string) *FilterOp {
 	f.MissingProp = &PropertyPathMarker{Field: field}
@@ -308,24 +307,4 @@ func (f *FilterOp) Missing(field string) *FilterOp {
 
 func (f *FilterOp) SetLimit(maxResults int) *FilterOp {
 	f.Limit = &LimitFilter{Value: maxResults}
-=======
-func (f *FilterOp) Missing(name string) *FilterOp {
-	f.MissingVal = map[string]string{"field": name}
-	return f
-}
-
-// Add another Filterop, "combines" two filter ops into one
-func (f *FilterOp) Add(fop *FilterOp) *FilterOp {
-	// TODO, this is invalid, refactor
-	if len(fop.Exist) > 0 {
-		f.Exist = fop.Exist
-	}
-	if len(fop.MissingVal) > 0 {
-		f.MissingVal = fop.MissingVal
-	}
-	if len(fop.Range) > 0 {
-		f.Range = fop.Range
-	}
->>>>>>> mattbaird/master
-	return f
 }
