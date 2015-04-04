@@ -64,11 +64,11 @@ func TestFilters(t *testing.T) {
 
 	// NOW, lets try with two query calls instead of one
 	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
+		Filter().
+			And(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
+			And(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)),
 	)
-	qry.Filter(
-		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
-	)
+
 	out, err = qry.Result(c)
 	//gou.Debug(out)
 	assert.T(t, err == nil, t, "should not have error")
