@@ -116,7 +116,7 @@ func TestAggregateFilter(t *testing.T) {
 	avg := Aggregate("avg_price").Avg("price")
 
 	dateAgg := Aggregate("in_stock_products").Filter(
-		Range().Field("stock").Gt(0),
+		Filter().Range("stock", nil, 0, nil, nil, ""),
 	)
 
 	dateAgg.Aggregates(

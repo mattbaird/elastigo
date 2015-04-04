@@ -53,9 +53,8 @@ func TestFilters(t *testing.T) {
 		Should this be an AND by default?
 	*/
 	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
-		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
-	)
+		Filter().And(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
+		And(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)))
 	out, err = qry.Result(c)
 	expectedDocs = 10
 	expectedHits = 44
@@ -77,9 +76,8 @@ func TestFilters(t *testing.T) {
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
 
 	qry = Search("github").Filter(
-		"or",
-		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
-		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
+		Filter().Or(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
+		Or(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)),
 	)
 	out, err = qry.Result(c)
 	expectedHits = 6676

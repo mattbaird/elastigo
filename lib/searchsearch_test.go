@@ -194,7 +194,7 @@ func TestSearchFacetRange(t *testing.T) {
 		Facet().Fields("actor").Size("500"),
 	).Query(
 		Query().Range(
-			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+			Filter().Range("created_at", "2012-12-10T15:00:00-08:00", nil, "2012-12-10T15:10:00-08:00", nil, ""),
 		).Search("add"),
 	)
 	out, err = qry.Result(c)
@@ -276,7 +276,7 @@ func TestSearchFilterQuery(t *testing.T) {
 	out, _ := Search("github").Size("25").Query(
 		Query().Fields("repository.name", "jas*", "", ""),
 	).Filter(
-		Filter().Terms("repository.has_wiki", true),
+		Filter().Terms("repository.has_wiki", TEM_DEFAULT, true),
 	).Result(c)
 	if out == nil || &out.Hits == nil {
 		t.Fail()
@@ -295,7 +295,7 @@ func TestSearchRange(t *testing.T) {
 	// now lets filter by a subset of the total time
 	out, _ := Search("github").Size("25").Query(
 		Query().Range(
-			Range().Field("created_at").From("2012-12-10T15:00:00-08:00").To("2012-12-10T15:10:00-08:00"),
+			Filter().Range("created_at", "2012-12-10T15:00:00-08:00", nil, "2012-12-10T15:10:00-08:00", nil, ""),
 		).Search("add"),
 	).Result(c)
 	assert.T(t, out != nil && &out.Hits != nil, "Must not have nil results, or hits")
