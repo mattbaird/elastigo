@@ -61,10 +61,11 @@ type QueryDsl struct {
 
 // The core Query Syntax can be embedded as a child of a variety of different parents
 type QueryEmbed struct {
-	MatchAll   *MatchAll         `json:"match_all,omitempty"`
-	Terms      map[string]string `json:"term,omitempty"`
-	Qs         *QueryString      `json:"query_string,omitempty"`
-	MultiMatch *MultiMatch       `json:"multi_match,omitempty"`
+	MatchAll      *MatchAll              `json:"match_all,omitempty"`
+	Terms         map[string]string      `json:"term,omitempty"`
+	Qs            *QueryString           `json:"query_string,omitempty"`
+	MultiMatch    *MultiMatch            `json:"multi_match,omitempty"`
+	FunctionScore map[string]interface{} `json:"function_score,omitempty"`
 	//Exist    string            `json:"_exists_,omitempty"`
 }
 
@@ -115,6 +116,16 @@ func (q *QueryDsl) Term(name, value string) *QueryDsl {
 		q.Terms = make(map[string]string)
 	}
 	q.Terms[name] = value
+	return q
+}
+
+// FunctionScore sets functions to use to score the documents.
+// http://www.elastic.co/guide/en/elasticsearch/reference/1.x/query-dsl-function-score-query.html
+func (q *QueryDsl) FunctionScore(mode string, functions ...map[string]interface{}) *QueryDsl {
+	q.QueryEmbed.FunctionScore = map[string]interface{}{
+		"functions":  functions,
+		"score_mode": mode,
+	}
 	return q
 }
 
