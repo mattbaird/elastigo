@@ -143,6 +143,20 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
+	TermsMap        map[string]interface{} `json:"terms,omitempty"`
+	TermMap         map[string]interface{} `json:"term,omitempty"`
+	RangeMap        map[string]RangeFilter `json:"range,omitempty"`
+	ExistsProp      *PropertyPathMarker    `json:"exists,omitempty"`
+	MissingProp     *PropertyPathMarker    `json:"missing,omitempty"`
+	AndFilters      []FilterOp             `json:"and,omitempty"`
+	OrFilters       []FilterOp             `json:"or,omitempty"`
+	NotFilters      []FilterOp             `json:"not,omitempty"`
+	LimitProp       *LimitFilter           `json:"limit,omitempty"`
+	TypeProp        *TypeFilter            `json:"type,omitempty"`
+	IdsProp         *IdsFilter             `json:"ids,omitempty"`
+	ScriptProp      *ScriptFilter          `json:"script,omitempty"`
+	GeoDistMap      map[string]interface{} `json:"geo_distance,omitempty"`
+	GeoDistRangeMap map[string]interface{} `json:"geo_distance_range,omitempty"`
 }
 
 type PropertyPathMarker struct {
@@ -158,6 +172,7 @@ type TypeFilter struct {
 }
 
 type IdsFilter struct {
+	Type   []string      `json:"type,omitempty"`
 	Values []interface{} `json:"values,omitempty"`
 }
 
@@ -227,15 +242,22 @@ func (f *FilterOp) Not(filter *FilterOp) *FilterOp {
 }
 
 func (f *FilterOp) GeoDistance(distance string, fields ...GeoField) *FilterOp {
+	f.GeoDistMap = make(map[string]interface{})
+	f.GeoDistMap["distance"] = distance
 	for _, val := range fields {
+		f.GeoDistMap[val.Field] = val.GeoLocation
 	}
 
 	return f
 }
 
 func (f *FilterOp) GeoDistanceRange(from string, to string, fields ...GeoField) *FilterOp {
+	f.GeoDistRangeMap = make(map[string]interface{})
+	f.GeoDistRangeMap["from"] = from
+	f.GeoDistRangeMap["to"] = to
 
 	for _, val := range fields {
+		f.GeoDistRangeMap[val.Field] = val.GeoLocation
 	}
 
 	return f
@@ -284,14 +306,17 @@ func (f *FilterOp) Range(field string, gte interface{},
 }
 
 func (f *FilterOp) Type(fieldType string) *FilterOp {
+	f.TypeProp = &TypeFilter{Value: fieldType}
 	return f
 }
 
 func (f *FilterOp) Ids(ids ...interface{}) *FilterOp {
+	f.IdsProp = &IdsFilter{Values: ids}
 	return f
 }
 
 func (f *FilterOp) IdsByTypes(types []string, ids ...interface{}) *FilterOp {
+	f.IdsProp = &IdsFilter{Type: types, Values: ids}
 	return f
 }
 
@@ -306,5 +331,6 @@ func (f *FilterOp) Missing(field string) *FilterOp {
 }
 
 func (f *FilterOp) Limit(maxResults int) *FilterOp {
+	f.LimitProp = &LimitFilter{Value: maxResults}
 	return f
 }
