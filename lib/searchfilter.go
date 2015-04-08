@@ -143,20 +143,6 @@ func CompoundFilter(fl ...interface{}) *FilterWrap {
 }
 
 type FilterOp struct {
-	TermsMap     map[string]interface{} `json:"terms,omitempty"`
-	TermMap      map[string]interface{} `json:"term,omitempty"`
-	RangeMap     map[string]RangeFilter `json:"range,omitempty"`
-	ExistsProp   *PropertyPathMarker    `json:"exists,omitempty"`
-	MissingProp  *PropertyPathMarker    `json:"missing,omitempty"`
-	AndFilters   []FilterOp             `json:"and,omitempty"`
-	OrFilters    []FilterOp             `json:"or,omitempty"`
-	NotFilters   []FilterOp             `json:"not,omitempty"`
-	Limit        *LimitFilter           `json:"limit,omitempty"`
-	Type         *TypeFilter            `json:"type,omitempty"`
-	Ids          *IdFilter              `json:"ids,omitempty"`
-	Script       *ScriptFilter          `json:"script,omitempty"`
-	GeoDist      map[string]interface{} `json:"geo_distance,omitempty"`
-	GeoDistRange map[string]interface{} `json:"geo_distance_range,omitempty"`
 }
 
 type PropertyPathMarker struct {
@@ -171,9 +157,8 @@ type TypeFilter struct {
 	Value string `json:"value"`
 }
 
-type IdFilter struct {
-	Type   string   `json:"type,omitempty"`
-	Values []string `json:"values,omitempty"`
+type IdsFilter struct {
+	Values []interface{} `json:"values,omitempty"`
 }
 
 type ScriptFilter struct {
@@ -231,23 +216,26 @@ func (f *FilterOp) Or(filter *FilterOp) *FilterOp {
 	return f
 }
 
+func (f *FilterOp) Not(filter *FilterOp) *FilterOp {
+	if len(f.NotFilters) == 0 {
+		f.NotFilters = []FilterOp{*filter}
+	} else {
+		f.NotFilters = append(f.NotFilters, *filter)
+	}
+
+	return f
+}
+
 func (f *FilterOp) GeoDistance(distance string, fields ...GeoField) *FilterOp {
-	f.GeoDist = make(map[string]interface{})
-	f.GeoDist["distance"] = distance
 	for _, val := range fields {
-		f.GeoDist[val.Field] = val.GeoLocation
 	}
 
 	return f
 }
 
 func (f *FilterOp) GeoDistanceRange(from string, to string, fields ...GeoField) *FilterOp {
-	f.GeoDist = make(map[string]interface{})
-	f.GeoDist["from"] = from
-	f.GeoDist["to"] = to
 
 	for _, val := range fields {
-		f.GeoDist[val.Field] = val.GeoLocation
 	}
 
 	return f
@@ -295,6 +283,18 @@ func (f *FilterOp) Range(field string, gte interface{},
 	return f
 }
 
+func (f *FilterOp) Type(fieldType string) *FilterOp {
+	return f
+}
+
+func (f *FilterOp) Ids(ids ...interface{}) *FilterOp {
+	return f
+}
+
+func (f *FilterOp) IdsByTypes(types []string, ids ...interface{}) *FilterOp {
+	return f
+}
+
 func (f *FilterOp) Exists(field string) *FilterOp {
 	f.ExistsProp = &PropertyPathMarker{Field: field}
 	return f
@@ -305,6 +305,6 @@ func (f *FilterOp) Missing(field string) *FilterOp {
 	return f
 }
 
-func (f *FilterOp) SetLimit(maxResults int) *FilterOp {
-	f.Limit = &LimitFilter{Value: maxResults}
+func (f *FilterOp) Limit(maxResults int) *FilterOp {
+	return f
 }
