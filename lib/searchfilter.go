@@ -54,6 +54,12 @@ func (f *FilterWrap) String() string {
 	return fmt.Sprintf(`fopv: %d:%v`, len(f.filters), f.filters)
 }
 
+// Bool sets the type of boolean filter to use.
+// Accepted values are "and" and "or".
+func (f *FilterWrap) Bool(s string) {
+	f.boolClause = s
+}
+
 // Custom marshalling to support the query dsl
 func (f *FilterWrap) addFilters(fl []interface{}) {
 	if len(fl) > 1 {
