@@ -250,7 +250,7 @@ type NodeStatsJVMMemResponse struct {
 	HeapCommitedInBytes     int64                                   `json:"heap_commited_in_bytes"`
 	HeapMaxInBytes          int64                                   `json:"heap_max_in_bytes"`
 	NonHeapUsedInBytes      int64                                   `json:"non_heap_used_in_bytes"`
-	NonHeapCommittedInBytes int64                                   `json:"non_heap_used_in_bytes"`
+	NonHeapCommittedInBytes int64                                   `json:"non_heap_committed_in_bytes"`
 	Pools                   map[string]NodeStatsJVMMemPoolsResponse `json:"pools"`
 }
 type NodeStatsJVMMemPoolsResponse struct {
