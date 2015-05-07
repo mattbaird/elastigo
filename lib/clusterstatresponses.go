@@ -25,8 +25,8 @@ type NodeStatsNodeResponse struct {
 }
 
 type NodeStatsNodeAttributes struct {
-	Data   bool
-	Client bool
+	Data   string `json:"data"`
+	Client string `json:"client"`
 }
 type NodeStatsNetworkResponse struct {
 	TCP NodeStatsTCPResponse `json:"tcp"`
