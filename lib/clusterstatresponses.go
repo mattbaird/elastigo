@@ -33,12 +33,12 @@ type NodeStatsNetworkResponse struct {
 }
 
 type NodeStatsFieldDataBreakerResponse struct {
-	MaximumSizeInBytes   int64 `json:"maximum_size_in_bytes"`
-	MaximumSize          string `json:"maximum_size"`
-	EstimatedSizeInBytes int64  `json:"estimated_size_in_bytes"`
-	EstimatedSize        string `json:"estimated_size"`
-	Overhead             int64  `json:"overhead"`
-	Tripped              int64  `json:"tripped"`
+	MaximumSizeInBytes   int64   `json:"maximum_size_in_bytes"`
+	MaximumSize          string  `json:"maximum_size"`
+	EstimatedSizeInBytes int64   `json:"estimated_size_in_bytes"`
+	EstimatedSize        string  `json:"estimated_size"`
+	Overhead             float64 `json:"overhead"`
+	Tripped              int64   `json:"tripped"`
 }
 type NodeStatsTransportResponse struct {
 	ServerOpen int64 `json:"server_open"`
