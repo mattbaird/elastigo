@@ -14,7 +14,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	elastigo "github.com/mattbaird/elastigo/lib"
+	elastigo "github.com/kpashka/elastigo/lib"
 	"log"
 	"os"
 )
@@ -27,6 +27,12 @@ func main() {
 	c := elastigo.NewConn()
 	log.SetFlags(log.LstdFlags)
 	flag.Parse()
+
+	// Trace all requests
+	c.RequestTracer = func(method, url, body string) {
+		log.Printf("Requesting %s %s", method, url)
+		log.Printf("Request body: %s", body)
+	}
 
 	fmt.Println("host = ", *host)
 	// Set the Elasticsearch Host to Connect to
