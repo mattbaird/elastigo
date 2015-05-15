@@ -25,20 +25,20 @@ type NodeStatsNodeResponse struct {
 }
 
 type NodeStatsNodeAttributes struct {
-	Data   bool
-	Client bool
+	Data   string `json:"data"`
+	Client string `json:"client"`
 }
 type NodeStatsNetworkResponse struct {
 	TCP NodeStatsTCPResponse `json:"tcp"`
 }
 
 type NodeStatsFieldDataBreakerResponse struct {
-	MaximumSizeInBytes   int64 `json:"maximum_size_in_bytes"`
-	MaximumSize          int64 `json:"maximum_size"`
-	EstimatedSizeInBytes int64 `json:"estimated_size_in_bytes"`
-	EstimatedSize        int64 `json:"estimated_size"`
-	Overhead             int64 `json:"overhead"`
-	Tripped              int64 `json:"tripped"`
+	MaximumSizeInBytes   int64   `json:"maximum_size_in_bytes"`
+	MaximumSize          string  `json:"maximum_size"`
+	EstimatedSizeInBytes int64   `json:"estimated_size_in_bytes"`
+	EstimatedSize        string  `json:"estimated_size"`
+	Overhead             float64 `json:"overhead"`
+	Tripped              int64   `json:"tripped"`
 }
 type NodeStatsTransportResponse struct {
 	ServerOpen int64 `json:"server_open"`
@@ -162,12 +162,12 @@ type NodeStatsIndicesFieldDataResponse struct {
 	Evictions         int64 `json:"evictions"`
 }
 type NodeStatsIndicesPercolateResponse struct {
-	Total             int64 `json:"total"`
-	TimeInMs          int64 `json:"time_in_millis"`
-	Current           int64 `json:"current"`
-	MemorySizeInBytes int64 `json:"memory_size_in_bytes"`
-	MemorySize        int64 `json:"memory_size"`
-	Queries           int64 `json:"queries"`
+	Total             int64  `json:"total"`
+	TimeInMs          int64  `json:"time_in_millis"`
+	Current           int64  `json:"current"`
+	MemorySizeInBytes int64  `json:"memory_size_in_bytes"`
+	MemorySize        string `json:"memory_size"`
+	Queries           int64  `json:"queries"`
 }
 type NodeStatsIndicesCompletionResponse struct {
 	SizeInBytes int64 `json:"size_in_bytes"`
@@ -250,7 +250,7 @@ type NodeStatsJVMMemResponse struct {
 	HeapCommitedInBytes     int64                                   `json:"heap_commited_in_bytes"`
 	HeapMaxInBytes          int64                                   `json:"heap_max_in_bytes"`
 	NonHeapUsedInBytes      int64                                   `json:"non_heap_used_in_bytes"`
-	NonHeapCommittedInBytes int64                                   `json:"non_heap_used_in_bytes"`
+	NonHeapCommittedInBytes int64                                   `json:"non_heap_committed_in_bytes"`
 	Pools                   map[string]NodeStatsJVMMemPoolsResponse `json:"pools"`
 }
 type NodeStatsJVMMemPoolsResponse struct {
