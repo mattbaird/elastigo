@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type CatShards []*CatShardInfo
+type CatShards []CatShardInfo
 
 // Stringify the shards
 func (s *CatShards) String() string {
@@ -85,4 +85,21 @@ func (s *CatShardInfo) String() string {
 	}
 	return fmt.Sprintf("%v:%v:%v:%v:%v:%v:%v:%v", s.IndexName, s.Shard, s.Primary,
 		s.State, s.Docs, s.Store, s.NodeIP, s.NodeName)
+}
+
+// Get all the shards, even the bad ones
+func (c *Conn) GetCatShards() (shards CatShards) {
+	shards = make(CatShards, 0)
+	args := map[string]interface{}{"bytes": "b"}
+	s, err := c.DoCommand("GET", "/_cat/shards", args, nil)
+	if err == nil {
+		catShardLines := strings.Split(string(s[:]), "\n")
+		for _, shardLine := range catShardLines {
+			shard, _ := NewCatShardInfo(shardLine)
+			if nil != shard {
+				shards = append(shards, *shard)
+			}
+		}
+	}
+	return shards
 }

@@ -57,3 +57,20 @@ func NewCatIndexInfo(indexLine string) (catIndex *CatIndexInfo, err error) {
 	}
 	return catIndex, nil
 }
+
+// Pull all the index info from the connection
+func (c *Conn) GetCatIndexInfo(pattern string) (catIndices []CatIndexInfo) {
+	catIndices = make([]CatIndexInfo, 0)
+	args := map[string]interface{}{"bytes": "b"}
+	indices, err := c.DoCommand("GET", "/_cat/indices/"+pattern, args, nil)
+	if err == nil {
+		indexLines := strings.Split(string(indices[:]), "\n")
+		for _, index := range indexLines {
+			ci, _ := NewCatIndexInfo(index)
+			if nil != ci {
+				catIndices = append(catIndices, *ci)
+			}
+		}
+	}
+	return catIndices
+}
