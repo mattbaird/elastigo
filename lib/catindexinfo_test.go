@@ -22,7 +22,7 @@ func TestCatIndexInfo(t *testing.T) {
 		So(i.Store.Size, ShouldEqual, 11000)
 		So(i.Store.PriSize, ShouldEqual, 13000)
 	})
-	Convey("Create index line from a bad replcas index listing", t, func() {
+	Convey("Create index line from a bad replicas index listing", t, func() {
 		i, err := NewCatIndexInfo("red foo-2000-01-01-bar 2 a 1234 3 11000 13000")
 		So(err, ShouldBeNil)
 		So(i.Health, ShouldEqual, "red")
@@ -58,7 +58,7 @@ func TestCatIndexInfo(t *testing.T) {
 		So(i.Store.Size, ShouldEqual, 11000)
 		So(i.Store.PriSize, ShouldEqual, 13000)
 	})
-	Convey("Create index line from a bad delets index listing", t, func() {
+	Convey("Create index line from a bad deletes index listing", t, func() {
 		i, err := NewCatIndexInfo("red foo-2000-01-01-bar 2 1 1234 a 11000 13000")
 		So(err, ShouldBeNil)
 		So(i.Health, ShouldEqual, "red")
