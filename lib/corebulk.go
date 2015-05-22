@@ -335,6 +335,10 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 
 	response := responseStruct{}
 
+	if b.conn.RequestTracer != nil {
+		b.conn.RequestTracer("POST", "/_bulk", buf.String())
+	}
+
 	body, err := b.conn.DoCommand("POST", "/_bulk", nil, buf)
 
 	if err != nil {
