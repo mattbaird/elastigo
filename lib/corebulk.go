@@ -306,11 +306,11 @@ func (b *BulkIndexer) Delete(index, _type, id string, refresh bool) {
 	return
 }
 
-func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, ttl string, date *time.Time, script string, refresh bool) error {
+func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, parent, ttl string, date *time.Time, script string, refresh bool) error {
 
 	var data map[string]interface{} = make(map[string]interface{})
 	data["script"] = script
-	return b.Update(index, _type, id, ttl, date, data, refresh)
+	return b.Update(index, _type, id, parent, ttl, date, data, refresh)
 }
 
 func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, parent, ttl string, date *time.Time, partialDoc interface{}, upsert bool, refresh bool) error {
