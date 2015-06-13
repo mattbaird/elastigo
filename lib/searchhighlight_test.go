@@ -52,12 +52,10 @@ func TestFieldDsl(t *testing.T) {
 	assert.Equal(t, "fdsa", actual["type"])
 }
 
-
 func TestEmbedAndFieldDsl(t *testing.T) {
 	highlight := NewHighlight().
 		SetOptions(NewHighlightOpts().Tags("<div>", "</div>")).
 		AddField("afield", NewHighlightOpts().Type("something"))
-
 
 	actual := GetJson(highlight)
 	actualField := actual["fields"].(map[string]interface{})["afield"].(map[string]interface{})
