@@ -13,27 +13,9 @@ package elastigo
 
 import (
 	"fmt"
-	//"github.com/araddon/gou"
-	"encoding/json"
 	"github.com/bmizerany/assert"
 	"testing"
 )
-
-func GetJson(input interface{}) map[string]interface{} {
-	var result map[string]interface{}
-	bytes, _ := json.Marshal(input)
-
-	json.Unmarshal(bytes, &result)
-	return result
-}
-
-func HasKey(input map[string]interface{}, key string) bool {
-	if _, ok := input[key]; ok {
-		return true
-	}
-
-	return false
-}
 
 func TestAndDsl(t *testing.T) {
 	filter := Filter().And(Filter().Term("test", "asdf")).
