@@ -31,8 +31,7 @@ func TestAndDsl(t *testing.T) {
 }
 
 func TestOrDsl(t *testing.T) {
-	filter := Filter().Or(Filter().Term("test", "asdf")).
-		Or(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
+	filter := Filter().Or(Filter().Term("test", "asdf"), Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
 	actual := GetJson(filter)
 
 	actualFilters := actual["or"].([]interface{})

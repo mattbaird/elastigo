@@ -154,9 +154,9 @@ type FilterOp struct {
 	RangeMap        map[string]RangeFilter `json:"range,omitempty"`
 	ExistsProp      *PropertyPathMarker    `json:"exists,omitempty"`
 	MissingProp     *PropertyPathMarker    `json:"missing,omitempty"`
-	AndFilters      []FilterOp             `json:"and,omitempty"`
-	OrFilters       []FilterOp             `json:"or,omitempty"`
-	NotFilters      []FilterOp             `json:"not,omitempty"`
+	AndFilters      []*FilterOp            `json:"and,omitempty"`
+	OrFilters       []*FilterOp            `json:"or,omitempty"`
+	NotFilters      []*FilterOp            `json:"not,omitempty"`
 	LimitProp       *LimitFilter           `json:"limit,omitempty"`
 	TypeProp        *TypeFilter            `json:"type,omitempty"`
 	IdsProp         *IdsFilter             `json:"ids,omitempty"`
@@ -217,31 +217,32 @@ func (f *FilterOp) Term(field string, value interface{}) *FilterOp {
 	return f
 }
 
-func (f *FilterOp) And(filter *FilterOp) *FilterOp {
+func (f *FilterOp) And(filters ...*FilterOp) *FilterOp {
 	if len(f.AndFilters) == 0 {
-		f.AndFilters = []FilterOp{*filter}
+		f.AndFilters = filters[:]
 	} else {
-		f.AndFilters = append(f.AndFilters, *filter)
+		f.AndFilters = append(f.AndFilters, filters...)
 	}
 
 	return f
 }
 
-func (f *FilterOp) Or(filter *FilterOp) *FilterOp {
+func (f *FilterOp) Or(filters ...*FilterOp) *FilterOp {
 	if len(f.OrFilters) == 0 {
-		f.OrFilters = []FilterOp{*filter}
+		f.OrFilters = filters[:]
 	} else {
-		f.OrFilters = append(f.OrFilters, *filter)
+		f.OrFilters = append(f.OrFilters, filters...)
 	}
 
 	return f
 }
 
-func (f *FilterOp) Not(filter *FilterOp) *FilterOp {
+func (f *FilterOp) Not(filters ...*FilterOp) *FilterOp {
 	if len(f.NotFilters) == 0 {
-		f.NotFilters = []FilterOp{*filter}
+		f.NotFilters = filters[:]
+
 	} else {
-		f.NotFilters = append(f.NotFilters, *filter)
+		f.NotFilters = append(f.NotFilters, filters...)
 	}
 
 	return f
