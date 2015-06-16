@@ -14,6 +14,7 @@ package elastigo
 import (
 	"flag"
 	"log"
+	"encoding/json"
 )
 
 var (
@@ -21,3 +22,19 @@ var (
 	eshost   *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
 	logLevel *string = flag.String("logging", "info", "Which log level: [debug,info,warn,error,fatal]")
 )
+
+func GetJson(input interface{}) map[string]interface{} {
+	var result map[string]interface{}
+	bytes, _ := json.Marshal(input)
+
+	json.Unmarshal(bytes, &result)
+	return result
+}
+
+func HasKey(input map[string]interface{}, key string) bool {
+	if _, ok := input[key]; ok {
+		return true
+	}
+
+	return false
+}
