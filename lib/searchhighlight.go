@@ -41,13 +41,21 @@ func (t *HighlightDsl) MarshalJSON() ([]byte, error) {
 		m["tag_schema"] = t.TagSchema
 	}
 
-	//This is terrible :(
-	if t.Settings != nil {
-		embed, _ := json.Marshal(t.Settings)
-		json.Unmarshal(embed, &m)
+	if t.Settings == nil {
+		return json.Marshal(m)
 	}
 
-	return json.Marshal(m)
+	//This is terrible :(, could use structs package to avoid extra serialization.
+	embed, err := json.Marshal(t.Settings)
+	if err == nil {
+		err = json.Unmarshal(embed, &m)
+	}
+
+	if err == nil {
+		return json.Marshal(m)
+	}
+
+	return nil, err
 }
 
 func (h *HighlightDsl) AddField(name string, settings *HighlightEmbed) *HighlightDsl {
