@@ -165,11 +165,11 @@ func (q *QueryDsl) Fields(fields, search, exists, missing string) *QueryDsl {
 }
 
 // Filter this query
-func (q *QueryDsl) Filter(f *FilterOp) *QueryDsl {
+func (q *QueryDsl) Filter(fl ...interface{}) *QueryDsl {
 	if q.FilterVal == nil {
 		q.FilterVal = NewFilterWrap()
 	}
-	q.FilterVal.addFilters([]interface{}{f})
+	q.FilterVal.addFilters(fl)
 	return q
 }
 
