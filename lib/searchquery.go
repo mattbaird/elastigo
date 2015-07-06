@@ -105,7 +105,7 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 		return q
 	}
 	// TODO:  this is not valid, refactor
-	q.FilterVal.Add(fop)
+	//q.FilterVal.Add(fop)
 	return q
 }
 
@@ -141,6 +141,11 @@ func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 // Querystring operations
 func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
 	q.QueryEmbed.Qs = qs
+	return q
+}
+
+func (q *QueryDsl) SetLenient(lenient bool) *QueryDsl {
+	q.QueryEmbed.Qs.Lenient = lenient
 	return q
 }
 
@@ -193,7 +198,7 @@ type QueryWrap struct {
 
 // QueryString based search
 func NewQueryString(field, query string) QueryString {
-	return QueryString{"", field, query, "", "", nil}
+	return QueryString{"", field, query, "", "", nil, false}
 }
 
 type QueryString struct {
@@ -203,6 +208,7 @@ type QueryString struct {
 	Exists          string   `json:"_exists_,omitempty"`
 	Missing         string   `json:"_missing_,omitempty"`
 	Fields          []string `json:"fields,omitempty"`
+	Lenient         bool     `json:"lenient,omitempty"`
 	//_exists_:field1,
 	//_missing_:field1,
 }
