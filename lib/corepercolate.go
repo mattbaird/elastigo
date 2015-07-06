@@ -16,6 +16,19 @@ import (
 	"fmt"
 )
 
+//{"took":9,"_shards":{"total":3,"successful":3,"failed":0},"total":3,
+//"matches":[{"_index":"test-geoevents-20150706-115234","_id":"nyc,West Village"},{"_index":"test-geoevents-20150706-115234","_id":"nyc,Manhattan"},{"_index":"test-geoevents-20150706-115234","_id":"nyc,Greenwich Village"}]}
+
+type PercolatorResult struct {
+	SearchResult
+	Matches []PercolatorMatch `json:"matches"`
+}
+
+type PercolatorMatch struct {
+	Index string `json:"_index"`
+	Id    string `json:"_id"`
+}
+
 // RegisterPercolate allows the caller to register queries against an index,
 // and then send percolate requests which include a doc, and getting back the
 // queries that match on that doc out of the set of registered queries.  Think
@@ -42,9 +55,9 @@ func (c *Conn) RegisterPercolate(index string, name string, args map[string]inte
 	return retval, err
 }
 
-func (c *Conn) Percolate(index string, _type string, name string, args map[string]interface{}, doc string) (Match, error) {
+func (c *Conn) Percolate(index string, _type string, name string, args map[string]interface{}, doc string) (PercolatorResult, error) {
 	var url string
-	var retval Match
+	var retval PercolatorResult
 	url = fmt.Sprintf("/%s/%s/_percolate", index, _type)
 	body, err := c.DoCommand("GET", url, args, doc)
 	if err != nil {
