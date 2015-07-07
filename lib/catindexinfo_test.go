@@ -11,8 +11,6 @@ func TestCatIndexInfo(t *testing.T) {
 		So(err, ShouldNotBeNil)
 	})
 	Convey("catIndex Create index line from a bad shards index listing", t, func() {
-		// green  open   twitter    5   1      11434            0       64mb           32mb
-		//green open logs-2015-06-19   2 1 135389346 20 53048922233 53048922233
 		i, err := NewCatIndexInfo("green open logs-2015-06-19   2 1 135389346 20 53048922233 53048922233")
 		So(err, ShouldBeNil)
 		So(i.Health, ShouldEqual, "green")

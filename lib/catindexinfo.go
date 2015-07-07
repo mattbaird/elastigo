@@ -9,8 +9,8 @@ import (
 var ErrInvalidIndexLine = errors.New("Cannot parse indexline")
 
 //Create an IndexInfo from the string _cat/indices would produce
-//EX: health status index    pri rep docs.count docs.deleted store.size pri.store.size
-//green open logs-2015-06-19   2 0 135389346 0 53048922233 53048922233
+//EX: health status index    pri rep docs.count docs.deleted store.size  pri.store.size
+//green open logs-2015-06-19   2 0   135389346  0            53048922233 53048922233
 func NewCatIndexInfo(indexLine string) (catIndex *CatIndexInfo, err error) {
 	split := strings.Fields(indexLine)
 	if len(split) < 5 {
