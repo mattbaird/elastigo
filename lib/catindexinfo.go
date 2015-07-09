@@ -64,7 +64,8 @@ func NewCatIndexInfo(indexLine string) (catIndex *CatIndexInfo, err error) {
 // Pull all the index info from the connection
 func (c *Conn) GetCatIndexInfo(pattern string) (catIndices []CatIndexInfo) {
 	catIndices = make([]CatIndexInfo, 0)
-	args := map[string]interface{}{"bytes": "b"}
+	//force it to only show the fileds we know about
+	args := map[string]interface{}{"bytes": "b", "h": "health,status,index,pri,rep,docs.count,docs.deleted,store.size,pri.store.size"}
 	indices, err := c.DoCommand("GET", "/_cat/indices/"+pattern, args, nil)
 	if err == nil {
 		indexLines := strings.Split(string(indices[:]), "\n")
