@@ -38,6 +38,15 @@ type ErrorBuffer struct {
 	Buf *bytes.Buffer
 }
 
+// An error implementation which contains the actual items in the bulk indexing response.
+type BulkIndexingError struct {
+	Items []map[string]interface{}
+}
+
+func (e BulkIndexingError) Error() string{
+	return fmt.Sprintf("Bulk Insertion Error. Failed item count [%d]", len(e.Items))
+}
+
 // A bulk indexer creates goroutines, and channels for connecting and sending data
 // to elasticsearch in bulk, using buffers.
 type BulkIndexer struct {
@@ -188,7 +197,7 @@ func (b *BulkIndexer) startHttpSender() {
 		go func() {
 			for buf := range b.sendBuf {
 				b.sendWg.Add(1)
-				// Copy for the potential re-send.
+				// Copy so we can put the buffer on the error channel, or potentially re-send it.
 				bufCopy := bytes.NewBuffer(buf.Bytes())
 				err := b.Sender(buf)
 
@@ -197,7 +206,10 @@ func (b *BulkIndexer) startHttpSender() {
 				//  2.  Retry then return error and let runner decide
 				//  3.  Retry, then log to disk?   retry later?
 				if err != nil {
+					buf = bufCopy
 					if b.RetryForSeconds > 0 {
+						//copy again so we can keep the original buffer for the error channel.
+						bufCopy := bytes.NewBuffer(buf.Bytes())
 						time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
 						err = b.Sender(bufCopy)
 						if err == nil {
@@ -331,7 +343,7 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	type responseStruct struct {
 		Took   int64                    `json:"took"`
 		Errors bool                     `json:"errors"`
-		Items  []map[string]interface{} `json:"items"`
+		Items  *json.RawMessage 		`json:"items"`
 	}
 
 	response := responseStruct{}
@@ -345,10 +357,30 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	// check for response errors, bulk insert will give 200 OK but then include errors in response
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr == nil {
+		//unmarshal the errors only if we need to
 		if response.Errors {
-			b.numErrors += uint64(len(response.Items))
-			return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
+			var items []map[string]interface{}
+			jsonErr = json.Unmarshal([]byte(*response.Items), &items)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			for _, item := range items {
+				for _, body := range item {
+					body, ok := body.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					if status, ok := body["status"]; ok && status.(float64) > 304 {
+						b.numErrors++
+					}
+				}
+			}
+
+			return BulkIndexingError{items}
 		}
+	} else {
+		return jsonErr
 	}
 	return nil
 }
