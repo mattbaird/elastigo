@@ -66,7 +66,20 @@ type QueryEmbed struct {
 	Qs            *QueryString           `json:"query_string,omitempty"`
 	MultiMatch    *MultiMatch            `json:"multi_match,omitempty"`
 	FunctionScore map[string]interface{} `json:"function_score,omitempty"`
+	Bool          map[string][]*QueryDsl `json:"bool,omitempty"`
 	//Exist    string            `json:"_exists_,omitempty"`
+}
+
+// Should can add QueryDsl with initializing `"bool":{"should":[]}`
+func (qd *QueryDsl) Should(qds ...*QueryDsl) *QueryDsl {
+	if qd.Bool == nil {
+		qd.Bool = map[string][]*QueryDsl{}
+	}
+	if _, ok := qd.Bool["should"]; !ok {
+		qd.Bool["should"] = []*QueryDsl{}
+	}
+	qd.Bool["should"] = append(qd.Bool["should"], qds...)
+	return qd
 }
 
 // MarshalJSON provides custom marshalling to support the query dsl which is a conditional
@@ -74,7 +87,7 @@ type QueryEmbed struct {
 func (qd *QueryDsl) MarshalJSON() ([]byte, error) {
 	q := qd.QueryEmbed
 	hasQuery := false
-	if q.Qs != nil || len(q.Terms) > 0 || q.MatchAll != nil || q.MultiMatch != nil {
+	if q.Qs != nil || len(q.Terms) > 0 || q.MatchAll != nil || q.MultiMatch != nil || q.Bool != nil {
 		hasQuery = true
 	}
 	// If a query has a
@@ -105,7 +118,7 @@ func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 		return q
 	}
 	// TODO:  this is not valid, refactor
-	q.FilterVal.Add(fop)
+	//q.FilterVal.Add(fop)
 	return q
 }
 
@@ -141,6 +154,11 @@ func (q *QueryDsl) Search(searchFor string) *QueryDsl {
 // Querystring operations
 func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
 	q.QueryEmbed.Qs = qs
+	return q
+}
+
+func (q *QueryDsl) SetLenient(lenient bool) *QueryDsl {
+	q.QueryEmbed.Qs.Lenient = lenient
 	return q
 }
 
@@ -193,7 +211,7 @@ type QueryWrap struct {
 
 // QueryString based search
 func NewQueryString(field, query string) QueryString {
-	return QueryString{"", field, query, "", "", nil}
+	return QueryString{"", field, query, "", "", nil, false}
 }
 
 type QueryString struct {
@@ -203,6 +221,7 @@ type QueryString struct {
 	Exists          string   `json:"_exists_,omitempty"`
 	Missing         string   `json:"_missing_,omitempty"`
 	Fields          []string `json:"fields,omitempty"`
+	Lenient         bool     `json:"lenient,omitempty"`
 	//_exists_:field1,
 	//_missing_:field1,
 }
