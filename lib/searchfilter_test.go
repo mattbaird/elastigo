@@ -12,10 +12,12 @@
 package elastigo
 
 import (
+	"encoding/json"
 	"fmt"
 	//"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
 	"testing"
+
+	"github.com/bmizerany/assert"
 )
 
 func TestFilters(t *testing.T) {
@@ -86,6 +88,25 @@ func TestFilters(t *testing.T) {
 	assert.T(t, err == nil, t, "should not have error")
 	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
 	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
+}
+
+func TestFilterNot(t *testing.T) {
+	c := NewTestConn()
+
+	qry := Search("github").Filter(Filter().Not(
+		Filter().Terms("actor_attributes.location", "portland"),
+	))
+	buf, _ := json.MarshalIndent(qry, "", "    ")
+	out, err := qry.Result(c)
+	if err != nil {
+		t.Fatal(err, "\n", string(buf))
+	}
+	if out.Hits.Total == 0 {
+		t.Fatal("no hits\n", string(buf))
+	}
+	if out.Hits.Total != 8014 {
+		t.Fatalf("expected 8014 hits, got %d\n%s", out.Hits.Total, string(buf))
+	}
 }
 
 func TestFilterRange(t *testing.T) {
