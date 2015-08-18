@@ -43,8 +43,36 @@ type BulkIndexingError struct {
 	Items []map[string]interface{}
 }
 
-func (e BulkIndexingError) Error() string{
+func (e BulkIndexingError) Error() string {
 	return fmt.Sprintf("Bulk Insertion Error. Failed item count [%d]", len(e.Items))
+}
+
+type DocVersion struct {
+	// The version to assign to the document
+	Version int64
+
+	// The Version Type to assign to the document
+	VersionType VersionType
+}
+
+// An enum representing the various allowed version types.
+// see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html#_version_types
+type VersionType string
+
+const (
+	INTERNAL     VersionType = "internal"
+	EXTERNAL     VersionType = "external"
+	EXTERNAL_GT  VersionType = "external_gt"
+	EXTERNAL_GTE VersionType = "external_gte"
+	FORCE        VersionType = "force"
+)
+
+// Creates a DocVersion struct with the given value and this version type.
+func (t VersionType) V(v int64) *DocVersion {
+	return &DocVersion{
+		Version:     v,
+		VersionType: t,
+	}
 }
 
 // A bulk indexer creates goroutines, and channels for connecting and sending data
@@ -293,9 +321,9 @@ func (b *BulkIndexer) shutdown() {
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
+func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *time.Time, version *DocVersion, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, data, refresh)
+	by, err := WriteBulkBytes("index", index, _type, id, ttl, date, version, data, refresh)
 	if err != nil {
 		return err
 	}
@@ -303,9 +331,9 @@ func (b *BulkIndexer) Index(index string, _type string, id, ttl string, date *ti
 	return nil
 }
 
-func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) error {
+func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *time.Time, version *DocVersion, data interface{}, refresh bool) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, data, refresh)
+	by, err := WriteBulkBytes("update", index, _type, id, ttl, date, version, data, refresh)
 	if err != nil {
 		return err
 	}
@@ -313,8 +341,15 @@ func (b *BulkIndexer) Update(index string, _type string, id, ttl string, date *t
 	return nil
 }
 
-func (b *BulkIndexer) Delete(index, _type, id string, refresh bool) {
-	queryLine := fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q,\"refresh\":%t}}\n", index, _type, id, refresh)
+func (b *BulkIndexer) Delete(index, _type, id string, version *DocVersion, refresh bool) {
+	verStr := ""
+	if version != nil {
+		verStr = fmt.Sprintf(",\"_version\":%d", version.Version)
+		if version.VersionType != "" {
+			verStr = verStr + ",\"_version_type\":\"" + string(version.VersionType) + "\""
+		}
+	}
+	queryLine := fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q%s,\"refresh\":%t}}\n", index, _type, id, verStr, refresh)
 	b.bulkChannel <- []byte(queryLine)
 	return
 }
@@ -323,10 +358,10 @@ func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, ttl s
 
 	var data map[string]interface{} = make(map[string]interface{})
 	data["script"] = script
-	return b.Update(index, _type, id, ttl, date, data, refresh)
+	return b.Update(index, _type, id, ttl, date, nil, data, refresh)
 }
 
-func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, ttl string, date *time.Time, partialDoc interface{}, upsert bool, refresh bool) error {
+func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, ttl string, date *time.Time, version *DocVersion, partialDoc interface{}, upsert bool, refresh bool) error {
 
 	var data map[string]interface{} = make(map[string]interface{})
 
@@ -334,16 +369,16 @@ func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, ttl s
 	if upsert {
 		data["doc_as_upsert"] = true
 	}
-	return b.Update(index, _type, id, ttl, date, data, refresh)
+	return b.Update(index, _type, id, ttl, date, version, data, refresh)
 }
 
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
 func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	type responseStruct struct {
-		Took   int64                    `json:"took"`
-		Errors bool                     `json:"errors"`
-		Items  *json.RawMessage 		`json:"items"`
+		Took   int64            `json:"took"`
+		Errors bool             `json:"errors"`
+		Items  *json.RawMessage `json:"items"`
 	}
 
 	response := responseStruct{}
@@ -387,7 +422,7 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 
 // Given a set of arguments for index, type, id, data create a set of bytes that is formatted for bulkd index
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func WriteBulkBytes(op string, index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool) ([]byte, error) {
+func WriteBulkBytes(op string, index string, _type string, id, ttl string, date *time.Time, version *DocVersion, data interface{}, refresh bool) ([]byte, error) {
 	// only index and update are currently supported
 	if op != "index" && op != "update" {
 		return nil, errors.New(fmt.Sprintf("Operation '%s' is not yet supported", op))
@@ -419,6 +454,15 @@ func WriteBulkBytes(op string, index string, _type string, id, ttl string, date 
 		buf.WriteString(`,"_timestamp":"`)
 		buf.WriteString(strconv.FormatInt(date.UnixNano()/1e6, 10))
 		buf.WriteString(`"`)
+	}
+	if version != nil {
+		buf.WriteString(`,"_version":`)
+		buf.WriteString(strconv.FormatInt(version.Version, 10))
+		if version.VersionType != "" {
+			buf.WriteString(`,"_version_type":"`)
+			buf.WriteString(string(version.VersionType))
+			buf.WriteString(`"`)
+		}
 	}
 	if refresh {
 		buf.WriteString(`,"refresh":true`)
