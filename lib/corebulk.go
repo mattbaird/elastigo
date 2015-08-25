@@ -381,7 +381,7 @@ func WriteBulkBytes(op string, index string, _type string, id, parent, ttl strin
 	}
 
 	if op == "update" {
-		buf.WriteString(`,"retry_on_conflict":3`)
+		buf.WriteString(`,"_retry_on_conflict":3`)
 	}
 
 	if len(ttl) > 0 {
