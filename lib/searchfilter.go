@@ -144,11 +144,12 @@ type FilterOp struct {
 	Range      map[string]map[string]interface{} `json:"range,omitempty"`
 	Exist      map[string]string                 `json:"exists,omitempty"`
 	MissingVal map[string]string                 `json:"missing,omitempty"`
+	NotClause  map[string]*FilterOp              `json:"not,omitempty"`
 }
 
 // A range is a special type of Filter operation
 //
-//    Range().Exists("repository.name")
+//    Range().Field("repository.name").From("100")
 func Range() *FilterOp {
 	return &FilterOp{Range: make(map[string]map[string]interface{})}
 }
@@ -159,6 +160,12 @@ func (f *FilterOp) Field(fld string) *FilterOp {
 		m := make(map[string]interface{})
 		f.Range[fld] = m
 	}
+	return f
+}
+
+// Not (negate) another Filterop
+func (f *FilterOp) Not(fop *FilterOp) *FilterOp {
+	f.NotClause = map[string]*FilterOp{"filter": fop}
 	return f
 }
 
