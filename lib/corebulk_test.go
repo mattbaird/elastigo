@@ -76,10 +76,10 @@ func TestBulkIndexerBasic(t *testing.T) {
 	}
 
 	err := indexer.Index(testIndex, "user", "1", "", "", &date, data, true)
-
 	waitFor(func() bool {
 		return len(buffers) > 0
 	}, 5)
+
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
@@ -88,7 +88,10 @@ func TestBulkIndexerBasic(t *testing.T) {
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index(testIndex, "user", "2", "", "", nil, data, true)
-	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
+	waitFor(func() bool {
+		return len(buffers) > 1
+	}, 5)
+
 	// this will test to ensure that Flush actually catches a doc
 	indexer.Flush()
 	totalBytesSent = totalBytesSent - len(*eshost)
