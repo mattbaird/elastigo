@@ -25,7 +25,7 @@ func TestFacetRegex(t *testing.T) {
 		TearDownTestDB(c)
 	}()
 
-	Convey("Wildcard request query", t, func() {
+	Convey("Facted regex query", t, func() {
 
 		// This is a possible solution for auto-complete
 		out, err := Search("oilers").Size("0").Facet(
