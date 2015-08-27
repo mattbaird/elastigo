@@ -116,6 +116,8 @@ func LoadTestData() {
 	c := NewConn()
 	c.Domain = *eshost
 
+	fmt.Println("Loading test data")
+
 	c.DeleteIndex(testIndex)
 
 	docCt := 0

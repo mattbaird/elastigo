@@ -18,6 +18,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http/httputil"
 	"time"
 )
 
@@ -50,6 +51,10 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 			}
 		}
 	}
+
+	// uncomment this to print out the request that hits the wire
+	reqbuf, err := httputil.DumpRequest(req.Request, true)
+	log.Println(fmt.Sprintf("\n========= req:\nURL: %s\n%s", req.URL, bytes.NewBuffer(reqbuf).String()))
 
 	// Copy request body for tracer
 	if c.RequestTracer != nil {

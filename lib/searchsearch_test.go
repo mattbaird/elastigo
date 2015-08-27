@@ -12,156 +12,145 @@
 package elastigo
 
 import (
-	"fmt"
 	"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
-func TestSearchRequest(t *testing.T) {
-	c := NewTestConn()
+func TestSearch(t *testing.T) {
 
-	qry := map[string]interface{}{
-		"query": map[string]interface{}{
-			"wildcard": map[string]string{"actor": "a*"},
-		},
-	}
-	out, err := c.Search("github", "", nil, qry)
-	//log.Println(out)
-	assert.T(t, &out != nil && err == nil, t, "Should get docs")
-	expectedDocs := 10
-	expectedHits := 621
-	assert.T(t, out.Hits.Len() == expectedDocs, t, fmt.Sprintf("Should have %v docs but was %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, t, fmt.Sprintf("Should have %v hits but was %v", expectedHits, out.Hits.Total))
+	c := NewTestConn()
+	PopulateTestDB(t, c)
+	defer func() {
+		TearDownTestDB(c)
+	}()
+
+	Convey("Wildcard request query", t, func() {
+
+		qry := map[string]interface{}{
+			"query": map[string]interface{}{
+				"wildcard": map[string]string{"name": "*hu*"},
+			},
+		}
+		out, err := c.Search("oilers", "", nil, qry)
+
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 3)
+	})
+
+	Convey("Simple search", t, func() {
+
+		// searching without faceting
+		qry := Search("oilers").Pretty().Query(
+			Query().Search("dave"),
+		)
+
+		// how many different docs used the word "dave"
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 2)
+
+		out, _ = Search("oilers").Search("dave").Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 2)
+	})
+
+	Convey("URL Request query string", t, func() {
+
+		out, err := c.SearchUri("oilers", "", map[string]interface{}{"q": "pos:*w"})
+
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 6)
+	})
+
+	//	A faceted search for what "type" of events there are
+	//	- since we are not specifying an elasticsearch type it searches all ()
+	//
+	//	{
+	//	    "terms" : {
+	//	      "_type" : "terms",
+	//	      "missing" : 0,
+	//	      "total" : 7561,
+	//	      "other" : 0,
+	//	      "terms" : [ {
+	//	        "term" : "pushevent",
+	//	        "count" : 4185
+	//	      }, {
+	//	        "term" : "createevent",
+	//	        "count" : 786
+	//	      }.....]
+	//	    }
+	//	 }
+
+	Convey("Facet search simple", t, func() {
+
+		qry := Search("oilers").Pretty().Facet(
+			Facet().Fields("teams").Size("4"),
+		).Query(
+			Query().All(),
+		).Size("1")
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+
+		h := gou.NewJsonHelper(out.Facets)
+		So(h.Int("teams.total"), ShouldEqual, 37)
+		So(h.Int("teams.missing"), ShouldEqual, 0)
+		So(len(h.List("teams.terms")), ShouldEqual, 4)
+
+		// change the size
+		qry.FacetVal.Size("20")
+		out, err = qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+
+		h = gou.NewJsonHelper(out.Facets)
+		So(h.Int("teams.total"), ShouldEqual, 37)
+		So(len(h.List("teams.terms")), ShouldEqual, 11)
+
+	})
+
+	Convey("Facet search with type", t, func() {
+
+		out, err := Search("oilers").Type("heyday").Pretty().Facet(
+			Facet().Fields("teams").Size("4"),
+		).Query(
+			Query().All(),
+		).Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+
+		h := gou.NewJsonHelper(out.Facets)
+		So(h.Int("teams.total"), ShouldEqual, 37)
+		So(len(h.List("teams.terms")), ShouldEqual, 4)
+	})
+
+	Convey("Facet search with range", t, func() {
+
+		qry := Search("oilers").Pretty().Facet(
+			Facet().Fields("teams").Size("20"),
+		).Query(
+			Query().Search("*w*"),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+
+		h := gou.NewJsonHelper(out.Facets)
+		So(h.Int("teams.total"), ShouldEqual, 20)
+		So(len(h.List("teams.terms")), ShouldEqual, 7)
+	})
 }
 
-func TestSearchSimple(t *testing.T) {
-	c := NewTestConn()
-
-	// searching without faceting
-	qry := Search("github").Pretty().Query(
-		Query().Search("add"),
-	)
-	out, _ := qry.Result(c)
-	// how many different docs used the word "add"
-	expectedDocs := 10
-	expectedHits := 494
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
-
-	// now the same result from a "Simple" search
-	out, _ = Search("github").Search("add").Result(c)
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total= %v", expectedHits, out.Hits.Total))
-}
-
-func TestSearchRequestQueryString(t *testing.T) {
-	c := NewTestConn()
-
-	out, err := c.SearchUri("github", "", map[string]interface{}{"q": "actor:a*"})
-	expectedHits := 621
-	assert.T(t, &out != nil && err == nil, "Should get docs")
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v hits but was %v", expectedHits, out.Hits.Total))
-}
-
-func TestSearchFacetOne(t *testing.T) {
-	/*
-		A faceted search for what "type" of events there are
-		- since we are not specifying an elasticsearch type it searches all ()
-
-		{
-		    "terms" : {
-		      "_type" : "terms",
-		      "missing" : 0,
-		      "total" : 7561,
-		      "other" : 0,
-		      "terms" : [ {
-		        "term" : "pushevent",
-		        "count" : 4185
-		      }, {
-		        "term" : "createevent",
-		        "count" : 786
-		      }.....]
-		    }
-		 }
-
-	*/
-	c := NewTestConn()
-
-	qry := Search("github").Pretty().Facet(
-		Facet().Fields("type").Size("25"),
-	).Query(
-		Query().All(),
-	).Size("1")
-	out, err := qry.Result(c)
-	//log.Println(string(out.Facets))
-	//gou.Debug(out)
-	assert.T(t, out != nil && err == nil, "Should have output")
-	if out == nil {
-		t.Fail()
-		return
-	}
-	h := gou.NewJsonHelper(out.Facets)
-	expectedTotal := 8084
-	expectedTerms := 16
-	assert.T(t, h.Int("type.total") == expectedTotal, fmt.Sprintf("Should have %v results %v", expectedTotal, h.Int("type.total")))
-	assert.T(t, len(h.List("type.terms")) == expectedTerms, fmt.Sprintf("Should have %v event types, %v", expectedTerms, len(h.List("type.terms"))))
-
-	// Now, lets try changing size to 10
-	qry.FacetVal.Size("10")
-	out, err = qry.Result(c)
-	h = gou.NewJsonHelper(out.Facets)
-
-	// still same doc count
-	assert.T(t, h.Int("type.total") == expectedTotal, fmt.Sprintf("Should have %v results %v", expectedTotal, h.Int("type.total")))
-	// make sure size worked
-	expectedTerms = 10
-	assert.T(t, len(h.List("type.terms")) == expectedTerms, fmt.Sprintf("Should have %v event types, got %v", expectedTerms, len(h.List("type.terms"))))
-
-	// now, lets add a type (out of the 16)
-	out, _ = Search("github").Type("IssueCommentEvent").Pretty().Facet(
-		Facet().Fields("type").Size("25"),
-	).Query(
-		Query().All(),
-	).Result(c)
-	h = gou.NewJsonHelper(out.Facets)
-	//log.Println(string(out.Facets))
-	// still same doc count
-	expectedTotal = 685
-	assert.T(t, h.Int("type.total") == expectedTotal, fmt.Sprintf("Should have %v results %v", expectedTotal, h.Int("type.total")))
-	// we should only have one facettype because we limited to one type
-	assert.T(t, len(h.List("type.terms")) == 1, fmt.Sprintf("Should have 1 event types, %v", len(h.List("type.terms"))))
-
-	// now, add a second type (chained)
-	out, _ = Search("github").Type("IssueCommentEvent").Type("PushEvent").Pretty().Facet(
-		Facet().Fields("type").Size("25"),
-	).Query(
-		Query().All(),
-	).Result(c)
-	h = gou.NewJsonHelper(out.Facets)
-	// still same doc count
-	expectedTotal = 4941
-	expectedTerms = 2
-	assert.T(t, h.Int("type.total") == expectedTotal, fmt.Sprintf("Should have %v results %v", expectedTotal, h.Int("type.total")))
-	// make sure we now have 2 types
-	assert.T(t, len(h.List("type.terms")) == expectedTerms, fmt.Sprintf("Should have %v event types, %v", expectedTerms, len(h.List("type.terms"))))
-
-	//and instead of faceting on type, facet on userid
-	// now, add a second type (chained)
-	out, _ = Search("github").Type("IssueCommentEvent,PushEvent").Pretty().Facet(
-		Facet().Fields("actor").Size("500"),
-	).Query(
-		Query().All(),
-	).Result(c)
-	h = gou.NewJsonHelper(out.Facets)
-	// still same doc count
-	expectedTotal = 5168
-	expectedTerms = 500
-	assert.T(t, h.Int("actor.total") == expectedTotal, t, fmt.Sprintf("Should have %v results %v", expectedTotal, h.Int("actor.total")))
-	// make sure size worked
-	assert.T(t, len(h.List("actor.terms")) == expectedTerms, t, fmt.Sprintf("Should have %v users, %v", expectedTerms, len(h.List("actor.terms"))))
-
-}
+/*
 
 func TestSearchFacetRange(t *testing.T) {
 	c := NewTestConn()
@@ -361,3 +350,4 @@ func TestSearchSortOrder(t *testing.T) {
 		fmt.Sprintf("Should have %v watchers, got %v", watchers, h3.Int("repository.watchers")))
 
 }
+*/
