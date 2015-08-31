@@ -18,7 +18,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	//"net/http/httputil"
 	"time"
 )
 
