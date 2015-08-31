@@ -9,7 +9,6 @@ func TestCatNode(t *testing.T) {
 
 	c := NewTestConn()
 
-	// Typical cat nodes call
 	Convey("Basic cat nodes", t, func() {
 
 		fields := []string{"fm", "fe", "fcm", "fce", "ft", "ftt", "im", "rp"}
@@ -27,7 +26,6 @@ func TestCatNode(t *testing.T) {
 		}
 	})
 
-	// Cat nodes call with default arguments
 	Convey("Cat nodes with default arguments", t, func() {
 
 		fields := []string{}
@@ -45,7 +43,6 @@ func TestCatNode(t *testing.T) {
 		}
 	})
 
-	// Cat nodes with all parameters
 	Convey("Cat nodes with all output fields", t, func() {
 
 		fields := []string{
@@ -74,7 +71,6 @@ func TestCatNode(t *testing.T) {
 		}
 	})
 
-	// Test field name validation
 	Convey("Invalid field error behavior", t, func() {
 
 		fields := []string{"fm", "bogus"}
