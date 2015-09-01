@@ -206,15 +206,19 @@ func newCatNodeInfo(fields []string, indexLine string) (catNode *CatNodeInfo, er
 // members are populated with statistics. If fields is nil or empty, the default
 // cat output is used.
 func (c *Conn) GetCatNodeInfo(fields []string) (catNodes []CatNodeInfo, err error) {
+
 	catNodes = make([]CatNodeInfo, 0)
 
-	// Issue a request for stats on the requested fields
-	var args map[string]interface{}
-	if len(fields) > 0 {
-		args = map[string]interface{}{"h": strings.Join(fields, ",")}
-	} else {
+	// If no fields have been specified, use the "default" arrangement
+	if len(fields) < 1 {
 		fields = []string{"host", "ip", "heap.percent", "ram.percent", "load",
 			"node.role", "master", "name"}
+	}
+
+	// Issue a request for stats on the requested fields
+	args := map[string]interface{}{
+		"bytes": "b",
+		"h":     strings.Join(fields, ","),
 	}
 	indices, err := c.DoCommand("GET", "/_cat/nodes/", args, nil)
 	if err != nil {
