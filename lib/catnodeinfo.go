@@ -90,8 +90,7 @@ func newCatNodeInfo(fields []string, indexLine string) (catNode *CatNodeInfo, er
 			i, _ := strconv.Atoi(split[i])
 			catNode.FlushTotal = int32(i)
 		case "flush.total_time", "ftt", "flushTotalTime":
-			i, _ := strconv.Atoi(split[i])
-			catNode.FlushTotalTime = int32(i)
+			catNode.FlushTotalTime = split[i]
 		case "get.current", "gc", "getCurrent":
 			i, _ := strconv.Atoi(split[i])
 			catNode.GetCur = int32(i)

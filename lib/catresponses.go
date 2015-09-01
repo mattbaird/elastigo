@@ -61,7 +61,7 @@ type CatNodeInfo struct {
 	FiltMem            string
 	FiltEvict          int32
 	FlushTotal         int32
-	FlushTotalTime     int32
+	FlushTotalTime     string
 	GetCur             int32
 	GetTime            string
 	GetTotal           int32
