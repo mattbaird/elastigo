@@ -4,189 +4,196 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"github.com/mattbaird/elastigo/fixedwidth"
 )
 
-// newCatNodeInfo returns an instance of CatNodeInfo populated with the
-// the information in the cat output node line, which is passed in as a
-// map of field name to value. An err is returned if a field is not known.
-func newCatNodeInfo(data map[string]string) (catNode *CatNodeInfo, err error) {
 
+
+// newCatNodeInfo returns an instance of CatNodeInfo populated with the
+// the information in the cat output indexLine which contains the
+// specified fields. An err is returned if a field is not known.
+func newCatNodeInfo(fields []string, indexLine string) (catNode *CatNodeInfo, err error) {
+
+	split := strings.Fields(indexLine)
 	catNode = &CatNodeInfo{}
 
+	// Check the fields length compared to the number of stats
+	lf, ls := len(fields), len(split)
+	if lf > ls {
+		return nil, fmt.Errorf("Number of fields (%d) greater than number of stats (%d)", lf, ls)
+	}
+
 	// Populate the apropriate field in CatNodeInfo
-	for field, value := range data {
+	for i, field := range fields {
+
 		switch field {
 		case "id", "nodeId":
-			catNode.Id = value
+			catNode.Id = split[i]
 		case "pid", "p":
-			i, _ := strconv.Atoi(value)
-			catNode.PID = int32(i)
+			catNode.PID = split[i]
 		case "host", "h":
-			catNode.Host = value
+			catNode.Host = split[i]
 		case "ip", "i":
-			catNode.IP = value
+			catNode.IP = split[i]
 		case "port", "po":
-			i, _ := strconv.Atoi(value)
-			catNode.Port = int16(i)
+			catNode.Port = split[i]
 		case "version", "v":
-			catNode.Version = value
+			catNode.Version = split[i]
 		case "build", "b":
-			catNode.Build = value
+			catNode.Build = split[i]
 		case "jdk", "j":
-			catNode.JDK = value
+			catNode.JDK = split[i]
 		case "disk.avail", "d", "disk", "diskAvail":
-			catNode.DiskAvail = value
+			catNode.DiskAvail = split[i]
 		case "heap.current", "hc", "heapCurrent":
-			catNode.HeapCur = value
+			catNode.HeapCur = split[i]
 		case "heap.percent", "hp", "heapPercent":
-			i, _ := strconv.Atoi(value)
-			catNode.HeapPerc = int16(i)
+			catNode.HeapPerc = split[i]
 		case "heap.max", "hm", "heapMax":
-			catNode.HeapMax = value
+			catNode.HeapMax = split[i]
 		case "ram.current", "rc", "ramCurrent":
-			catNode.RamCur = value
+			catNode.RamCur = split[i]
 		case "ram.percent", "rp", "ramPercent":
-			i, _ := strconv.Atoi(value)
-			catNode.RamPerc = int16(i)
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.RamPerc = int16(val)
 		case "ram.max", "rm", "ramMax":
-			catNode.RamMax = value
+			catNode.RamMax = split[i]
 		case "file_desc.current", "fdc", "fileDescriptorCurrent":
-			catNode.FileDescCur = value
+			catNode.FileDescCur = split[i]
 		case "file_desc.percent", "fdp", "fileDescriptorPercent":
-			i, _ := strconv.Atoi(value)
-			catNode.FileDescPerc = int16(i)
+			catNode.FileDescPerc = split[i]
 		case "file_desc.max", "fdm", "fileDescriptorMax":
-			catNode.FileDescMax = value
+			catNode.FileDescMax = split[i]
 		case "load", "l":
-			catNode.Load = value
+			catNode.Load = split[i]
 		case "uptime", "u":
-			catNode.UpTime = value
+			catNode.UpTime = split[i]
 		case "node.role", "r", "role", "dc", "nodeRole":
-			catNode.NodeRole = value
+			catNode.NodeRole = split[i]
 		case "master", "m":
-			catNode.Master = value
+			catNode.Master = split[i]
 		case "name", "n":
-			catNode.Name = value
+			catNode.Name = strings.Join(split[i:], " ")
 		case "completion.size", "cs", "completionSize":
-			catNode.CmpltSize = value
+			catNode.CmpltSize = split[i]
 		case "fielddata.memory_size", "fm", "fielddataMemory":
-			catNode.FieldMem = value
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.FieldMem = val
 		case "fielddata.evictions", "fe", "fieldataEvictions":
-			i, _ := strconv.Atoi(value)
-			catNode.FieldEvict = int32(i)
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.FieldEvict = val
 		case "filter_cache.memory_size", "fcm", "filterCacheMemory":
-			catNode.FiltMem = value
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.FiltMem = val
 		case "filter_cache.evictions", "fce", "filterCacheEvictions":
-			i, _ := strconv.Atoi(value)
-			catNode.FiltEvict = int32(i)
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.FiltEvict = val
 		case "flush.total", "ft", "flushTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.FlushTotal = int32(i)
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.FlushTotal = val
 		case "flush.total_time", "ftt", "flushTotalTime":
-			catNode.FlushTotalTime = value
+			catNode.FlushTotalTime = split[i]
 		case "get.current", "gc", "getCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.GetCur = int32(i)
+			catNode.GetCur = split[i]
 		case "get.time", "gti", "getTime":
-			catNode.GetTime = value
+			catNode.GetTime = split[i]
 		case "get.total", "gto", "getTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.GetTotal = int32(i)
+			catNode.GetTotal = split[i]
 		case "get.exists_time", "geti", "getExistsTime":
-			catNode.GetExistsTime = value
+			catNode.GetExistsTime = split[i]
 		case "get.exists_total", "geto", "getExistsTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.GetExistsTotal = int32(i)
+			catNode.GetExistsTotal = split[i]
 		case "get.missing_time", "gmti", "getMissingTime":
-			catNode.GetMissingTime = value
+			catNode.GetMissingTime = split[i]
 		case "get.missing_total", "gmto", "getMissingTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.GetMissingTotal = int32(i)
+			catNode.GetMissingTotal = split[i]
 		case "id_cache.memory_size", "im", "idCacheMemory":
-			catNode.IDCacheMemory = value
+			val, err := strconv.Atoi(split[i])
+			if err != nil {
+				return nil, err
+			}
+			catNode.IDCacheMemory = val
 		case "indexing.delete_current", "idc", "indexingDeleteCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.IdxDelCur = int32(i)
+			catNode.IdxDelCur = split[i]
 		case "indexing.delete_time", "idti", "indexingDeleteime":
-			catNode.IdxDelTime = value
+			catNode.IdxDelTime = split[i]
 		case "indexing.delete_total", "idto", "indexingDeleteTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.IdxDelTotal = int32(i)
+			catNode.IdxDelTotal = split[i]
 		case "indexing.index_current", "iic", "indexingIndexCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.IdxIdxCur = int32(i)
+			catNode.IdxIdxCur = split[i]
 		case "indexing.index_time", "iiti", "indexingIndexTime":
-			catNode.IdxIdxTime = value
+			catNode.IdxIdxTime = split[i]
 		case "indexing.index_total", "iito", "indexingIndexTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.IdxIdxTotal = int32(i)
+			catNode.IdxIdxTotal = split[i]
 		case "merges.current", "mc", "mergesCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.MergCur = int32(i)
+			catNode.MergCur = split[i]
 		case "merges.current_docs", "mcd", "mergesCurrentDocs":
-			i, _ := strconv.Atoi(value)
-			catNode.MergCurDocs = int32(i)
+			catNode.MergCurDocs = split[i]
 		case "merges.current_size", "mcs", "mergesCurrentSize":
-			catNode.MergCurSize = value
+			catNode.MergCurSize = split[i]
 		case "merges.total", "mt", "mergesTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.MergTotal = int32(i)
+			catNode.MergTotal = split[i]
 		case "merges.total_docs", "mtd", "mergesTotalDocs":
-			i, _ := strconv.Atoi(value)
-			catNode.MergTotalDocs = int32(i)
+			catNode.MergTotalDocs = split[i]
 		case "merges.total_size", "mts", "mergesTotalSize":
-			catNode.MergTotalSize = value
+			catNode.MergTotalSize = split[i]
 		case "merges.total_time", "mtt", "mergesTotalTime":
-			catNode.MergTotalTime = value
+			catNode.MergTotalTime = split[i]
 		case "percolate.current", "pc", "percolateCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.PercCur = int32(i)
+			catNode.PercCur = split[i]
 		case "percolate.memory_size", "pm", "percolateMemory":
-			catNode.PercMem = value
+			catNode.PercMem = split[i]
 		case "percolate.queries", "pq", "percolateQueries":
-			i, _ := strconv.Atoi(value)
-			catNode.PercQueries = int32(i)
+			catNode.PercQueries = split[i]
 		case "percolate.time", "pti", "percolateTime":
-			catNode.PercTime = value
+			catNode.PercTime = split[i]
 		case "percolate.total", "pto", "percolateTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.PercTotal = int32(i)
+			catNode.PercTotal = split[i]
 		case "refesh.total", "rto", "refreshTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.RefreshTotal = int32(i)
+			catNode.RefreshTotal = split[i]
 		case "refresh.time", "rti", "refreshTime":
-			catNode.RefreshTime = value
+			catNode.RefreshTime = split[i]
 		case "search.fetch_current", "sfc", "searchFetchCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.SearchFetchCur = int32(i)
+			catNode.SearchFetchCur = split[i]
 		case "search.fetch_time", "sfti", "searchFetchTime":
-			catNode.SearchFetchTime = value
+			catNode.SearchFetchTime = split[i]
 		case "search.fetch_total", "sfto", "searchFetchTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.SearchFetchTotal = int32(i)
+			catNode.SearchFetchTotal = split[i]
 		case "search.open_contexts", "so", "searchOpenContexts":
-			i, _ := strconv.Atoi(value)
-			catNode.SearchOpenContexts = int32(i)
+			catNode.SearchOpenContexts = split[i]
 		case "search.query_current", "sqc", "searchQueryCurrent":
-			i, _ := strconv.Atoi(value)
-			catNode.SearchQueryCur = int32(i)
+			catNode.SearchQueryCur = split[i]
 		case "search.query_time", "sqti", "searchQueryTime":
-			catNode.SearchQueryTime = value
+			catNode.SearchQueryTime = split[i]
 		case "search.query_total", "sqto", "searchQueryTotal":
-			i, _ := strconv.Atoi(value)
-			catNode.SearchQueryTotal = int32(i)
+			catNode.SearchQueryTotal = split[i]
 		case "segments.count", "sc", "segmentsCount":
-			i, _ := strconv.Atoi(value)
-			catNode.SegCount = int32(i)
+			catNode.SegCount = split[i]
 		case "segments.memory", "sm", "segmentsMemory":
-			catNode.SegMem = value
+			catNode.SegMem = split[i]
 		case "segments.index_writer_memory", "siwm", "segmentsIndexWriterMemory":
-			catNode.SegIdxWriterMem = value
+			catNode.SegIdxWriterMem = split[i]
 		case "segments.index_writer_max_memory", "siwmx", "segmentsIndexWriterMaxMemory":
-			catNode.SegIdxWriterMax = value
+			catNode.SegIdxWriterMax = split[i]
 		case "segments.version_map_memory", "svmm", "segmentsVersionMapMemory":
-			catNode.SegVerMapMem = value
+			catNode.SegVerMapMem = split[i]
 		default:
 			return nil, fmt.Errorf("Invalid cat nodes field: %s", field)
 		}
@@ -213,7 +220,6 @@ func (c *Conn) GetCatNodeInfo(fields []string) (catNodes []CatNodeInfo, err erro
 
 	// Issue a request for stats on the requested fields
 	args := map[string]interface{}{
-		"v": "",
 		"bytes": "b",
 		"h":     strings.Join(fields, ","),
 	}
@@ -222,16 +228,19 @@ func (c *Conn) GetCatNodeInfo(fields []string) (catNodes []CatNodeInfo, err erro
 		return catNodes, err
 	}
 
-	// Create a table of response data
-	tab, err := fixedwidth.NewFixedWidthTable(indices)
-	for row := 0; row < tab.Height(); row++ {
+	// Create a CatIndexInfo for each line in the response
+	indexLines := strings.Split(string(indices[:]), "\n")
+	for _, index := range indexLines {
 
-		data := tab.RowMap(row)
+		// Ignore empty output lines
+		if len(index) < 1 {
+			continue
+		}
 
 		// Create a CatNodeInfo and append it to the result
-		ci, err := newCatNodeInfo(data)
-		if ci != nil {
-			catNodes = append(catNodes, *ci)
+		info, err := newCatNodeInfo(fields, index)
+		if info != nil {
+			catNodes = append(catNodes, *info)
 		} else if err != nil {
 			return catNodes, err
 		}

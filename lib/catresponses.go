@@ -33,22 +33,22 @@ type CatShardInfo struct {
 
 type CatNodeInfo struct {
 	Id                 string
-	PID                int32
+	PID                string
 	Host               string
 	IP                 string
-	Port               int16
+	Port               string
 	Version            string
 	Build              string
 	JDK                string
 	DiskAvail          string
 	HeapCur            string
-	HeapPerc           int16
+	HeapPerc           string
 	HeapMax            string
 	RamCur             string
 	RamPerc            int16
 	RamMax             string
 	FileDescCur        string
-	FileDescPerc       int16
+	FileDescPerc       string
 	FileDescMax        string
 	Load               string
 	UpTime             string
@@ -56,48 +56,48 @@ type CatNodeInfo struct {
 	Master             string
 	Name               string
 	CmpltSize          string
-	FieldMem           string
-	FieldEvict         int32
-	FiltMem            string
-	FiltEvict          int32
-	FlushTotal         int32
+	FieldMem           int
+	FieldEvict         int
+	FiltMem            int
+	FiltEvict          int
+	FlushTotal         int
 	FlushTotalTime     string
-	GetCur             int32
+	GetCur             string
 	GetTime            string
-	GetTotal           int32
+	GetTotal           string
 	GetExistsTime      string
-	GetExistsTotal     int32
+	GetExistsTotal     string
 	GetMissingTime     string
-	GetMissingTotal    int32
-	IDCacheMemory      string
-	IdxDelCur          int32
+	GetMissingTotal    string
+	IDCacheMemory      int
+	IdxDelCur          string
 	IdxDelTime         string
-	IdxDelTotal        int32
-	IdxIdxCur          int32
+	IdxDelTotal        string
+	IdxIdxCur          string
 	IdxIdxTime         string
-	IdxIdxTotal        int32
-	MergCur            int32
-	MergCurDocs        int32
+	IdxIdxTotal        string
+	MergCur            string
+	MergCurDocs        string
 	MergCurSize        string
-	MergTotal          int32
-	MergTotalDocs      int32
+	MergTotal          string
+	MergTotalDocs      string
 	MergTotalSize      string
 	MergTotalTime      string
-	PercCur            int32
+	PercCur            string
 	PercMem            string
-	PercQueries        int32
+	PercQueries        string
 	PercTime           string
-	PercTotal          int32
-	RefreshTotal       int32
+	PercTotal          string
+	RefreshTotal       string
 	RefreshTime        string
-	SearchFetchCur     int32
+	SearchFetchCur     string
 	SearchFetchTime    string
-	SearchFetchTotal   int32
-	SearchOpenContexts int32
-	SearchQueryCur     int32
+	SearchFetchTotal   string
+	SearchOpenContexts string
+	SearchQueryCur     string
 	SearchQueryTime    string
-	SearchQueryTotal   int32
-	SegCount           int32
+	SearchQueryTotal   string
+	SegCount           string
 	SegMem             string
 	SegIdxWriterMem    string
 	SegIdxWriterMax    string
