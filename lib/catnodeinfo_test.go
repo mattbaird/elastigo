@@ -74,9 +74,12 @@ func TestCatNode(t *testing.T) {
 	Convey("Invalid field error behavior", t, func() {
 
 		fields := []string{"fm", "bogus"}
-		_, err := c.GetCatNodeInfo(fields)
+		catNodes, err := c.GetCatNodeInfo(fields)
+		
+		So(err, ShouldBeNil)
 
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, "Number of fields (2) greater than number of stats (1)")
+		for _, catNode := range catNodes {
+			So(catNode.FieldMem, ShouldNotBeEmpty)
+		}
 	})
 }
