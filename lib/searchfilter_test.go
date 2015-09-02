@@ -20,9 +20,7 @@ func TestFilters(t *testing.T) {
 
 	c := NewTestConn()
 	PopulateTestDB(t, c)
-	defer func() {
-		TearDownTestDB(c)
-	}()
+	defer TearDownTestDB(c)
 
 	Convey("Exists filter", t, func() {
 		qry := Search("oilers").Filter(
@@ -49,7 +47,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Terms filter", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", "rw", "lw"),
+			Filter().Terms("pos", "RW", "LW"),
 		)
 		out, err := qry.Result(c)
 		So(err, ShouldBeNil)
@@ -60,7 +58,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Filter involving an AND", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", "lw"),
+			Filter().Terms("pos", "LW"),
 			Filter().Exists("PIM"),
 		)
 		out, err := qry.Result(c)
@@ -72,7 +70,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Filterng filter results", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", "lw"),
+			Filter().Terms("pos", "LW"),
 		)
 		qry.Filter(
 			Filter().Exists("PIM"),
@@ -87,7 +85,7 @@ func TestFilters(t *testing.T) {
 	Convey("Filter involving OR", t, func() {
 		qry := Search("oilers").Filter(
 			"or",
-			Filter().Terms("pos", "g"),
+			Filter().Terms("pos", "G"),
 			Range().Field("goals").Gt(80),
 		)
 		out, err := qry.Result(c)

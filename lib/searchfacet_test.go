@@ -21,9 +21,7 @@ func TestFacetRegex(t *testing.T) {
 
 	c := NewTestConn()
 	PopulateTestDB(t, c)
-	defer func() {
-		TearDownTestDB(c)
-	}()
+	defer TearDownTestDB(c)
 
 	Convey("Facted regex query", t, func() {
 

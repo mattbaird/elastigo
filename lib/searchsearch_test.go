@@ -21,9 +21,7 @@ func TestSearch(t *testing.T) {
 
 	c := NewTestConn()
 	PopulateTestDB(t, c)
-	defer func() {
-		//TearDownTestDB(c)
-	}()
+	defer TearDownTestDB(c)
 
 	Convey("Wildcard request query", t, func() {
 
@@ -63,13 +61,14 @@ func TestSearch(t *testing.T) {
 
 	Convey("URL Request query string", t, func() {
 
-		out, err := c.SearchUri("oilers", "", map[string]interface{}{"q": "pos:*w"})
+		out, err := c.SearchUri("oilers", "", map[string]interface{}{"q": "pos:LW"})
 
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 		So(out.Hits, ShouldNotBeNil)
-		So(out.Hits.Total, ShouldEqual, 6)
+		So(out.Hits.Total, ShouldEqual, 3)
 	})
+
 
 	//	A faceted search for what "type" of events there are
 	//	- since we are not specifying an elasticsearch type it searches all ()
@@ -133,6 +132,7 @@ func TestSearch(t *testing.T) {
 		So(len(h.List("teams.terms")), ShouldEqual, 4)
 	})
 
+
 	Convey("Facet search with wildcard", t, func() {
 
 		qry := Search("oilers").Pretty().Facet(
@@ -170,7 +170,7 @@ func TestSearch(t *testing.T) {
 	Convey("Search query with terms", t, func() {
 
 		qry := Search("oilers").Query(
-			Query().Term("teams", "nyr"),
+			Query().Term("teams", "NYR"),
 		)
 		out, err := qry.Result(c)
 		So(err, ShouldBeNil)
@@ -182,7 +182,7 @@ func TestSearch(t *testing.T) {
 	Convey("Search query with fields", t, func() {
 
 		qry := Search("oilers").Query(
-			Query().Fields("teams", "nyr", "", ""),
+			Query().Fields("teams", "NYR", "", ""),
 		)
 		out, err := qry.Result(c)
 		So(err, ShouldBeNil)
@@ -217,7 +217,7 @@ func TestSearch(t *testing.T) {
 		out, err := Search("oilers").Size("25").Query(
 			Query().Fields("name", "*d*", "", ""),
 		).Filter(
-			Filter().Terms("teams", "stl"),
+			Filter().Terms("teams", "STL"),
 		).Result(c)
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
@@ -288,5 +288,4 @@ func TestSearch(t *testing.T) {
 		h1 := gou.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Wayne Gretzky")
 	})
-
 }

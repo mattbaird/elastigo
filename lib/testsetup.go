@@ -28,13 +28,20 @@ func newIndexWorker(c *Conn, t *testing.T) func(interface{}) {
 func PopulateTestDB(t *testing.T, c *Conn) {
 
 	// it is not technically necessary to create an index here
-	c.CreateIndex("oilers")
+	_, err := c.CreateIndex("oilers")
+	if err != nil {
+		t.Fatal("Error in CreateIndex", err)
+	}
 
 	// set the mapping for dob to be a date so it can be used for range searches
-	_, err := c.DoCommand("PUT", "/oilers/heyday/_mapping?ignore_conflicts", nil,
-		string(`{"heyday": {"properties": {"dob": {"type": "date"}}}}`))
+	_, err = c.DoCommand("PUT", "/oilers/heyday/_mapping?ignore_conflicts", nil,
+		string(`{"heyday": {"properties": {
+					"dob": {"type": "date", "format": "basic_date"},
+					"pos": {"type": "string", "index": "not_analyzed"},
+					"teams": {"type": "string", "index": "not_analyzed"}
+				}}}`))
 	if err != nil {
-		t.Fatal("Error setting dob mapping")
+		t.Fatal("Error setting dob mapping", err)
 	}
 
 	idx := newIndexWorker(c, t)
