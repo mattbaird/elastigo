@@ -101,7 +101,7 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return nil, nil, jsonErr
+			return nil, nil, fmt.Errorf("Json response unmarshal error: [%s], response content: [%s]", jsonErr.Error(), string(bodyBytes))
 		}
 	}
 	return res, bodyBytes, err
