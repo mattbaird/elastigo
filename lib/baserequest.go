@@ -58,13 +58,17 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 
 	// Copy request body for tracer
 	if c.RequestTracer != nil {
-		requestBody, err := ioutil.ReadAll(req.Body)
-		if err != nil {
-			return body, err
-		}
+		rbody := ""
+		if req.Body != nil {
+			requestBody, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				return body, err
+			}
 
-		req.SetBody(bytes.NewReader(requestBody))
-		c.RequestTracer(req.Method, req.URL.String(), string(requestBody))
+			req.SetBody(bytes.NewReader(requestBody))
+			rbody = string(requestBody)
+		}
+		c.RequestTracer(req.Method, req.URL.String(), rbody)
 	}
 
 	httpStatusCode, body, err = req.Do(&response)
