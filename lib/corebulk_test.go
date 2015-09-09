@@ -17,13 +17,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
 	"log"
 	"net/url"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 )
 
 //  go test -bench=".*"
