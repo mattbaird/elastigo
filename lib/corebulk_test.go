@@ -17,13 +17,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/araddon/gou"
+	"github.com/bmizerany/assert"
 	"log"
+	"net/url"
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/araddon/gou"
-	"github.com/bmizerany/assert"
 )
 
 //  go test -bench=".*"
@@ -103,6 +103,57 @@ func TestBulkIndexerBasic(t *testing.T) {
 	assert.T(t, closeInt(totalBytesSent, expectedBytes), fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	indexer.Stop()
+}
+
+func TestRefreshParam(t *testing.T) {
+	var requrl *url.URL
+	InitTests(true)
+	c := NewTestConn()
+	c.RequestTracer = func(method, urlStr, body string) {
+		requrl, _ = url.Parse(urlStr)
+	}
+	date := time.Unix(1257894000, 0)
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
+
+	// Now tests small batches
+	indexer := c.NewBulkIndexer(1)
+	indexer.Refresh = true
+
+	indexer.Start()
+	<-time.After(time.Millisecond * 20)
+
+	indexer.Index("users", "user", "2", "", "", &date, data)
+
+	<-time.After(time.Millisecond * 200)
+	//	indexer.Flush()
+	indexer.Stop()
+
+	assert.T(t, requrl.Query().Get("refresh") == "true", "Should have set refresh query param to true")
+}
+
+func TestWithoutRefreshParam(t *testing.T) {
+	var requrl *url.URL
+	InitTests(true)
+	c := NewTestConn()
+	c.RequestTracer = func(method, urlStr, body string) {
+		requrl, _ = url.Parse(urlStr)
+	}
+	date := time.Unix(1257894000, 0)
+	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
+
+	// Now tests small batches
+	indexer := c.NewBulkIndexer(1)
+
+	indexer.Start()
+	<-time.After(time.Millisecond * 20)
+
+	indexer.Index("users", "user", "2", "", "", &date, data)
+
+	<-time.After(time.Millisecond * 200)
+	//	indexer.Flush()
+	indexer.Stop()
+
+	assert.T(t, requrl.Query().Get("refresh") == "false", "Should have set refresh query param to false")
 }
 
 // currently broken in drone.io
