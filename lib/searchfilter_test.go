@@ -12,280 +12,276 @@
 package elastigo
 
 import (
-	"fmt"
-	//"github.com/araddon/gou"
-	"encoding/json"
-	"github.com/bmizerany/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
-func GetJson(input interface{}) map[string]interface{} {
-	var result map[string]interface{}
-	bytes, _ := json.Marshal(input)
-
-	json.Unmarshal(bytes, &result)
-	return result
-}
-
-func HasKey(input map[string]interface{}, key string) bool {
-	if _, ok := input[key]; ok {
-		return true
-	}
-
-	return false
-}
-
-func TestAndDsl(t *testing.T) {
-	filter := Filter().And(Filter().Term("test", "asdf")).
+func TestFilterDsl(t *testing.T) {
+	Convey("And filter", t, func() {
+		filter := Filter().And(Filter().Term("test", "asdf")).
 		And(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
-	actual := GetJson(filter)
+		actual, err := GetJson(filter)
 
-	actualFilters := actual["and"].([]interface{})
+		actualFilters := actual["and"].([]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, 2, len(actualFilters), "Should have 2 filters")
-	assert.Equal(t, true, HasKey(actualFilters[0].(map[string]interface{}), "term"), "first filter is term")
-	assert.Equal(t, true, HasKey(actualFilters[1].(map[string]interface{}), "range"), "second filter is range")
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(2, ShouldEqual, len(actualFilters))
+		So(true, ShouldEqual, HasKey(actualFilters[0].(map[string]interface{}), "term"))
+		So(true, ShouldEqual, HasKey(actualFilters[1].(map[string]interface{}), "range"))
+	})
 
-func TestOrDsl(t *testing.T) {
-	filter := Filter().Or(Filter().Term("test", "asdf"), Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
-	actual := GetJson(filter)
+	Convey("Or filter", t, func() {
+		filter := Filter().Or(Filter().Term("test", "asdf"), Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
+		actual, err := GetJson(filter)
 
-	actualFilters := actual["or"].([]interface{})
+		actualFilters := actual["or"].([]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, 2, len(actualFilters), "Should have 2 filters")
-	assert.Equal(t, true, HasKey(actualFilters[0].(map[string]interface{}), "term"), "first filter is term")
-	assert.Equal(t, true, HasKey(actualFilters[1].(map[string]interface{}), "range"), "second filter is range")
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(2, ShouldEqual, len(actualFilters))
+		So(true, ShouldEqual, HasKey(actualFilters[0].(map[string]interface{}), "term"))
+		So(true, ShouldEqual, HasKey(actualFilters[1].(map[string]interface{}), "range"))
+	})
 
-func TestNotDsl(t *testing.T) {
-	filter := Filter().Not(Filter().Term("test", "asdf")).
+	Convey("Not filter", t, func() {
+		filter := Filter().Not(Filter().Term("test", "asdf")).
 		Not(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
-	actual := GetJson(filter)
+		actual, err  := GetJson(filter)
 
-	actualFilters := actual["not"].([]interface{})
+		actualFilters := actual["not"].([]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, 2, len(actualFilters), "Should have 2 filters")
-	assert.Equal(t, true, HasKey(actualFilters[0].(map[string]interface{}), "term"), "first filter is term")
-	assert.Equal(t, true, HasKey(actualFilters[1].(map[string]interface{}), "range"), "second filter is range")
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(2, ShouldEqual, len(actualFilters))
+		So(true, ShouldEqual, HasKey(actualFilters[0].(map[string]interface{}), "term"))
+		So(true, ShouldEqual, HasKey(actualFilters[1].(map[string]interface{}), "range"))
+	})
 
-func TestTermsDsl(t *testing.T) {
-	filter := Filter().Terms("Sample", TEM_AND, "asdf", 123, true)
-	actual := GetJson(filter)
+	Convey("Terms filter", t, func() {
+		filter := Filter().Terms("Sample", TEM_AND, "asdf", 123, true)
+		actual, err  := GetJson(filter)
 
-	actualTerms := actual["terms"].(map[string]interface{})
-	actualValues := actualTerms["Sample"].([]interface{})
+		actualTerms := actual["terms"].(map[string]interface{})
+		actualValues := actualTerms["Sample"].([]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, 3, len(actualValues), "Should have 3 term values")
-	assert.Equal(t, actualValues[0], "asdf")
-	assert.Equal(t, actualValues[1], float64(123))
-	assert.Equal(t, actualValues[2], true)
-	assert.Equal(t, "and", actualTerms["execution"])
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(3, ShouldEqual, len(actualValues))
+		So(actualValues[0], ShouldEqual, "asdf")
+		So(actualValues[1], ShouldEqual, float64(123))
+		So(actualValues[2], ShouldEqual, true)
+		So("and", ShouldEqual, actualTerms["execution"])
+	})
 
-func TestTermDsl(t *testing.T) {
-	filter := Filter().Term("Sample", "asdf").Term("field2", 341.4)
-	actual := GetJson(filter)
+	Convey("Term filter", t, func() {
+		filter := Filter().Term("Sample", "asdf").Term("field2", 341.4)
+		actual, err  := GetJson(filter)
 
-	actualTerm := actual["term"].(map[string]interface{})
+		actualTerm := actual["term"].(map[string]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, "asdf", actualTerm["Sample"])
-	assert.Equal(t, float64(341.4), actualTerm["field2"])
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So("asdf", ShouldEqual, actualTerm["Sample"])
+		So(float64(341.4), ShouldEqual, actualTerm["field2"])
+	})
 
-func TestRangeDsl(t *testing.T) {
-	filter := Filter().Range("rangefield", 1, 2, 3, 4, "+08:00")
-	actual := GetJson(filter)
-	//A bit lazy, probably should assert keys exist
-	actualRange := actual["range"].(map[string]interface{})["rangefield"].(map[string]interface{})
+	Convey("Range filter", t, func() {
+		filter := Filter().Range("rangefield", 1, 2, 3, 4, "+08:00")
+		actual, err  := GetJson(filter)
+		//A bit lazy, probably should assert keys exist
+		actualRange := actual["range"].(map[string]interface{})["rangefield"].(map[string]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, float64(1), actualRange["gte"])
-	assert.Equal(t, float64(2), actualRange["gt"])
-	assert.Equal(t, float64(3), actualRange["lte"])
-	assert.Equal(t, float64(4), actualRange["lt"])
-	assert.Equal(t, "+08:00", actualRange["time_zone"])
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(float64(1), ShouldEqual, actualRange["gte"])
+		So(float64(2), ShouldEqual, actualRange["gt"])
+		So(float64(3), ShouldEqual, actualRange["lte"])
+		So(float64(4), ShouldEqual, actualRange["lt"])
+		So("+08:00", ShouldEqual, actualRange["time_zone"])
+	})
 
-func TestExistsDsl(t *testing.T) {
-	filter := Filter().Exists("field1")
-	actual := GetJson(filter)
+	Convey("Exists filter", t, func() {
+		filter := Filter().Exists("field1")
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["exists"].(map[string]interface{})
+		actualValue := actual["exists"].(map[string]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, "field1", actualValue["field"], "exist field should match")
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So("field1", ShouldEqual, actualValue["field"])
+	})
 
-func TestMissingDsl(t *testing.T) {
-	filter := Filter().Missing("field1")
-	actual := GetJson(filter)
+	Convey("Missing filter", t, func() {
+		filter := Filter().Missing("field1")
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["missing"].(map[string]interface{})
+		actualValue := actual["missing"].(map[string]interface{})
 
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, "field1", actualValue["field"], "missing field should match")
-}
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So("field1", ShouldEqual, actualValue["field"])
+	})
 
-func TestLimitDsl(t *testing.T) {
-	filter := Filter().Limit(100)
-	actual := GetJson(filter)
+	Convey("Limit filter", t, func() {
+		filter := Filter().Limit(100)
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["limit"].(map[string]interface{})
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, float64(100), actualValue["value"], "limit value should match")
-}
+		actualValue := actual["limit"].(map[string]interface{})
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(float64(100), ShouldEqual, actualValue["value"])
+	})
 
-func TestTypeDsl(t *testing.T) {
-	filter := Filter().Type("my_type")
-	actual := GetJson(filter)
+	Convey("Type filter", t, func() {
+		filter := Filter().Type("my_type")
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["type"].(map[string]interface{})
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, "my_type", actualValue["value"], "type value should match")
-}
+		actualValue := actual["type"].(map[string]interface{})
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So("my_type", ShouldEqual, actualValue["value"])
+	})
 
-func TestIdsDsl(t *testing.T) {
-	filter := Filter().Ids("test", "asdf", "fdsa")
-	actual := GetJson(filter)
+	Convey("Ids filter", t, func() {
+		filter := Filter().Ids("test", "asdf", "fdsa")
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["ids"].(map[string]interface{})
-	actualValues := actualValue["values"].([]interface{})
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, nil, actualValue["type"], "Should have no type specified")
-	assert.Equal(t, 3, len(actualValues), "Should have 3 values specified")
-	assert.Equal(t, "test", actualValues[0], "Should have same value")
-	assert.Equal(t, "asdf", actualValues[1], "Should have same value")
-	assert.Equal(t, "fdsa", actualValues[2], "Should have same value")
-}
+		actualValue := actual["ids"].(map[string]interface{})
+		actualValues := actualValue["values"].([]interface{})
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(nil, ShouldEqual, actualValue["type"])
+		So(3, ShouldEqual, len(actualValues))
+		So("test", ShouldEqual, actualValues[0])
+		So("asdf", ShouldEqual, actualValues[1])
+		So("fdsa", ShouldEqual, actualValues[2])
+	})
 
-func TestIdsTypeDsl(t *testing.T) {
-	filter := Filter().IdsByTypes([]string{"my_type"}, "test", "asdf", "fdsa")
-	actual := GetJson(filter)
+	Convey("IdsByTypes filter", t, func() {
+		filter := Filter().IdsByTypes([]string{"my_type"}, "test", "asdf", "fdsa")
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["ids"].(map[string]interface{})
-	actualTypes := actualValue["type"].([]interface{})
-	actualValues := actualValue["values"].([]interface{})
-	assert.Equal(t, 1, len(actual), "JSON should only have one key")
-	assert.Equal(t, 1, len(actualTypes), "Should have one type specified")
-	assert.Equal(t, "my_type", actualTypes[0], "Should have correct type specified")
-	assert.Equal(t, 3, len(actualValues), "Should have 3 values specified")
-	assert.Equal(t, "test", actualValues[0], "Should have same value")
-	assert.Equal(t, "asdf", actualValues[1], "Should have same value")
-	assert.Equal(t, "fdsa", actualValues[2], "Should have same value")
-}
+		actualValue := actual["ids"].(map[string]interface{})
+		actualTypes := actualValue["type"].([]interface{})
+		actualValues := actualValue["values"].([]interface{})
+		So(err, ShouldBeNil)
+		So(1, ShouldEqual, len(actual))
+		So(1, ShouldEqual, len(actualTypes))
+		So("my_type", ShouldEqual, actualTypes[0])
+		So(3, ShouldEqual, len(actualValues))
+		So("test", ShouldEqual, actualValues[0])
+		So("asdf", ShouldEqual, actualValues[1])
+		So("fdsa", ShouldEqual, actualValues[2])
+	})
 
-func TestGeoDistDsl(t *testing.T) {
-	filter := Filter().GeoDistance("100km", NewGeoField("pin.location", 32.3, 23.4))
-	actual := GetJson(filter)
+	Convey("GeoDistance filter", t, func() {
+		filter := Filter().GeoDistance("100km", NewGeoField("pin.location", 32.3, 23.4))
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["geo_distance"].(map[string]interface{})
-	actualLocation := actualValue["pin.location"].(map[string]interface{})
-	assert.Equal(t, "100km", actualValue["distance"], "Distance should be equal")
-	assert.Equal(t, float64(32.3), actualLocation["lat"], "Latitude should be equal")
-	assert.Equal(t, float64(23.4), actualLocation["lon"], "Longitude should be equal")
-}
+		actualValue := actual["geo_distance"].(map[string]interface{})
+		actualLocation := actualValue["pin.location"].(map[string]interface{})
+		So(err, ShouldBeNil)
+		So("100km", ShouldEqual, actualValue["distance"])
+		So(float64(32.3), ShouldEqual, actualLocation["lat"])
+		So(float64(23.4), ShouldEqual, actualLocation["lon"])
+	})
 
-func TestGeoDistRangeDsl(t *testing.T) {
-	filter := Filter().GeoDistanceRange("100km", "200km", NewGeoField("pin.location", 32.3, 23.4))
-	actual := GetJson(filter)
+	Convey("GeoDistanceRange filter", t, func() {
+		filter := Filter().GeoDistanceRange("100km", "200km", NewGeoField("pin.location", 32.3, 23.4))
+		actual, err  := GetJson(filter)
 
-	actualValue := actual["geo_distance_range"].(map[string]interface{})
-	actualLocation := actualValue["pin.location"].(map[string]interface{})
-	assert.Equal(t, "100km", actualValue["from"], "From should be equal")
-	assert.Equal(t, "200km", actualValue["to"], "To should be equal")
-	assert.Equal(t, float64(32.3), actualLocation["lat"], "Latitude should be equal")
-	assert.Equal(t, float64(23.4), actualLocation["lon"], "Longitude should be equal")
+		actualValue := actual["geo_distance_range"].(map[string]interface{})
+		actualLocation := actualValue["pin.location"].(map[string]interface{})
+		So(err, ShouldBeNil)
+		So("100km", ShouldEqual, actualValue["from"])
+		So("200km", ShouldEqual, actualValue["to"])
+		So(float64(32.3), ShouldEqual, actualLocation["lat"])
+		So(float64(23.4), ShouldEqual, actualLocation["lon"])
+	})
 }
 
 func TestFilters(t *testing.T) {
+
 	c := NewTestConn()
+	PopulateTestDB(t, c)
+	defer TearDownTestDB(c)
 
-	// search for docs that are missing repository.name
-	qry := Search("github").Filter(
-		Filter().Exists("repository.name"),
-	)
-	out, err := qry.Result(c)
-	assert.T(t, err == nil, t, "should not have error")
-	expectedDocs := 10
-	expectedHits := 7695
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
-	qry = Search("github").Filter(
-		Filter().Missing("repository.name"),
-	)
-	expectedHits = 390
-	out, _ = qry.Result(c)
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
+	Convey("Exists filter", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().Exists("goals"),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Len(), ShouldEqual, 10)
+		So(out.Hits.Total, ShouldEqual, 12)
+	})
 
-	//actor_attributes: {type: "User",
-	qry = Search("github").Filter(
-		Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland"),
-	)
-	out, _ = qry.Result(c)
-	expectedDocs = 10
-	expectedHits = 71
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
+	Convey("Missing filter", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().Missing("goals"),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 2)
+	})
 
-	/*
-		Should this be an AND by default?
-	*/
-	qry = Search("github").Filter(
-		Filter().And(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
-			And(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)))
-	out, err = qry.Result(c)
-	expectedDocs = 10
-	expectedHits = 44
-	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
+	Convey("Terms filter", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().Terms("pos", "RW", "LW"),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 6)
+	})
 
-	// NOW, lets try with two query calls instead of one
-	qry = Search("github").Filter(
-		Filter().
-			And(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
-			And(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)),
-	)
+	Convey("Filter involving an AND", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().And(
+				Filter().Terms("pos", "LW"),
+				Filter().Exists("PIM"),
+			),
+		)
 
-	out, err = qry.Result(c)
-	//gou.Debug(out)
-	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 2)
+	})
 
-	qry = Search("github").Filter(
-		Filter().Or(Filter().Terms("actor_attributes.location", TEM_DEFAULT, "portland")).
-			Or(Filter().Terms("repository.has_wiki", TEM_DEFAULT, true)),
-	)
-	out, err = qry.Result(c)
-	expectedHits = 6676
-	assert.T(t, err == nil, t, "should not have error")
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have %v total got %v", expectedHits, out.Hits.Total))
-}
 
-func TestFilterRange(t *testing.T) {
-	c := NewTestConn()
+	Convey("Filterng filter results", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().Terms("pos", "LW"),
+		)
+		qry.Filter(
+			Filter().Exists("PIM"),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 2)
+	})
 
-	// now lets filter range for repositories with more than 100 forks
-	out, _ := Search("github").Size("25").Filter(Filter().
-		Range("repository.forks", 100, nil, nil, nil, "")).Result(c)
-
-	if out == nil || &out.Hits == nil {
-		t.Fail()
-		return
-	}
-	expectedDocs := 25
-	expectedHits := 725
-
-	assert.T(t, out.Hits.Len() == expectedDocs, fmt.Sprintf("Should have %v docs got %v", expectedDocs, out.Hits.Len()))
-	assert.T(t, out.Hits.Total == expectedHits, fmt.Sprintf("Should have total %v got %v", expectedHits, out.Hits.Total))
+	Convey("Filter involving OR", t, func() {
+		qry := Search("oilers").Filter(
+			Filter().Or(
+				Filter().Terms("pos", TEM_DEFAULT, "G"),
+				Filter().Range("goals", nil, 80, nil, nil, ""),
+			),
+		)
+		out, err := qry.Result(c)
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits, ShouldNotBeNil)
+		So(out.Hits.Total, ShouldEqual, 3)
+	})
 }

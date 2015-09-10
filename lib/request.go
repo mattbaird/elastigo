@@ -54,16 +54,7 @@ func (r *Request) SetBody(body io.Reader) {
 		rc = ioutil.NopCloser(body)
 	}
 	r.Body = rc
-	if body != nil {
-		switch v := body.(type) {
-		case *strings.Reader:
-			r.ContentLength = int64(v.Len())
-		case *bytes.Reader:
-			r.ContentLength = int64(v.Len())
-		case *bytes.Buffer:
-			r.ContentLength = int64(v.Len())
-		}
-	}
+	r.ContentLength = -1
 }
 
 func (r *Request) Do(v interface{}) (int, []byte, error) {
@@ -101,7 +92,7 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	if res.StatusCode > 304 && v != nil {
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
-			return nil, nil, jsonErr
+			return nil, nil, fmt.Errorf("Json response unmarshal error: [%s], response content: [%s]", jsonErr.Error(), string(bodyBytes))
 		}
 	}
 	return res, bodyBytes, err
