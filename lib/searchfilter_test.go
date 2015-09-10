@@ -232,7 +232,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Terms filter", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", "RW", "LW"),
+			Filter().Terms("pos", TEM_DEFAULT, "RW", "LW"),
 		)
 		out, err := qry.Result(c)
 		So(err, ShouldBeNil)
@@ -244,7 +244,7 @@ func TestFilters(t *testing.T) {
 	Convey("Filter involving an AND", t, func() {
 		qry := Search("oilers").Filter(
 			Filter().And(
-				Filter().Terms("pos", "LW"),
+				Filter().Terms("pos", TEM_DEFAULT, "LW"),
 				Filter().Exists("PIM"),
 			),
 		)
@@ -259,7 +259,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Filterng filter results", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", "LW"),
+			Filter().Terms("pos", TEM_DEFAULT, "LW"),
 		)
 		qry.Filter(
 			Filter().Exists("PIM"),

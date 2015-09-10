@@ -155,7 +155,7 @@ func TestSearch(t *testing.T) {
 			Facet().Fields("teams").Size("20"),
 		).Query(
 			Query().Range(
-				Filter().Range("dob", 19600101, nil, 19621231, nil, ""),
+				Filter().Range("dob", "19600101", nil, "19621231", nil, ""),
 			).Search("*w*"),
 		)
 		out, err := qry.Result(c)
@@ -217,7 +217,7 @@ func TestSearch(t *testing.T) {
 		out, err := Search("oilers").Size("25").Query(
 			Query().Fields("name", "*d*", "", ""),
 		).Filter(
-			Filter().Terms("teams", "STL"),
+			Filter().Terms("teams", TEM_DEFAULT, "STL"),
 		).Result(c)
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
@@ -229,7 +229,7 @@ func TestSearch(t *testing.T) {
 
 		out, err := Search("oilers").Size("25").Query(
 			Query().Range(
-				Filter().Range("dob", 19600101, nil, 19621231, nil, ""),
+				Filter().Range("dob", "19600101", nil, "19621231", nil, ""),
 			).Search("*w*"),
 		).Result(c)
 		So(err, ShouldBeNil)
