@@ -60,3 +60,30 @@ func TestSetFromUrl(t *testing.T) {
 	exp = "Url is empty"
 	assert.T(t, err != nil && err.Error() == exp, fmt.Sprintf("Expected %s, got: %s", exp, err.Error()))
 }
+
+type RequestInfo struct {
+	Method string
+	Url    string
+	Body   string
+}
+
+var lastRequest RequestInfo
+
+func TestTracing(t *testing.T) {
+	c := NewConn()
+	c.RequestTracer = func(method, url, body string) {
+		lastRequest = RequestInfo{method, url, body}
+	}
+
+	Search("example").Result(c)
+
+	exp := RequestInfo{
+		Method: "POST",
+		Url:    "http://localhost:9200/example/_search",
+		Body:   "{}",
+	}
+
+	assert.T(t, lastRequest.Method == exp.Method, fmt.Sprintf("Expected %s, got: %s", exp.Method, lastRequest.Method))
+	assert.T(t, lastRequest.Url == exp.Url, fmt.Sprintf("Expected %s, got: %s", exp.Url, lastRequest.Url))
+	assert.T(t, lastRequest.Body == exp.Body, fmt.Sprintf("Expected %s, got: %s", exp.Body, lastRequest.Body))
+}
