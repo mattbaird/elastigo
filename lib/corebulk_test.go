@@ -130,11 +130,12 @@ func TestBulkIndexerBasic(t *testing.T) {
 }
 
 func TestRefreshParam(t *testing.T) {
-	var requrl *url.URL
+	requrlChan := make(chan *url.URL, 1)
 	InitTests(true)
 	c := NewTestConn()
 	c.RequestTracer = func(method, urlStr, body string) {
-		requrl, _ = url.Parse(urlStr)
+		requrl, _ := url.Parse(urlStr)
+		requrlChan <- requrl
 	}
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
@@ -151,16 +152,17 @@ func TestRefreshParam(t *testing.T) {
 	<-time.After(time.Millisecond * 200)
 	//	indexer.Flush()
 	indexer.Stop()
-
+	requrl := <-requrlChan
 	assert.T(t, requrl.Query().Get("refresh") == "true", "Should have set refresh query param to true")
 }
 
 func TestWithoutRefreshParam(t *testing.T) {
-	var requrl *url.URL
+	requrlChan := make(chan *url.URL, 1)
 	InitTests(true)
 	c := NewTestConn()
 	c.RequestTracer = func(method, urlStr, body string) {
-		requrl, _ = url.Parse(urlStr)
+		requrl, _ := url.Parse(urlStr)
+		requrlChan <- requrl
 	}
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
@@ -176,7 +178,7 @@ func TestWithoutRefreshParam(t *testing.T) {
 	<-time.After(time.Millisecond * 200)
 	//	indexer.Flush()
 	indexer.Stop()
-
+	requrl := <-requrlChan
 	assert.T(t, requrl.Query().Get("refresh") == "false", "Should have set refresh query param to false")
 }
 
@@ -270,13 +272,15 @@ func TestBulkSmallBatch(t *testing.T) {
 
 func TestBulkDelete(t *testing.T) {
 	InitTests(true)
-
+	var lock sync.Mutex
 	c := NewTestConn()
 	indexer := c.NewBulkIndexer(1)
 	sentBytes := []byte{}
 
 	indexer.Sender = func(buf *bytes.Buffer) error {
+		lock.Lock()
 		sentBytes = append(sentBytes, buf.Bytes()...)
+		lock.Unlock()
 		return nil
 	}
 
@@ -287,7 +291,9 @@ func TestBulkDelete(t *testing.T) {
 	indexer.Flush()
 	indexer.Stop()
 
+	lock.Lock()
 	sent := string(sentBytes)
+	lock.Unlock()
 
 	expected := `{"delete":{"_index":"fake","_type":"fake_type","_id":"1"}}
 `
