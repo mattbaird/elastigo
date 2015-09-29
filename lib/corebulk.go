@@ -160,16 +160,6 @@ func (b *BulkIndexer) Stop() {
 	}
 }
 
-// Make a channel that will close when the given WaitGroup is done.
-func wgChan(wg *sync.WaitGroup) <-chan interface{} {
-	ch := make(chan interface{})
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-	return ch
-}
-
 func (b *BulkIndexer) PendingDocuments() int {
 	return b.docCt
 }
@@ -280,7 +270,7 @@ func (b *BulkIndexer) shutdown() {
 	close(b.timerDoneChan)
 	close(b.sendBuf)
 	close(b.bulkChannel)
-	<-wgChan(b.sendWg)
+	b.sendWg.Wait()
 }
 
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
