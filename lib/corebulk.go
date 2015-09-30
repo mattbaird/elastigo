@@ -19,6 +19,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -96,7 +97,7 @@ type BulkIndexer struct {
 }
 
 func (b *BulkIndexer) NumErrors() uint64 {
-	return b.numErrors
+	return atomic.LoadUint64(&b.numErrors)
 }
 
 func (c *Conn) NewBulkIndexer(maxConns int) *BulkIndexer {
@@ -180,9 +181,9 @@ func (b *BulkIndexer) startHttpSender() {
 	// in theory, the whole set will cause a backup all the way to IndexBulk if
 	// we have consumed all maxConns
 	for i := 0; i < b.maxConns; i++ {
+		b.sendWg.Add(1)
 		go func() {
 			for buf := range b.sendBuf {
-				b.sendWg.Add(1)
 				// Copy for the potential re-send.
 				bufCopy := bytes.NewBuffer(buf.Bytes())
 				err := b.Sender(buf)
@@ -197,7 +198,6 @@ func (b *BulkIndexer) startHttpSender() {
 						err = b.Sender(bufCopy)
 						if err == nil {
 							// Successfully re-sent with no error
-							b.sendWg.Done()
 							continue
 						}
 					}
@@ -205,8 +205,8 @@ func (b *BulkIndexer) startHttpSender() {
 						b.ErrorChannel <- &ErrorBuffer{err, buf}
 					}
 				}
-				b.sendWg.Done()
 			}
+			b.sendWg.Done()
 		}()
 	}
 }
@@ -334,14 +334,14 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	body, err := b.conn.DoCommand("POST", fmt.Sprintf("/_bulk?refresh=%t", b.Refresh), nil, buf)
 
 	if err != nil {
-		b.numErrors += 1
+		atomic.AddUint64(&b.numErrors, 1)
 		return err
 	}
 	// check for response errors, bulk insert will give 200 OK but then include errors in response
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr == nil {
 		if response.Errors {
-			b.numErrors += uint64(len(response.Items))
+			atomic.AddUint64(&b.numErrors, uint64(len(response.Items)))
 			return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
 		}
 	}
