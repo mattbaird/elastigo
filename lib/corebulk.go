@@ -19,6 +19,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -128,7 +129,7 @@ type BulkIndexer struct {
 }
 
 func (b *BulkIndexer) NumErrors() uint64 {
-	return b.numErrors
+	return atomic.LoadUint64(&b.numErrors)
 }
 
 func (c *Conn) NewBulkIndexer(maxConns int) *BulkIndexer {
@@ -192,16 +193,6 @@ func (b *BulkIndexer) Stop() {
 	}
 }
 
-// Make a channel that will close when the given WaitGroup is done.
-func wgChan(wg *sync.WaitGroup) <-chan interface{} {
-	ch := make(chan interface{})
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-	return ch
-}
-
 func (b *BulkIndexer) PendingDocuments() int {
 	return b.docCt
 }
@@ -222,9 +213,10 @@ func (b *BulkIndexer) startHttpSender() {
 	// in theory, the whole set will cause a backup all the way to IndexBulk if
 	// we have consumed all maxConns
 	for i := 0; i < b.maxConns; i++ {
+		b.sendWg.Add(1)
 		go func() {
+			defer b.sendWg.Done()
 			for buf := range b.sendBuf {
-				b.sendWg.Add(1)
 				// Copy so we can put the buffer on the error channel, or potentially re-send it.
 				bufCopy := bytes.NewBuffer(buf.Bytes())
 				err := b.Sender(buf)
@@ -242,7 +234,6 @@ func (b *BulkIndexer) startHttpSender() {
 						err = b.Sender(bufCopy)
 						if err == nil {
 							// Successfully re-sent with no error
-							b.sendWg.Done()
 							continue
 						}
 					}
@@ -250,7 +241,6 @@ func (b *BulkIndexer) startHttpSender() {
 						b.ErrorChannel <- &ErrorBuffer{err, buf}
 					}
 				}
-				b.sendWg.Done()
 			}
 		}()
 	}
@@ -315,7 +305,7 @@ func (b *BulkIndexer) shutdown() {
 	close(b.timerDoneChan)
 	close(b.sendBuf)
 	close(b.bulkChannel)
-	<-wgChan(b.sendWg)
+	b.sendWg.Wait()
 }
 
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
@@ -386,7 +376,7 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	body, err := b.conn.DoCommand("POST", "/_bulk", nil, buf)
 
 	if err != nil {
-		b.numErrors += 1
+		atomic.AddUint64(&b.numErrors, 1)
 		return err
 	}
 	// check for response errors, bulk insert will give 200 OK but then include errors in response
@@ -407,7 +397,7 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 						continue
 					}
 					if status, ok := body["status"]; ok && status.(float64) > 304 {
-						b.numErrors++
+						atomic.AddUint64(&b.numErrors, 1)
 					}
 				}
 			}

@@ -19,16 +19,41 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
+	"strings"
+
 	"github.com/araddon/gou"
 	"github.com/bmizerany/assert"
-	"strings"
 )
 
 //  go test -bench=".*"
 //  go test -bench="Bulk"
+
+type sharedBuffer struct {
+	mu     sync.Mutex
+	Buffer []*bytes.Buffer
+}
+
+func NewSharedBuffer() *sharedBuffer {
+	return &sharedBuffer{
+		Buffer: make([]*bytes.Buffer, 0),
+	}
+}
+
+func (b *sharedBuffer) Append(buf *bytes.Buffer) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.Buffer = append(b.Buffer, buf)
+}
+
+func (b *sharedBuffer) Length() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return len(b.Buffer)
+}
 
 func init() {
 	flag.Parse()
@@ -49,7 +74,7 @@ func closeInt(a, b int) bool {
 func TestBulkIndexerBasic(t *testing.T) {
 	testIndex := "users"
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -63,8 +88,8 @@ func TestBulkIndexerBasic(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
-		// log.Printf("buffer:%s", string(buf.Bytes()))
+		buffers.Append(buf)
+		//log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
 	indexer.Start()
@@ -79,23 +104,26 @@ func TestBulkIndexerBasic(t *testing.T) {
 	err := indexer.Index(testIndex, "user", "1", "", &date, nil, data, true)
 
 	waitFor(func() bool {
-		return len(buffers) > 0
+		return buffers.Length() > 0
 	}, 5)
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
-	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
+	assert.T(t, buffers.Length() == 1, fmt.Sprintf("Should have sent one operation but was %d", buffers.Length()))
 	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. NumErrors: %v, err: %v", indexer.NumErrors(), err))
 	expectedBytes := 144
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index(testIndex, "user", "2", "", nil, nil, data, true)
-	<-time.After(time.Millisecond * 10) // we need to wait for doc to hit send channel
+	waitFor(func() bool {
+		return buffers.Length() > 1
+	}, 5)
+
 	// this will test to ensure that Flush actually catches a doc
 	indexer.Flush()
 	<-time.After(time.Millisecond * 1) // we need to wait for the httpSender to read from the send buffer
 	totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, err == nil, fmt.Sprintf("Should have nil error  =%v", err))
-	assert.T(t, len(buffers) == 2, fmt.Sprintf("Should have another buffer ct=%d", len(buffers)))
+	assert.T(t, buffers.Length() == 2, fmt.Sprintf("Should have another buffer ct=%d", buffers.Length()))
 
 	assert.T(t, indexer.NumErrors() == 0, fmt.Sprintf("Should not have any errors %d", indexer.NumErrors()))
 	expectedBytes = 250 // with refresh
@@ -114,13 +142,13 @@ func TestBulkIndexerErrors(t *testing.T) {
 	sent := make(chan struct{}, 1)
 
 	indexer := c.NewBulkIndexer(3)
-	indexer.Start()
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		// log.Printf("buffer:%s", string(buf.Bytes()))
 		ret := indexer.Send(buf)
 		sent <- struct{}{}
 		return ret
 	}
+	indexer.Start()
 	errch := make(chan *ErrorBuffer, 1)
 	indexer.ErrorChannel = errch
 
@@ -180,7 +208,7 @@ func TestBulkIndexerErrors(t *testing.T) {
 // currently broken in drone.io
 func XXXTestBulkUpdate(t *testing.T) {
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -192,7 +220,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
+		buffers.Append(buf)
 		return indexer.Send(buf)
 	}
 	indexer.Start()
@@ -216,7 +244,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 	//	indexer.Flush()
 
 	waitFor(func() bool {
-		return len(buffers) > 0
+		return buffers.Length() > 0
 	}, 5)
 
 	indexer.Stop()
@@ -267,13 +295,15 @@ func TestBulkSmallBatch(t *testing.T) {
 
 func TestBulkDelete(t *testing.T) {
 	InitTests(true)
-
+	var lock sync.Mutex
 	c := NewTestConn()
 	indexer := c.NewBulkIndexer(1)
 	sentBytes := []byte{}
 
 	indexer.Sender = func(buf *bytes.Buffer) error {
+		lock.Lock()
 		sentBytes = append(sentBytes, buf.Bytes()...)
+		lock.Unlock()
 		return nil
 	}
 
@@ -284,7 +314,9 @@ func TestBulkDelete(t *testing.T) {
 	indexer.Flush()
 	indexer.Stop()
 
+	lock.Lock()
 	sent := string(sentBytes)
+	lock.Unlock()
 
 	expected := `{"delete":{"_index":"fake","_type":"fake_type","_id":"1","refresh":true}}
 `
@@ -324,7 +356,7 @@ func XXXTestBulkErrors(t *testing.T) {
 func TestBulkVersioning_Internal(t *testing.T) {
 	testIndex := "users"
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -341,7 +373,7 @@ func TestBulkVersioning_Internal(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
+		buffers.Append(buf)
 		// log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
@@ -394,7 +426,7 @@ func TestBulkVersioning_Internal(t *testing.T) {
 func TestBulkVersioning_External(t *testing.T) {
 	testIndex := "users"
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -411,7 +443,7 @@ func TestBulkVersioning_External(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
+		buffers.Append(buf)
 		// log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
