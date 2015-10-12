@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/url"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,6 +30,29 @@ import (
 
 //  go test -bench=".*"
 //  go test -bench="Bulk"
+
+type sharedBuffer struct {
+	mu     sync.Mutex
+	Buffer []*bytes.Buffer
+}
+
+func NewSharedBuffer() *sharedBuffer {
+	return &sharedBuffer{
+		Buffer: make([]*bytes.Buffer, 0),
+	}
+}
+
+func (b *sharedBuffer) Append(buf *bytes.Buffer) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.Buffer = append(b.Buffer, buf)
+}
+
+func (b *sharedBuffer) Length() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return len(b.Buffer)
+}
 
 func init() {
 	flag.Parse()
@@ -49,7 +73,7 @@ func closeInt(a, b int) bool {
 func TestBulkIndexerBasic(t *testing.T) {
 	testIndex := "users"
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -63,7 +87,7 @@ func TestBulkIndexerBasic(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
+		buffers.Append(buf)
 		//log.Printf("buffer:%s", string(buf.Bytes()))
 		return indexer.Send(buf)
 	}
@@ -78,26 +102,26 @@ func TestBulkIndexerBasic(t *testing.T) {
 
 	err := indexer.Index(testIndex, "user", "1", "", "", &date, data)
 	waitFor(func() bool {
-		return len(buffers) > 0
+		return buffers.Length() > 0
 	}, 5)
 
 	// part of request is url, so lets factor that in
 	//totalBytesSent = totalBytesSent - len(*eshost)
-	assert.T(t, len(buffers) == 1, fmt.Sprintf("Should have sent one operation but was %d", len(buffers)))
+	assert.T(t, buffers.Length() == 1, fmt.Sprintf("Should have sent one operation but was %d", buffers.Length()))
 	assert.T(t, indexer.NumErrors() == 0 && err == nil, fmt.Sprintf("Should not have any errors. NumErrors: %v, err: %v", indexer.NumErrors(), err))
 	expectedBytes := 129
 	assert.T(t, totalBytesSent == expectedBytes, fmt.Sprintf("Should have sent %v bytes but was %v", expectedBytes, totalBytesSent))
 
 	err = indexer.Index(testIndex, "user", "2", "", "", nil, data)
 	waitFor(func() bool {
-		return len(buffers) > 1
+		return buffers.Length() > 1
 	}, 5)
 
 	// this will test to ensure that Flush actually catches a doc
 	indexer.Flush()
 	totalBytesSent = totalBytesSent - len(*eshost)
 	assert.T(t, err == nil, fmt.Sprintf("Should have nil error  =%v", err))
-	assert.T(t, len(buffers) == 2, fmt.Sprintf("Should have another buffer ct=%d", len(buffers)))
+	assert.T(t, buffers.Length() == 2, fmt.Sprintf("Should have another buffer ct=%d", buffers.Length()))
 
 	assert.T(t, indexer.NumErrors() == 0, fmt.Sprintf("Should not have any errors %d", indexer.NumErrors()))
 	expectedBytes = 220
@@ -107,11 +131,12 @@ func TestBulkIndexerBasic(t *testing.T) {
 }
 
 func TestRefreshParam(t *testing.T) {
-	var requrl *url.URL
+	requrlChan := make(chan *url.URL, 1)
 	InitTests(true)
 	c := NewTestConn()
 	c.RequestTracer = func(method, urlStr, body string) {
-		requrl, _ = url.Parse(urlStr)
+		requrl, _ := url.Parse(urlStr)
+		requrlChan <- requrl
 	}
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
@@ -128,16 +153,17 @@ func TestRefreshParam(t *testing.T) {
 	<-time.After(time.Millisecond * 200)
 	//	indexer.Flush()
 	indexer.Stop()
-
+	requrl := <-requrlChan
 	assert.T(t, requrl.Query().Get("refresh") == "true", "Should have set refresh query param to true")
 }
 
 func TestWithoutRefreshParam(t *testing.T) {
-	var requrl *url.URL
+	requrlChan := make(chan *url.URL, 1)
 	InitTests(true)
 	c := NewTestConn()
 	c.RequestTracer = func(method, urlStr, body string) {
-		requrl, _ = url.Parse(urlStr)
+		requrl, _ := url.Parse(urlStr)
+		requrlChan <- requrl
 	}
 	date := time.Unix(1257894000, 0)
 	data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
@@ -153,14 +179,14 @@ func TestWithoutRefreshParam(t *testing.T) {
 	<-time.After(time.Millisecond * 200)
 	//	indexer.Flush()
 	indexer.Stop()
-
+	requrl := <-requrlChan
 	assert.T(t, requrl.Query().Get("refresh") == "false", "Should have set refresh query param to false")
 }
 
 // currently broken in drone.io
 func XXXTestBulkUpdate(t *testing.T) {
 	var (
-		buffers        = make([]*bytes.Buffer, 0)
+		buffers        = NewSharedBuffer()
 		totalBytesSent int
 		messageSets    int
 	)
@@ -172,7 +198,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 	indexer.Sender = func(buf *bytes.Buffer) error {
 		messageSets += 1
 		totalBytesSent += buf.Len()
-		buffers = append(buffers, buf)
+		buffers.Append(buf)
 		return indexer.Send(buf)
 	}
 	indexer.Start()
@@ -196,7 +222,7 @@ func XXXTestBulkUpdate(t *testing.T) {
 	//	indexer.Flush()
 
 	waitFor(func() bool {
-		return len(buffers) > 0
+		return buffers.Length() > 0
 	}, 5)
 
 	indexer.Stop()
@@ -247,13 +273,15 @@ func TestBulkSmallBatch(t *testing.T) {
 
 func TestBulkDelete(t *testing.T) {
 	InitTests(true)
-
+	var lock sync.Mutex
 	c := NewTestConn()
 	indexer := c.NewBulkIndexer(1)
 	sentBytes := []byte{}
 
 	indexer.Sender = func(buf *bytes.Buffer) error {
+		lock.Lock()
 		sentBytes = append(sentBytes, buf.Bytes()...)
+		lock.Unlock()
 		return nil
 	}
 
@@ -264,7 +292,9 @@ func TestBulkDelete(t *testing.T) {
 	indexer.Flush()
 	indexer.Stop()
 
+	lock.Lock()
 	sent := string(sentBytes)
+	lock.Unlock()
 
 	expected := `{"delete":{"_index":"fake","_type":"fake_type","_id":"1"}}
 `
