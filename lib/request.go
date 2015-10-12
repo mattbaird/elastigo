@@ -15,13 +15,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	hostpool "github.com/bitly/go-hostpool"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
+
+	hostpool "github.com/bitly/go-hostpool"
 )
 
 type Request struct {
@@ -107,9 +109,11 @@ func Escape(args map[string]interface{}) (s string, err error) {
 		case bool:
 			vals.Add(key, strconv.FormatBool(v))
 		case int, int32, int64:
-			vals.Add(key, strconv.Itoa(v.(int)))
+			vInt := reflect.ValueOf(v).Int()
+			vals.Add(key, strconv.FormatInt(vInt, 10))
 		case float32, float64:
-			vals.Add(key, strconv.FormatFloat(v.(float64), 'f', -1, 64))
+			vFloat := reflect.ValueOf(v).Float()
+			vals.Add(key, strconv.FormatFloat(vFloat, 'f', -1, 32))
 		case []string:
 			vals.Add(key, strings.Join(v, ","))
 		default:
