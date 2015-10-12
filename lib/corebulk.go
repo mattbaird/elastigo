@@ -126,6 +126,9 @@ type BulkIndexer struct {
 	mu sync.Mutex
 	// Wait Group for the http sends
 	sendWg *sync.WaitGroup
+
+	// numPendingSends tracks queued buffers pending 'send' in sendBuf
+	numPendingSends int64
 }
 
 func (b *BulkIndexer) NumErrors() uint64 {
@@ -197,6 +200,10 @@ func (b *BulkIndexer) PendingDocuments() int {
 	return b.docCt
 }
 
+func (b *BulkIndexer) PendingSends() int64 {
+	return atomic.LoadInt64(&b.numPendingSends)
+}
+
 // Flush all current documents to ElasticSearch
 func (b *BulkIndexer) Flush() {
 	b.mu.Lock()
@@ -232,15 +239,12 @@ func (b *BulkIndexer) startHttpSender() {
 						bufCopy := bytes.NewBuffer(buf.Bytes())
 						time.Sleep(time.Second * time.Duration(b.RetryForSeconds))
 						err = b.Sender(bufCopy)
-						if err == nil {
-							// Successfully re-sent with no error
-							continue
-						}
 					}
-					if b.ErrorChannel != nil {
+					if err != nil && b.ErrorChannel != nil {
 						b.ErrorChannel <- &ErrorBuffer{err, buf}
 					}
 				}
+				atomic.AddInt64(&b.numPendingSends, -1)
 			}
 		}()
 	}
@@ -294,6 +298,7 @@ func (b *BulkIndexer) startDocChannel() {
 
 func (b *BulkIndexer) send(buf *bytes.Buffer) {
 	//b2 := *b.buf
+	atomic.AddInt64(&b.numPendingSends, 1)
 	b.sendBuf <- buf
 	b.buf = new(bytes.Buffer)
 	//	b.buf.Reset()
