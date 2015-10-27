@@ -232,6 +232,7 @@ func (b *BulkIndexer) startTimer() {
 				b.mu.Unlock()
 			case <-b.timerDoneChan:
 				// shutdown this go routine
+				ticker.Stop()
 				return
 			}
 
