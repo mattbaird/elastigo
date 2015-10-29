@@ -202,6 +202,8 @@ func (b *BulkIndexer) Stop() {
 }
 
 func (b *BulkIndexer) PendingDocuments() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	return b.docCt
 }
 
