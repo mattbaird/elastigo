@@ -59,7 +59,7 @@ func TestFilterDsl(t *testing.T) {
 	})
 
 	Convey("Terms filter", t, func() {
-		filter := Filter().Terms("Sample", TEM_AND, "asdf", 123, true)
+		filter := Filter().Terms("Sample", TEMAnd, "asdf", 123, true)
 		actual, err  := GetJson(filter)
 
 		actualTerms := actual["terms"].(map[string]interface{})
@@ -232,7 +232,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Terms filter", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", TEM_DEFAULT, "RW", "LW"),
+			Filter().Terms("pos", TEMDefault, "RW", "LW"),
 		)
 		out, err := qry.Result(c)
 		So(err, ShouldBeNil)
@@ -244,7 +244,7 @@ func TestFilters(t *testing.T) {
 	Convey("Filter involving an AND", t, func() {
 		qry := Search("oilers").Filter(
 			Filter().And(
-				Filter().Terms("pos", TEM_DEFAULT, "LW"),
+				Filter().Terms("pos", TEMDefault, "LW"),
 				Filter().Exists("PIM"),
 			),
 		)
@@ -259,7 +259,7 @@ func TestFilters(t *testing.T) {
 
 	Convey("Filterng filter results", t, func() {
 		qry := Search("oilers").Filter(
-			Filter().Terms("pos", TEM_DEFAULT, "LW"),
+			Filter().Terms("pos", TEMDefault, "LW"),
 		)
 		qry.Filter(
 			Filter().Exists("PIM"),
@@ -274,7 +274,7 @@ func TestFilters(t *testing.T) {
 	Convey("Filter involving OR", t, func() {
 		qry := Search("oilers").Filter(
 			Filter().Or(
-				Filter().Terms("pos", TEM_DEFAULT, "G"),
+				Filter().Terms("pos", TEMDefault, "G"),
 				Filter().Range("goals", nil, 80, nil, nil, ""),
 			),
 		)

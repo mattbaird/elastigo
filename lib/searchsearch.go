@@ -174,6 +174,7 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 //         Filter().Exists("repository.name"),
 //         Filter().Terms("repository.has_wiki", true)
 //     )
+
 func (s *SearchDsl) Filter(fl *FilterOp) *SearchDsl {
 	s.FilterVal = fl
 	return s

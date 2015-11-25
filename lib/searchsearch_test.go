@@ -217,7 +217,7 @@ func TestSearch(t *testing.T) {
 		out, err := Search("oilers").Size("25").Query(
 			Query().Fields("name", "*d*", "", ""),
 		).Filter(
-			Filter().Terms("teams", TEM_DEFAULT, "STL"),
+			Filter().Terms("teams", TEMDefault, "STL"),
 		).Result(c)
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)

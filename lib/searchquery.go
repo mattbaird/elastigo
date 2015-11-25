@@ -98,14 +98,14 @@ func (q *QueryDsl) All() *QueryDsl {
 	return q
 }
 
-// Limit the query to this range
+// Range adds a RANGE FilterOp to the search query
+// Legacy. Use the Filter() function instead
 func (q *QueryDsl) Range(fop *FilterOp) *QueryDsl {
 	if q.FilterVal == nil {
 		q.FilterVal = fop
 		return q
 	}
-	// TODO:  this is not valid, refactor
-	//q.FilterVal.Add(fop)
+
 	return q
 }
 
@@ -144,6 +144,8 @@ func (q *QueryDsl) Qs(qs *QueryString) *QueryDsl {
 	return q
 }
 
+// SetLenient sets whether the query should ignore format based failures,
+// such as passing in text to a number field.
 func (q *QueryDsl) SetLenient(lenient bool) *QueryDsl {
 	q.QueryEmbed.Qs.Lenient = lenient
 	return q
@@ -212,6 +214,8 @@ type QueryString struct {
 	//_exists_:field1,
 	//_missing_:field1,
 }
+
+//I don't know how any of the Term stuff below is supposed to work. -mikeyoon
 
 // Generic Term based (used in query, facet, filter)
 type Term struct {
