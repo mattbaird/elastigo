@@ -73,10 +73,14 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 
 	httpStatusCode, body, err = req.Do(&response)
 	if err != nil {
-		return body, err
+		if httpStatusCode == -1 {
+			//connection error like *url.Error
+			return body, err
+		}
+		//error reading response body, or something else after we obtained an HTTP status code
+		return body, ESError{time.Now(), fmt.Sprintf("Error [%v] Status [%v]", err, httpStatusCode), httpStatusCode}
 	}
 	if httpStatusCode > 304 {
-
 		jsonErr := json.Unmarshal(body, &response)
 		if jsonErr == nil {
 			if res_err, ok := response["error"]; ok {
@@ -84,7 +88,7 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 				return body, ESError{time.Now(), fmt.Sprintf("Error [%s] Status [%v]", res_err, status), httpStatusCode}
 			}
 		}
-		return body, jsonErr
+		return body, ESError{time.Now(), fmt.Sprintf("Error [%v] Status [%v]", jsonErr, httpStatusCode), httpStatusCode}
 	}
 	return body, nil
 }

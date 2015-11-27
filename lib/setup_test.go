@@ -76,7 +76,7 @@ func PopulateTestDB(t *testing.T, c *Conn) {
 			"dob": "19600218", "teams": ["EDM", "BOS", "DAL", "MTL"]}`)
 
 	// HACK to let the ES magic happen
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
 }
 
 func TearDownTestDB(c *Conn) {

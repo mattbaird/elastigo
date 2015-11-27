@@ -61,8 +61,8 @@ func (r *Request) SetBody(body io.Reader) {
 
 func (r *Request) Do(v interface{}) (int, []byte, error) {
 	response, bodyBytes, err := r.DoResponse(v)
-	if err != nil {
-		return -1, nil, err
+	if response == nil {
+		return -1, bodyBytes, err
 	}
 	return response.StatusCode, bodyBytes, err
 }
@@ -84,18 +84,15 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return nil, nil, err
+		return res, nil, err
 	}
 
 	if res.StatusCode == 404 {
-		return nil, bodyBytes, RecordNotFound
+		return res, bodyBytes, RecordNotFound
 	}
 
 	if res.StatusCode > 304 && v != nil {
-		jsonErr := json.Unmarshal(bodyBytes, v)
-		if jsonErr != nil {
-			return nil, nil, fmt.Errorf("Json response unmarshal error: [%s], response content: [%s]", jsonErr.Error(), string(bodyBytes))
-		}
+		err = json.Unmarshal(bodyBytes, v)
 	}
 	return res, bodyBytes, err
 }

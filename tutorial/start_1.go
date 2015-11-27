@@ -14,9 +14,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	elastigo "github.com/mattbaird/elastigo/lib"
 	"log"
 	"os"
+
+	elastigo "github.com/zaphod-concur/elastigo/lib"
 )
 
 var (
