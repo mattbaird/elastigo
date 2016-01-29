@@ -35,7 +35,7 @@ func main() {
 	c.Domain = *eshost
 	response, _ := c.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	c.Flush()
-	log.Printf("Index OK: %v", response.Ok)
+	log.Printf("Index OK: %v", response.Created)
 	searchresponse, err := c.Search("twitter", "tweet", nil, "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}")
 	if err != nil {
 		log.Println("error during search:" + err.Error())
@@ -47,7 +47,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("err calling marshalJson:%v", err)
 	}
-	json.Unmarshal(bytes, t)
+	json.Unmarshal(bytes, &t)
 	log.Printf("Search Found: %s", t)
 	response, _ = c.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
