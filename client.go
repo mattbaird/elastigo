@@ -35,7 +35,7 @@ func main() {
 	c.Domain = *eshost
 	response, _ := c.Index("twitter", "tweet", "1", nil, NewTweet("kimchy", "Search is cool"))
 	c.Flush()
-	log.Printf("Index OK: %v", response.Created)
+	log.Printf("Index OK: %v", response.Ok)
 	searchresponse, err := c.Search("twitter", "tweet", nil, "{\"query\" : {\"term\" : { \"user\" : \"kimchy\" }}}")
 	if err != nil {
 		log.Println("error during search:" + err.Error())
