@@ -12,9 +12,9 @@
 package elastigo
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
-	"encoding/json"
 )
 
 var (

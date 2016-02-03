@@ -68,7 +68,7 @@ type TypeOptions struct {
 }
 
 type TTLOptions struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool   `json:"enabled"`
 	Default string `json:"default,omitempty"`
 }
 

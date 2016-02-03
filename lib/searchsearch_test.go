@@ -69,7 +69,6 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 3)
 	})
 
-
 	//	A faceted search for what "type" of events there are
 	//	- since we are not specifying an elasticsearch type it searches all ()
 	//
@@ -131,7 +130,6 @@ func TestSearch(t *testing.T) {
 		So(h.Int("teams.total"), ShouldEqual, 37)
 		So(len(h.List("teams.terms")), ShouldEqual, 4)
 	})
-
 
 	Convey("Facet search with wildcard", t, func() {
 
