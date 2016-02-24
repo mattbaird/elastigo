@@ -110,6 +110,17 @@ func TestPutMapping(t *testing.T) {
 				},
 			},
 		},
+		DynamicTemplates: []map[string]interface{}{
+			map[string]interface{}{
+				"strings": map[string]interface{}{
+					"match_mapping_type": "string",
+					"mapping": map[string]interface{}{
+						"type":  "string",
+						"index": "not_analyzed",
+					},
+				},
+			},
+		},
 	}
 	expValue := MappingForType("myType", MappingOptions{
 		Timestamp: TimestampOptions{Enabled: true},
@@ -196,6 +207,15 @@ func TestPutMappingFromJSON(t *testing.T) {
 					},
 				},
 			},
+			DynamicTemplates: []map[string]interface{}{
+				"strings": map[string]interface{}{
+					"match_mapping_type": "string",
+					"mapping": {
+						"type":  "string",
+						"index": "not_analyzed",
+					},
+				},
+			},
 		}
 	*/
 
@@ -229,7 +249,18 @@ func TestPutMappingFromJSON(t *testing.T) {
 									}
 								}
 							}
-						}
+						},
+						"dynamic_templates": [
+							{
+								"strings": {
+									"match_mapping_type": "string",
+									"mapping": {
+										"type": "string",
+										"index": "not_analyzed"
+									}
+								}
+							}
+						]
 					}
 				}`
 
@@ -255,6 +286,17 @@ func TestPutMappingFromJSON(t *testing.T) {
 					"fields": map[string]map[string]string{
 						"ma_analyzed":    {"type": "string", "index": "analyzed"},
 						"ma_notanalyzed": {"type": "string", "index": "not_analyzed"},
+					},
+				},
+			},
+			"dynamic_templates": []map[string]interface{}{
+				map[string]interface{}{
+					"strings": map[string]interface{}{
+						"match_mapping_type": "string",
+						"mapping": map[string]interface{}{
+							"type":  "string",
+							"index": "not_analyzed",
+						},
 					},
 				},
 			},
