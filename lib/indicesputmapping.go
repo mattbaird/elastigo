@@ -28,6 +28,7 @@ type MappingOptions struct {
 	Routing          *RoutingOptions          `json:"_routing,omitempty"`
 	Size             *SizeOptions             `json:"_size,omitempty"`
 	Source           *SourceOptions           `json:"_source,omitempty"`
+	TTL              *TTLOptions              `json:"_ttl,omitempty"`
 	Type             *TypeOptions             `json:"_type,omitempty"`
 	Properties       map[string]interface{}   `json:"properties"`
 	DynamicTemplates []map[string]interface{} `json:"dynamic_templates,omitempty"`
