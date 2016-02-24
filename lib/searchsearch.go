@@ -47,8 +47,9 @@ type SearchDsl struct {
 	FacetVal      *FacetDsl                `json:"facets,omitempty"`
 	QueryVal      *QueryDsl                `json:"query,omitempty"`
 	SortBody      []*SortDsl               `json:"sort,omitempty"`
-	FilterVal     *FilterWrap              `json:"filter,omitempty"`
+	FilterVal     *FilterOp                `json:"filter,omitempty"`
 	AggregatesVal map[string]*AggregateDsl `json:"aggregations,omitempty"`
+	HighlightVal  *HighlightDsl            `json:"highlight,omitempty"`
 }
 
 func (s *SearchDsl) Bytes(conn *Conn) ([]byte, error) {
@@ -173,12 +174,9 @@ func (s *SearchDsl) Query(q *QueryDsl) *SearchDsl {
 //         Filter().Exists("repository.name"),
 //         Filter().Terms("repository.has_wiki", true)
 //     )
-func (s *SearchDsl) Filter(fl ...interface{}) *SearchDsl {
-	if s.FilterVal == nil {
-		s.FilterVal = NewFilterWrap()
-	}
 
-	s.FilterVal.addFilters(fl)
+func (s *SearchDsl) Filter(fl *FilterOp) *SearchDsl {
+	s.FilterVal = fl
 	return s
 }
 
@@ -197,5 +195,10 @@ func (s *SearchDsl) Scroll(duration string) *SearchDsl {
 
 func (s *SearchDsl) SearchType(searchType string) *SearchDsl {
 	s.args["search_type"] = searchType
+	return s
+}
+
+func (s *SearchDsl) Highlight(highlight *HighlightDsl) *SearchDsl {
+	s.HighlightVal = highlight
 	return s
 }

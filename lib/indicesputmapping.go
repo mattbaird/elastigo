@@ -67,6 +67,11 @@ type TypeOptions struct {
 	Index string `json:"index,omitempty"`
 }
 
+type TTLOptions struct {
+	Enabled bool   `json:"enabled"`
+	Default string `json:"default,omitempty"`
+}
+
 type IdOptions struct {
 	Index string `json:"index,omitempty"`
 	Path  string `json:"path,omitempty"`
