@@ -289,6 +289,17 @@ func TestPutMappingFromJSON(t *testing.T) {
 					},
 				},
 			},
+			"dynamic_templates": []map[string]interface{}{
+				map[string]interface{}{
+					"strings": map[string]interface{}{
+						"match_mapping_type": "string",
+						"mapping": map[string]interface{}{
+							"type":  "string",
+							"index": "not_analyzed",
+						},
+					},
+				},
+			},
 		},
 	}
 
