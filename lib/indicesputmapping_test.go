@@ -122,6 +122,7 @@ func TestPutMapping(t *testing.T) {
 			},
 		},
 	}
+
 	expValue := MappingForType("myType", MappingOptions{
 		Timestamp: TimestampOptions{Enabled: true},
 		Id:        IdOptions{Index: "analyzed", Path: "id"},
@@ -160,6 +161,17 @@ func TestPutMapping(t *testing.T) {
 				"type": "nested",
 				"properties": map[string]map[string]string{
 					"innerField": {"type": "date"},
+				},
+			},
+		},
+		DynamicTemplates: []map[string]interface{}{
+			map[string]interface{}{
+				"strings": map[string]interface{}{
+					"match_mapping_type": "string",
+					"mapping": map[string]interface{}{
+						"type":  "string",
+						"index": "not_analyzed",
+					},
 				},
 			},
 		},
