@@ -13,6 +13,7 @@ package elastigo
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,6 +31,43 @@ type Request struct {
 	*http.Client
 	*http.Request
 	hostResponse hostpool.HostPoolResponse
+}
+
+func (r *Request) SetBodyGzip(data interface{}) error {
+	buf := new(bytes.Buffer)
+	gw := gzip.NewWriter(buf)
+
+	switch v := data.(type) {
+	case string:
+		if _, err := gw.Write([]byte(v)); err != nil {
+			return err
+		}
+	case []byte:
+		if _, err := gw.Write([]byte(v)); err != nil {
+			return err
+		}
+	case io.Reader:
+		if _, err := io.Copy(gw, v); err != nil {
+			return err
+		}
+	default:
+		b, err := json.Marshal(data)
+		if err != nil {
+			return err
+		}
+		if _, err := gw.Write(b); err != nil {
+			return err
+		}
+	}
+
+	if err := gw.Close(); err != nil {
+		return err
+	}
+	r.SetBody(bytes.NewReader(buf.Bytes()))
+	r.ContentLength = int64(len(buf.Bytes()))
+	r.Header.Add("Accept-Charset", "utf-8")
+	r.Header.Set("Content-Encoding", "gzip")
+	return nil
 }
 
 func (r *Request) SetBodyJson(data interface{}) error {
