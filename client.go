@@ -47,7 +47,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("err calling marshalJson:%v", err)
 	}
-	json.Unmarshal(bytes, t)
+	json.Unmarshal(bytes, &t)
 	log.Printf("Search Found: %s", t)
 	response, _ = c.Get("twitter", "tweet", "1", nil)
 	log.Printf("Get: %v", response.Exists)
