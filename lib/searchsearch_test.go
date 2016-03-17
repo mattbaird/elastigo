@@ -288,4 +288,21 @@ func TestSearch(t *testing.T) {
 		h1 := gou.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Wayne Gretzky")
 	})
+
+	Convey("Search query with filtered source fields", t, func() {
+
+		qry := Search("oilers").SourceFields("name", "goals").Pretty().Query(
+			Query().All(),
+		)
+		out, err := qry.Result(c)
+
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits.Len(), ShouldEqual, 10)
+		So(out.Hits.Total, ShouldEqual, 14)
+
+		b, err := out.Hits.Hits[0].Source.MarshalJSON()
+		h1 := gou.NewJsonHelper(b)
+		So(h1.Keys(), ShouldResemble, []string{"name", "goals"})
+	})
 }
