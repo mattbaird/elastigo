@@ -1,11 +1,11 @@
 package elastigo
 
 import (
-	"testing"
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
+	"testing"
 )
 
 func TestDeleteMapping(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDeleteMapping(t *testing.T) {
 	c.Domain = strings.Split(serverURL.Host, ":")[0]
 	c.Port = strings.Split(serverURL.Host, ":")[1]
 
-	_, err := c.DeleteMapping("this","exists")
+	_, err := c.DeleteMapping("this", "exists")
 	if err != nil {
 		t.Errorf("Expected no error and got, %s", err)
 	}

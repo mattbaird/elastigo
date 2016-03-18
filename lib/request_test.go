@@ -11,6 +11,8 @@
 package elastigo
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -139,4 +141,60 @@ func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	response.Header.Set("Content-Type", t.contentType)
 	response.Body = ioutil.NopCloser(strings.NewReader(t.body))
 	return response, nil
+}
+
+func TestSetBodyGzip(t *testing.T) {
+	s := "foo"
+
+	// test []byte
+	expB := []byte(s)
+	actB, err := gzipHelper(t, expB)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, bytes.Compare(actB, expB) == 0, fmt.Sprintf("Expected: %s, got: %s", expB, actB))
+
+	// test string
+	expS := s
+	actS, err := gzipHelper(t, expS)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, string(actS) == expS, fmt.Sprintf("Expected: %s, got: %s", expS, actS))
+
+	// test io.Reader
+	expR := strings.NewReader(s)
+	actR, err := gzipHelper(t, expR)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, bytes.Compare([]byte(s), actR) == 0, fmt.Sprintf("Expected: %s, got: %s", s, actR))
+
+	// test other
+	expO := testStruct{Name: "Travis"}
+	actO, err := gzipHelper(t, expO)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to not be nil"))
+	assert.T(t, bytes.Compare([]byte(`{"name":"Travis"}`), actO) == 0, fmt.Sprintf("Expected: %s, got: %s", s, actO))
+}
+
+type testStruct struct {
+	Name string `json:"name"`
+}
+
+func gzipHelper(t *testing.T, data interface{}) ([]byte, error) {
+	r, err := http.NewRequest("GET", "http://google.com", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// test string
+	req := &Request{
+		Request: r,
+	}
+
+	err = req.SetBodyGzip(data)
+	if err != nil {
+		return nil, err
+	}
+
+	gr, err := gzip.NewReader(req.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadAll(gr)
 }

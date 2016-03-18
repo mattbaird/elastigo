@@ -12,14 +12,15 @@
 package elastigo
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestFilterDsl(t *testing.T) {
 	Convey("And filter", t, func() {
 		filter := Filter().And(Filter().Term("test", "asdf")).
-		And(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
+			And(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
 		actual, err := GetJson(filter)
 
 		actualFilters := actual["and"].([]interface{})
@@ -46,8 +47,8 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Not filter", t, func() {
 		filter := Filter().Not(Filter().Term("test", "asdf")).
-		Not(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
-		actual, err  := GetJson(filter)
+			Not(Filter().Range("rangefield", 1, 2, 3, 4, "+08:00"))
+		actual, err := GetJson(filter)
 
 		actualFilters := actual["not"].([]interface{})
 
@@ -60,7 +61,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Terms filter", t, func() {
 		filter := Filter().Terms("Sample", TEMAnd, "asdf", 123, true)
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualTerms := actual["terms"].(map[string]interface{})
 		actualValues := actualTerms["Sample"].([]interface{})
@@ -76,7 +77,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Term filter", t, func() {
 		filter := Filter().Term("Sample", "asdf").Term("field2", 341.4)
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualTerm := actual["term"].(map[string]interface{})
 
@@ -88,7 +89,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Range filter", t, func() {
 		filter := Filter().Range("rangefield", 1, 2, 3, 4, "+08:00")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 		//A bit lazy, probably should assert keys exist
 		actualRange := actual["range"].(map[string]interface{})["rangefield"].(map[string]interface{})
 
@@ -103,7 +104,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Exists filter", t, func() {
 		filter := Filter().Exists("field1")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["exists"].(map[string]interface{})
 
@@ -114,7 +115,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Missing filter", t, func() {
 		filter := Filter().Missing("field1")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["missing"].(map[string]interface{})
 
@@ -125,7 +126,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Limit filter", t, func() {
 		filter := Filter().Limit(100)
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["limit"].(map[string]interface{})
 		So(err, ShouldBeNil)
@@ -135,7 +136,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Type filter", t, func() {
 		filter := Filter().Type("my_type")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["type"].(map[string]interface{})
 		So(err, ShouldBeNil)
@@ -145,7 +146,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("Ids filter", t, func() {
 		filter := Filter().Ids("test", "asdf", "fdsa")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["ids"].(map[string]interface{})
 		actualValues := actualValue["values"].([]interface{})
@@ -160,7 +161,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("IdsByTypes filter", t, func() {
 		filter := Filter().IdsByTypes([]string{"my_type"}, "test", "asdf", "fdsa")
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["ids"].(map[string]interface{})
 		actualTypes := actualValue["type"].([]interface{})
@@ -177,7 +178,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("GeoDistance filter", t, func() {
 		filter := Filter().GeoDistance("100km", NewGeoField("pin.location", 32.3, 23.4))
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["geo_distance"].(map[string]interface{})
 		actualLocation := actualValue["pin.location"].(map[string]interface{})
@@ -189,7 +190,7 @@ func TestFilterDsl(t *testing.T) {
 
 	Convey("GeoDistanceRange filter", t, func() {
 		filter := Filter().GeoDistanceRange("100km", "200km", NewGeoField("pin.location", 32.3, 23.4))
-		actual, err  := GetJson(filter)
+		actual, err := GetJson(filter)
 
 		actualValue := actual["geo_distance_range"].(map[string]interface{})
 		actualLocation := actualValue["pin.location"].(map[string]interface{})
@@ -255,7 +256,6 @@ func TestFilters(t *testing.T) {
 		So(out.Hits, ShouldNotBeNil)
 		So(out.Hits.Total, ShouldEqual, 2)
 	})
-
 
 	Convey("Filterng filter results", t, func() {
 		qry := Search("oilers").Filter(
