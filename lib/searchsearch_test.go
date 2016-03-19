@@ -301,6 +301,7 @@ func TestSearch(t *testing.T) {
 
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
 		h1 := gou.NewJsonHelper(b)
-		So(h1.Keys(), ShouldResemble, []string{"name", "goals"})
+		So(h1.Keys(), ShouldContain, "name")
+		So(h1.Keys(), ShouldContain, "goals")
 	})
 }
