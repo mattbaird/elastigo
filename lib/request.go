@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -130,6 +131,17 @@ func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
 	}
 
 	if res.StatusCode > 304 && v != nil {
+		// Make sure the response is JSON and not some other type.
+		// i.e. 502 or 504 errors from a proxy.
+		mediaType, _, err := mime.ParseMediaType(res.Header.Get("Content-Type"))
+		if err != nil {
+			return nil, bodyBytes, err
+		}
+
+		if mediaType != "application/json" {
+			return nil, bodyBytes, fmt.Errorf(http.StatusText(res.StatusCode))
+		}
+
 		jsonErr := json.Unmarshal(bodyBytes, v)
 		if jsonErr != nil {
 			return nil, nil, fmt.Errorf("Json response unmarshal error: [%s], response content: [%s]", jsonErr.Error(), string(bodyBytes))

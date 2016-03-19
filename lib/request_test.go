@@ -78,6 +78,71 @@ func TestQueryString(t *testing.T) {
 	assert.T(t, err != nil, fmt.Sprintf("Expected err to not be nil"))
 }
 
+func TestDoResponseError(t *testing.T) {
+	v := make(map[string]string)
+	conn := NewConn()
+	req, _ := conn.NewRequest("GET", "http://mock.com", "")
+	req.Client = http.DefaultClient
+	defer func() {
+		req.Client.Transport = http.DefaultTransport
+	}()
+
+	// application/json
+	req.Client.Transport = newMockTransport(500, "application/json", `{"error":"internal_server_error"}`)
+	res, bodyBytes, err := req.DoResponse(&v)
+	assert.NotEqual(t, nil, res)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, 500, res.StatusCode)
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "internal_server_error", v["error"])
+	assert.Equal(t, []byte(`{"error":"internal_server_error"}`), bodyBytes)
+
+	// text/html
+	v = make(map[string]string)
+	req.Client.Transport = newMockTransport(500, "text/html", "HTTP 500 Internal Server Error")
+	res, bodyBytes, err = req.DoResponse(&v)
+	assert.T(t, res == nil, fmt.Sprintf("Expected nil, got: %v", res))
+	assert.NotEqual(t, nil, err)
+	assert.Equal(t, 0, len(v))
+	assert.Equal(t, []byte("HTTP 500 Internal Server Error"), bodyBytes)
+	assert.Equal(t, fmt.Errorf(http.StatusText(500)), err)
+
+	//  mime error
+	v = make(map[string]string)
+	req.Client.Transport = newMockTransport(500, "", "HTTP 500 Internal Server Error")
+	res, bodyBytes, err = req.DoResponse(&v)
+	assert.T(t, res == nil, fmt.Sprintf("Expected nil, got: %v", res))
+	assert.NotEqual(t, nil, err)
+	assert.Equal(t, 0, len(v))
+	assert.Equal(t, []byte("HTTP 500 Internal Server Error"), bodyBytes)
+	assert.NotEqual(t, fmt.Errorf(http.StatusText(500)), err)
+}
+
+type mockTransport struct {
+	statusCode  int
+	contentType string
+	body        string
+}
+
+func newMockTransport(statusCode int, contentType, body string) http.RoundTripper {
+	return &mockTransport{
+		statusCode:  statusCode,
+		contentType: contentType,
+		body:        body,
+	}
+}
+
+func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	response := &http.Response{
+		Header:     make(http.Header),
+		Request:    req,
+		StatusCode: t.statusCode,
+	}
+	response.Header.Set("Content-Type", t.contentType)
+	response.Body = ioutil.NopCloser(strings.NewReader(t.body))
+	return response, nil
+}
+
 func TestSetBodyGzip(t *testing.T) {
 	s := "foo"
 
