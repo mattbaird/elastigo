@@ -201,7 +201,7 @@ func (h *Hits) Len() int {
 
 type Highlight map[string][]string
 
-// TTL is a wrapper around time.Time that converts a number of milliseconds in the future to time.Time
+// TTL is a wrapper around time.Time that converts a number of milliseconds in the future to a time.Time.
 type TTL struct{ time.Time }
 
 func (t *TTL) UnmarshalJSON(data []byte) (err error) {
