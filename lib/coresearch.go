@@ -189,9 +189,9 @@ func (s *SearchResult) String() string {
 }
 
 type Hits struct {
-	Total int `json:"total"`
-	//	MaxScore float32 `json:"max_score"`
-	Hits []Hit `json:"hits"`
+	Total    int             `json:"total"`
+	MaxScore Float32Nullable `json:"max_score"`
+	Hits     []Hit           `json:"hits"`
 }
 
 func (h *Hits) Len() int {
