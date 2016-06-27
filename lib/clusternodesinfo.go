@@ -166,13 +166,13 @@ type Interface struct {
 }
 
 type Transport struct {
-	BoundAddress   string `json:"bound_address,omitempty"`
-	PublishAddress string `json:"publish_address,omitempty"`
+	BoundAddress   []string `json:"bound_address,omitempty"`
+	PublishAddress string   `json:"publish_address,omitempty"`
 }
 
 type Http struct {
-	BoundAddress   string `json:"bound_address,omitempty"`
-	PublishAddress string `json:"publish_address,omitempty"`
+	BoundAddress   []string `json:"bound_address,omitempty"`
+	PublishAddress string   `json:"publish_address,omitempty"`
 }
 
 type Plugin struct {
