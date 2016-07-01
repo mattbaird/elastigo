@@ -118,3 +118,47 @@ func (c *Conn) getSnapshots(repository, name string, args map[string]interface{}
 
 	return retval, nil
 }
+
+// DeleteSnapshotRepository deletes a snapshot repository. When a repository is deleted, Elasticsearch
+// only removes the reference to the location where the repository is storing the snapshots.
+// The snapshots themselves are left untouched and in place.
+// http://www.elastic.co/guide/en/elasticsearch/reference/1.3/modules-snapshots.html
+func (c *Conn) DeleteSnapshotRepository(repository string) (BaseResponse, error) {
+	var url string
+	var retval BaseResponse
+	url = fmt.Sprintf("/_snapshot/%s", repository)
+	body, err := c.DoCommand("DELETE", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+
+	return retval, nil
+}
+
+// DeleteSnapshot deletes a snapshot from a repository. Elasticsearch deletes all files that are
+// associated with the deleted snapshot and not used by any other snapshots.
+// http://www.elastic.co/guide/en/elasticsearch/reference/1.3/modules-snapshots.html
+func (c *Conn) DeleteSnapshot(repository, name string) (BaseResponse, error) {
+	var url string
+	var retval BaseResponse
+	url = fmt.Sprintf("/_snapshot/%s/%s", repository, name)
+	body, err := c.DoCommand("DELETE", url, nil, nil)
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		fmt.Println(string(body))
+		jsonErr := json.Unmarshal(body, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+
+	return retval, nil
+}
