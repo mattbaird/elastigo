@@ -153,7 +153,6 @@ func (c *Conn) DeleteSnapshot(repository, name string) (BaseResponse, error) {
 		return retval, err
 	}
 	if err == nil {
-		fmt.Println(string(body))
 		jsonErr := json.Unmarshal(body, &retval)
 		if jsonErr != nil {
 			return retval, jsonErr
