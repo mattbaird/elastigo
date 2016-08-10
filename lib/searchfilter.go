@@ -197,8 +197,8 @@ type RangeFilter struct {
 }
 
 type GeoLocation struct {
-	Latitude  float32 `json:"lat"`
-	Longitude float32 `json:"lon"`
+	Latitude  float64 `json:"lat"`
+	Longitude float64 `json:"lon"`
 }
 
 type GeoField struct {
@@ -270,7 +270,7 @@ func (f *FilterOp) GeoDistanceRange(from string, to string, fields ...GeoField) 
 }
 
 // Helper to create values for the GeoDistance filters
-func NewGeoField(field string, latitude float32, longitude float32) GeoField {
+func NewGeoField(field string, latitude float64, longitude float64) GeoField {
 	return GeoField{
 		GeoLocation: GeoLocation{Latitude: latitude, Longitude: longitude},
 		Field:       field}
