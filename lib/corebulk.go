@@ -135,7 +135,10 @@ func (b *BulkIndexer) Start() {
 	go func() {
 		// XXX(j): Refactor this stuff to use an interface.
 		if b.Sender == nil {
-			b.Sender = b.Send
+			b.Sender = func(buf *bytes.Buffer) error {
+				_, err := b.Send(buf)
+				return err
+			}
 		}
 		// Backwards compatibility
 		b.startHttpSender()
@@ -329,7 +332,7 @@ type BulkResponseStruct struct {
 
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
-func (b *BulkIndexer) Send(buf *bytes.Buffer) (BulResponseStruct, error) {
+func (b *BulkIndexer) Send(buf *bytes.Buffer) (BulkResponseStruct, error) {
 
 	response := BulkResponseStruct{}
 
@@ -337,17 +340,17 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) (BulResponseStruct, error) {
 
 	if err != nil {
 		atomic.AddUint64(&b.numErrors, 1)
-		return err
+		return response, err
 	}
 	// check for response errors, bulk insert will give 200 OK but then include errors in response
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr == nil {
 		if response.Errors {
 			atomic.AddUint64(&b.numErrors, uint64(len(response.Items)))
-			return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
+			return response, fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
 		}
 	}
-	return nil
+	return response, nil
 }
 
 // Given a set of arguments for index, type, id, data create a set of bytes that is formatted for bulkd index
