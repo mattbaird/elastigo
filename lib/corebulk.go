@@ -331,7 +331,7 @@ type BulkResponseStruct struct {
 // into bytes of ES formatted bulk data
 func (b *BulkIndexer) Send(buf *bytes.Buffer) (BulResponseStruct, error) {
 
-	response := BulResponseStruct{}
+	response := BulkResponseStruct{}
 
 	body, err := b.conn.DoCommand("POST", fmt.Sprintf("/_bulk?refresh=%t", b.Refresh), nil, buf)
 
