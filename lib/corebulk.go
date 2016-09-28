@@ -321,16 +321,17 @@ func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, paren
 	return b.Update(index, _type, id, parent, ttl, date, data)
 }
 
+type BulkResponseStruct struct {
+	Took   int64                    `json:"took"`
+	Errors bool                     `json:"errors"`
+	Items  []map[string]interface{} `json:"items"`
+}
+
 // This does the actual send of a buffer, which has already been formatted
 // into bytes of ES formatted bulk data
-func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
-	type responseStruct struct {
-		Took   int64                    `json:"took"`
-		Errors bool                     `json:"errors"`
-		Items  []map[string]interface{} `json:"items"`
-	}
+func (b *BulkIndexer) Send(buf *bytes.Buffer) (BulResponseStruct, error) {
 
-	response := responseStruct{}
+	response := BulResponseStruct{}
 
 	body, err := b.conn.DoCommand("POST", fmt.Sprintf("/_bulk?refresh=%t", b.Refresh), nil, buf)
 
