@@ -204,6 +204,8 @@ type Hit struct {
 	Index       string           `json:"_index"`
 	Type        string           `json:"_type,omitempty"`
 	Id          string           `json:"_id"`
+	Parent      string           `json:"_parent,omitempty"` // for parent/child requests
+	Routing     string           `json:"_routing,omitempty"`
 	Score       Float32Nullable  `json:"_score,omitempty"` // Filters (no query) dont have score, so is null
 	Source      *json.RawMessage `json:"_source"`          // marshalling left to consumer
 	Fields      *json.RawMessage `json:"fields"`           // when a field arg is passed to ES, instead of _source it returns fields
