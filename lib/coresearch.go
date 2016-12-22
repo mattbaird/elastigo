@@ -158,9 +158,11 @@ func (c *Conn) Scroll(args map[string]interface{}, scroll_id string) (SearchResu
 }
 
 type SuggestionOption struct {
+	Id      string          `json:"_id"`
 	Payload json.RawMessage `json:"payload"`
 	Score   Float32Nullable `json:"score,omitempty"`
 	Text    string          `json:"text"`
+	Source  json.RawMessage `json:"_source"`
 }
 
 type Suggestion struct {
