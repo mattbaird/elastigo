@@ -1,18 +1,30 @@
 package elastigo
 
 type CatIndexInfo struct {
-	Health   string
-	Status   string
-	Name     string
-	Shards   int
-	Replicas int
-	Docs     CatIndexDocs
-	Store    CatIndexStore
+	Health   string        `json:"health"`
+	Status   string        `json:"status"`
+	Name     string        `json:"index"`
+	Shards   int           `json:"pri"`
+	Replicas int           `json:"rep"`
+	Docs     CatIndexDocs  `json:"docs"`
+	Store    CatIndexStore `json:"store"`
+}
+
+type CatIndexInfoEs5 struct {
+	Health       string `json:"health"`
+	Status       string `json:"status"`
+	Name         string `json:"index"`
+	Shards       string `json:"pri"`
+	Replicas     string `json:"rep"`
+	DocsCount    string `json:"docs.count"`
+	DocsDel      string `json:"docs.deleted"`
+	StoreSize    string `json:"store.size"`
+	PriStoreSize string `json:"pri.store.size"`
 }
 
 type CatIndexDocs struct {
-	Count   int64
-	Deleted int64
+	Count   int64 `json:"count"`
+	Deleted int64 `json:"deleted"`
 }
 
 type CatIndexStore struct {
