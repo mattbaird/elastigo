@@ -190,7 +190,7 @@ type NodeStatsIndicesSuggestResponse struct {
 type NodeStatsOSResponse struct {
 	Timestamp int64                   `json:"timestamp"`
 	Uptime    int64                   `json:"uptime_in_millis"`
-	LoadAvg   []float64               `json:"load_average"`
+	LoadAvg   float64                 `json:"load_average"`
 	CPU       NodeStatsOSCPUResponse  `json:"cpu"`
 	Mem       NodeStatsOSMemResponse  `json:"mem"`
 	Swap      NodeStatsOSSwapResponse `json:"swap"`
