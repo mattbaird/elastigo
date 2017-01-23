@@ -162,7 +162,10 @@ func (b *BulkIndexer) Stop() {
 }
 
 func (b *BulkIndexer) PendingDocuments() int {
-	return b.docCt
+	b.mu.Lock()
+	docCt := b.docCt
+	b.mu.Unlock()	
+	return docCt
 }
 
 // Flush all current documents to ElasticSearch
