@@ -111,7 +111,7 @@ func TestPutMapping(t *testing.T) {
 			},
 		},
 		DynamicTemplates: []map[string]interface{}{
-			map[string]interface{}{
+			{
 				"strings": map[string]interface{}{
 					"match_mapping_type": "string",
 					"mapping": map[string]interface{}{
@@ -165,7 +165,7 @@ func TestPutMapping(t *testing.T) {
 			},
 		},
 		DynamicTemplates: []map[string]interface{}{
-			map[string]interface{}{
+			{
 				"strings": map[string]interface{}{
 					"match_mapping_type": "string",
 					"mapping": map[string]interface{}{
@@ -302,7 +302,7 @@ func TestPutMappingFromJSON(t *testing.T) {
 				},
 			},
 			"dynamic_templates": []map[string]interface{}{
-				map[string]interface{}{
+				{
 					"strings": map[string]interface{}{
 						"match_mapping_type": "string",
 						"mapping": map[string]interface{}{
