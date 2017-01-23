@@ -1,6 +1,7 @@
 package elastigo
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
@@ -68,7 +69,7 @@ func (c *Conn) GetCatIndexInfo(pattern string) (catIndices []CatIndexInfo) {
 	args := map[string]interface{}{"bytes": "b", "h": "health,status,index,pri,rep,docs.count,docs.deleted,store.size,pri.store.size"}
 	indices, err := c.DoCommand("GET", "/_cat/indices/"+pattern, args, nil)
 	if err == nil {
-		indexLines := strings.Split(string(indices[:]), "\n")
+		indexLines := strings.Split(string(indices), "\n")
 		for _, index := range indexLines {
 			ci, _ := NewCatIndexInfo(index)
 			if nil != ci {
@@ -77,4 +78,56 @@ func (c *Conn) GetCatIndexInfo(pattern string) (catIndices []CatIndexInfo) {
 		}
 	}
 	return catIndices
+}
+
+// Pull all the index info from the connection, for ElasticSearch 5.1.1,
+// which returns JSON in response to this query.
+func (c *Conn) GetCatIndexInfoEs5(pattern string) (catIndices []CatIndexInfo) {
+	catIndices = make([]CatIndexInfo, 0)
+	//force it to only show the fileds we know about
+	args := map[string]interface{}{"bytes": "b", "h": "health,status,index,pri,rep,docs.count,docs.deleted,store.size,pri.store.size"}
+	indices, err := c.DoCommand("GET", "/_cat/indices/"+pattern, args, nil)
+	if err != nil {
+		return
+	}
+
+	his := []CatIndexInfoEs5{}
+	err = json.Unmarshal(indices, &his)
+	if err != nil {
+		return
+	}
+	for i := range his {
+		catIndices = append(catIndices, CatIndexInfo{
+			Health:   his[i].Health,
+			Status:   his[i].Status,
+			Name:     his[i].Name,
+			Shards:   toInt(his[i].Shards),
+			Replicas: toInt(his[i].Replicas),
+			Docs: CatIndexDocs{
+				Count:   toInt64(his[i].DocsCount),
+				Deleted: toInt64(his[i].DocsDel),
+			},
+			Store: CatIndexStore{
+				Size:    toInt64(his[i].StoreSize),
+				PriSize: toInt64(his[i].PriStoreSize),
+			},
+		})
+	}
+	return catIndices
+}
+
+func toInt(s string) int {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+func toInt64(s string) int64 {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return int64(n)
 }
