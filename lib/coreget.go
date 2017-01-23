@@ -63,7 +63,7 @@ func (c *Conn) GetSource(index string, _type string, id string, args map[string]
 	url := fmt.Sprintf("/%s/%s/%s/_source", index, _type, id)
 	body, err := c.DoCommand("GET", url, args, nil)
 	if err == nil {
-		err = json.Unmarshal(body, &source)
+		err = json.Unmarshal(body, source)
 	}
 	return err
 }
