@@ -278,9 +278,9 @@ func (b *BulkIndexer) shutdown() {
 // The index bulk API adds or updates a typed JSON document to a specific index, making it searchable.
 // it operates by buffering requests, and ocassionally flushing to elasticsearch
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func (b *BulkIndexer) Index(index string, _type string, id, parent, ttl string, date *time.Time, data interface{}) error {
+func (b *BulkIndexer) Index(index string, _type string, id, parent, routing, ttl string, date *time.Time, data interface{}) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("index", index, _type, id, parent, ttl, date, data)
+	by, err := WriteBulkBytes("index", index, _type, id, parent, routing, ttl, date, data)
 	if err != nil {
 		return err
 	}
@@ -288,9 +288,9 @@ func (b *BulkIndexer) Index(index string, _type string, id, parent, ttl string, 
 	return nil
 }
 
-func (b *BulkIndexer) Update(index string, _type string, id, parent, ttl string, date *time.Time, data interface{}) error {
+func (b *BulkIndexer) Update(index string, _type string, id, parent, routing, ttl string, date *time.Time, data interface{}) error {
 	//{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
-	by, err := WriteBulkBytes("update", index, _type, id, parent, ttl, date, data)
+	by, err := WriteBulkBytes("update", index, _type, id, parent, routing, ttl, date, data)
 	if err != nil {
 		return err
 	}
@@ -298,20 +298,28 @@ func (b *BulkIndexer) Update(index string, _type string, id, parent, ttl string,
 	return nil
 }
 
-func (b *BulkIndexer) Delete(index, _type, id string) {
-	queryLine := fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q}}\n", index, _type, id)
-	b.bulkChannel <- []byte(queryLine)
+func (b *BulkIndexer) Delete(index, _type, _parent, _routing, id string) {
+	queryLine := bytes.Buffer{}
+	queryLine.WriteString(fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q", index, _type, id))
+	if len(_parent) > 0 {
+		queryLine.WriteString(fmt.Sprintf(",\"_parent\":%q", _parent))
+	}
+	if len(_routing) > 0 {
+		queryLine.WriteString(fmt.Sprintf(",\"_routing\":%q", _routing))
+	}
+	queryLine.WriteString("}}\n")
+	b.bulkChannel <- queryLine.Bytes()
 	return
 }
 
-func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, parent, ttl string, date *time.Time, script string) error {
+func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, parent, routing, ttl string, date *time.Time, script string) error {
 
 	var data map[string]interface{} = make(map[string]interface{})
 	data["script"] = script
-	return b.Update(index, _type, id, parent, ttl, date, data)
+	return b.Update(index, _type, id, parent, routing, ttl, date, data)
 }
 
-func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, parent, ttl string, date *time.Time, partialDoc interface{}, upsert bool) error {
+func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, parent, routing, ttl string, date *time.Time, partialDoc interface{}, upsert bool) error {
 
 	var data map[string]interface{} = make(map[string]interface{})
 
@@ -319,7 +327,7 @@ func (b *BulkIndexer) UpdateWithPartialDoc(index string, _type string, id, paren
 	if upsert {
 		data["doc_as_upsert"] = true
 	}
-	return b.Update(index, _type, id, parent, ttl, date, data)
+	return b.Update(index, _type, id, parent, routing, ttl, date, data)
 }
 
 // This does the actual send of a buffer, which has already been formatted
@@ -352,7 +360,7 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 
 // Given a set of arguments for index, type, id, data create a set of bytes that is formatted for bulkd index
 // http://www.elasticsearch.org/guide/reference/api/bulk.html
-func WriteBulkBytes(op string, index string, _type string, id, parent, ttl string, date *time.Time, data interface{}) ([]byte, error) {
+func WriteBulkBytes(op string, index string, _type string, id, parent, routing, ttl string, date *time.Time, data interface{}) ([]byte, error) {
 	// only index and update are currently supported
 	if op != "index" && op != "update" {
 		return nil, errors.New(fmt.Sprintf("Operation '%s' is not yet supported", op))
@@ -374,6 +382,12 @@ func WriteBulkBytes(op string, index string, _type string, id, parent, ttl strin
 	if len(parent) > 0 {
 		buf.WriteString(`,"_parent":"`)
 		buf.WriteString(parent)
+		buf.WriteString(`"`)
+	}
+
+	if len(routing) > 0 {
+		buf.WriteString(`,"_routing":"`)
+		buf.WriteString(routing)
 		buf.WriteString(`"`)
 	}
 
