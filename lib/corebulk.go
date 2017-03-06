@@ -137,6 +137,10 @@ func (b *BulkIndexer) Start() {
 		if b.Sender == nil {
 			b.Sender = b.Send
 		}
+		// Resize bulk channel buffer if max docs greater than default
+		if b.BulkMaxDocs > BulkMaxDocs {
+			b.bulkChannel = make(chan []byte, b.BulkMaxDocs)
+		}
 		// Backwards compatibility
 		b.startHttpSender()
 		b.startDocChannel()
