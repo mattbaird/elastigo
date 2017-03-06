@@ -352,7 +352,12 @@ func (b *BulkIndexer) Send(buf *bytes.Buffer) error {
 	if jsonErr == nil {
 		if response.Errors {
 			atomic.AddUint64(&b.numErrors, uint64(len(response.Items)))
-			return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]", len(response.Items))
+			itemJson, err := json.Marshal(response.Items)
+			if err == nil {
+				return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]. Response Items: %s", len(response.Items), itemJson)
+			} else {
+				return fmt.Errorf("Bulk Insertion Error. Failed item count [%d]. Error marshalling response items: %s", len(response.Items), err)
+			}
 		}
 	}
 	return nil
