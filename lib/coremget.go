@@ -19,10 +19,58 @@ import (
 // MGet allows the caller to get multiple documents based on an index, type (optional) and id (and possibly routing).
 // The response includes a docs array with all the fetched documents, each element similar in structure to a document
 // provided by the get API.
-// see http://www.elasticsearch.org/guide/reference/api/multi-get.html
+// see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
+/*
+{
+  "docs" : [
+    {
+      "_type" : "type",
+      "_id" : "1"
+    },
+    {
+      "_type" : "type",
+      "_id" : "2"
+    }
+  ]
+}
+*/
 func (c *Conn) MGet(index string, _type string, mgetRequest MGetRequestContainer, args map[string]interface{}) (MGetResponseContainer, error) {
-	var url string
+	body, err := c.DoCommand("GET", mGetUrl(index, _type), args, mgetRequest)
+	return mGetHandleResponse(body, err)
+}
+
+// MGetShort allows to get multiple documents based on an index, type (optional) and id (and possibly routing).
+// The response includes a docs array with all the fetched documents, each element similar in structure to a document
+// provided by the get API.
+// see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html
+/*
+{
+	"ids": ["1", "2", "3"]
+}
+*/
+
+func (c *Conn) MGetShort(index string, _type string, mgetRequestShort MGetRequestShort, args map[string]interface{}) (MGetResponseContainer, error) {
+	body, err := c.DoCommand("GET", mGetUrl(index, _type), args, mgetRequestShort)
+	return mGetHandleResponse(body, err)
+}
+
+func mGetHandleResponse (responseBody []byte, err error) (MGetResponseContainer, error) {
 	var retval MGetResponseContainer
+	if err != nil {
+		return retval, err
+	}
+	if err == nil {
+		// marshall into json
+		jsonErr := json.Unmarshal(responseBody, &retval)
+		if jsonErr != nil {
+			return retval, jsonErr
+		}
+	}
+	return retval, err
+}
+
+func mGetUrl(index string, _type string) string {
+	var url string
 	if len(index) <= 0 {
 		url = fmt.Sprintf("/_mget")
 	}
@@ -31,18 +79,7 @@ func (c *Conn) MGet(index string, _type string, mgetRequest MGetRequestContainer
 	} else if len(index) > 0 {
 		url = fmt.Sprintf("/%s/_mget", index)
 	}
-	body, err := c.DoCommand("GET", url, args, mgetRequest)
-	if err != nil {
-		return retval, err
-	}
-	if err == nil {
-		// marshall into json
-		jsonErr := json.Unmarshal(body, &retval)
-		if jsonErr != nil {
-			return retval, jsonErr
-		}
-	}
-	return retval, err
+	return url
 }
 
 type MGetRequestContainer struct {
@@ -50,11 +87,14 @@ type MGetRequestContainer struct {
 }
 
 type MGetRequest struct {
-	Index  string   `json:"_index"`
-	Type   string   `json:"_type"`
+	Index  string   `json:"_index,omitempty"`
+	Type   string   `json:"_type,omitempty"`
 	ID     string   `json:"_id"`
-	IDS    []string `json:"_ids,omitempty"`
 	Fields []string `json:"fields,omitempty"`
+}
+
+type MGetRequestShort struct {
+	IDS    []string `json:"ids"`
 }
 
 type MGetResponseContainer struct {
