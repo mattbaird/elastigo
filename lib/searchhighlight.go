@@ -8,7 +8,7 @@ func NewHighlight() *HighlightDsl {
 
 type HighlightDsl struct {
 	Settings  *HighlightEmbed           `-`
-	TagSchema string                    `json:"tag_schema,omitempty"`
+	TagSchema string                    `json:"tags_schema,omitempty"`
 	Fields    map[string]HighlightEmbed `json:"fields,omitempty"`
 }
 
@@ -38,7 +38,7 @@ func (t *HighlightDsl) MarshalJSON() ([]byte, error) {
 	}
 
 	if t.TagSchema != "" {
-		m["tag_schema"] = t.TagSchema
+		m["tags_schema"] = t.TagSchema
 	}
 
 	if t.Settings == nil {
