@@ -27,7 +27,6 @@ import (
 )
 
 type Request struct {
-	*http.Client
 	*http.Request
 	hostResponse hostpool.HostPoolResponse
 }
@@ -68,7 +67,7 @@ func (r *Request) Do(v interface{}) (int, []byte, error) {
 }
 
 func (r *Request) DoResponse(v interface{}) (*http.Response, []byte, error) {
-	res, err := r.Client.Do(r.Request)
+	res, err := httpClient.Do(r.Request)
 	// Inform the HostPool of what happened to the request and allow it to update
 	r.hostResponse.Mark(err)
 	if err != nil {
