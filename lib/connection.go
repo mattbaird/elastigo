@@ -108,7 +108,7 @@ func (c *Conn) SetHosts(newhosts []string) {
 }
 
 // Sets the timeout for each individual request.
-func (c *Conn) SetTimeout(timeout time.Duration) {
+func SetTimeout(timeout time.Duration) {
 	httpClient.Timeout = timeout
 }
 
