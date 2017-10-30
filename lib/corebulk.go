@@ -317,13 +317,13 @@ func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, paren
 	var data map[string]interface{} = make(map[string]interface{})
 	if scripted_upsert {
 		data["scripted_upsert"] = true
+		if upsert != nil {
+			data["upsert"] = upsert
+		} else {
+			data["upsert"] = map[string]interface{}{}
+		}
 	}
-	if upsert != nil {
-		data["upsert"] = upsert
-	} else {
-		data["upsert"] = map[string]interface{}{}
-	}
-	data["script"] = script
+	
 	data["script"] = script
 	return b.Update(index, _type, id, parent, ttl, date, data)
 }
