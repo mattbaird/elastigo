@@ -96,6 +96,13 @@ type BulkIndexer struct {
 	sendWg *sync.WaitGroup
 }
 
+type EsScript struct {
+	Lang   string                 `json:"lang"`
+	File   string                 `json:"file"`
+	Inline string                 `json:"inline"`
+	Params map[string]interface{} `json:"params"`
+}
+
 func (b *BulkIndexer) NumErrors() uint64 {
 	return atomic.LoadUint64(&b.numErrors)
 }
@@ -306,9 +313,18 @@ func (b *BulkIndexer) Delete(index, _type, id string) {
 	return
 }
 
-func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, parent, ttl string, date *time.Time, script string) error {
+func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, parent, ttl string, date *time.Time, script EsScript, scripted_upsert bool, upsert interface{}) error {
 
 	var data map[string]interface{} = make(map[string]interface{})
+	if scripted_upsert {
+		data["scripted_upsert"] = true
+		if upsert != nil {
+			data["upsert"] = upsert
+		} else {
+			data["upsert"] = map[string]interface{}{}
+		}
+	}
+
 	data["script"] = script
 	return b.Update(index, _type, id, parent, ttl, date, data)
 }
