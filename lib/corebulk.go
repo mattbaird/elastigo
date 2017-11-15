@@ -97,10 +97,10 @@ type BulkIndexer struct {
 }
 
 type EsScript struct {
-	Lang   string                 `json:"lang"`
-	File   string                 `json:"file"`
-	Inline string                 `json:"inline"`
-	Params map[string]interface{} `json:"params"`
+	Lang   string                 `json:"lang,omitempty"`
+	File   string                 `json:"file,omitempty"`
+	Inline string                 `json:"inline,omitempty"`
+	Params map[string]interface{} `json:"params,omitempty"`
 }
 
 func (b *BulkIndexer) NumErrors() uint64 {
