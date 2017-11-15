@@ -99,6 +99,7 @@ type BulkIndexer struct {
 type EsScript struct {
 	Lang   string                 `json:"lang"`
 	File   string                 `json:"file"`
+	Inline string                 `json:"inline"`
 	Params map[string]interface{} `json:"params"`
 }
 
@@ -323,7 +324,7 @@ func (b *BulkIndexer) UpdateWithWithScript(index string, _type string, id, paren
 			data["upsert"] = map[string]interface{}{}
 		}
 	}
-	
+
 	data["script"] = script
 	return b.Update(index, _type, id, parent, ttl, date, data)
 }
