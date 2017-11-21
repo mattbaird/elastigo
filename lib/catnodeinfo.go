@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-
-
 // newCatNodeInfo returns an instance of CatNodeInfo populated with the
 // the information in the cat output indexLine which contains the
 // specified fields. An err is returned if a field is not known.
@@ -22,7 +20,7 @@ func newCatNodeInfo(fields []string, indexLine string) (catNode *CatNodeInfo, er
 		return nil, fmt.Errorf("Number of fields (%d) greater than number of stats (%d)", lf, ls)
 	}
 
-	// Populate the apropriate field in CatNodeInfo
+	// Populate the appropriate field in CatNodeInfo
 	for i, field := range fields {
 
 		switch field {
@@ -166,7 +164,7 @@ func newCatNodeInfo(fields []string, indexLine string) (catNode *CatNodeInfo, er
 			catNode.PercTime = split[i]
 		case "percolate.total", "pto", "percolateTotal":
 			catNode.PercTotal = split[i]
-		case "refesh.total", "rto", "refreshTotal":
+		case "refresh.total", "rto", "refreshTotal":
 			catNode.RefreshTotal = split[i]
 		case "refresh.time", "rti", "refreshTime":
 			catNode.RefreshTime = split[i]

@@ -11,7 +11,12 @@
 package elastigo
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/bmizerany/assert"
@@ -71,4 +76,125 @@ func TestQueryString(t *testing.T) {
 	// Test invalid datatype
 	s, err = Escape(map[string]interface{}{"foo": []int{}})
 	assert.T(t, err != nil, fmt.Sprintf("Expected err to not be nil"))
+}
+
+func TestDoResponseError(t *testing.T) {
+	v := make(map[string]string)
+	conn := NewConn()
+	req, _ := conn.NewRequest("GET", "http://mock.com", "")
+	req.Client = http.DefaultClient
+	defer func() {
+		req.Client.Transport = http.DefaultTransport
+	}()
+
+	// application/json
+	req.Client.Transport = newMockTransport(500, "application/json", `{"error":"internal_server_error"}`)
+	res, bodyBytes, err := req.DoResponse(&v)
+	assert.NotEqual(t, nil, res)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, 500, res.StatusCode)
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
+	assert.Equal(t, "internal_server_error", v["error"])
+	assert.Equal(t, []byte(`{"error":"internal_server_error"}`), bodyBytes)
+
+	// text/html
+	v = make(map[string]string)
+	req.Client.Transport = newMockTransport(500, "text/html", "HTTP 500 Internal Server Error")
+	res, bodyBytes, err = req.DoResponse(&v)
+	assert.T(t, res == nil, fmt.Sprintf("Expected nil, got: %v", res))
+	assert.NotEqual(t, nil, err)
+	assert.Equal(t, 0, len(v))
+	assert.Equal(t, []byte("HTTP 500 Internal Server Error"), bodyBytes)
+	assert.Equal(t, fmt.Errorf(http.StatusText(500)), err)
+
+	//  mime error
+	v = make(map[string]string)
+	req.Client.Transport = newMockTransport(500, "", "HTTP 500 Internal Server Error")
+	res, bodyBytes, err = req.DoResponse(&v)
+	assert.T(t, res == nil, fmt.Sprintf("Expected nil, got: %v", res))
+	assert.NotEqual(t, nil, err)
+	assert.Equal(t, 0, len(v))
+	assert.Equal(t, []byte("HTTP 500 Internal Server Error"), bodyBytes)
+	assert.NotEqual(t, fmt.Errorf(http.StatusText(500)), err)
+}
+
+type mockTransport struct {
+	statusCode  int
+	contentType string
+	body        string
+}
+
+func newMockTransport(statusCode int, contentType, body string) http.RoundTripper {
+	return &mockTransport{
+		statusCode:  statusCode,
+		contentType: contentType,
+		body:        body,
+	}
+}
+
+func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	response := &http.Response{
+		Header:     make(http.Header),
+		Request:    req,
+		StatusCode: t.statusCode,
+	}
+	response.Header.Set("Content-Type", t.contentType)
+	response.Body = ioutil.NopCloser(strings.NewReader(t.body))
+	return response, nil
+}
+
+func TestSetBodyGzip(t *testing.T) {
+	s := "foo"
+
+	// test []byte
+	expB := []byte(s)
+	actB, err := gzipHelper(t, expB)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, bytes.Compare(actB, expB) == 0, fmt.Sprintf("Expected: %s, got: %s", expB, actB))
+
+	// test string
+	expS := s
+	actS, err := gzipHelper(t, expS)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, string(actS) == expS, fmt.Sprintf("Expected: %s, got: %s", expS, actS))
+
+	// test io.Reader
+	expR := strings.NewReader(s)
+	actR, err := gzipHelper(t, expR)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to be nil"))
+	assert.T(t, bytes.Compare([]byte(s), actR) == 0, fmt.Sprintf("Expected: %s, got: %s", s, actR))
+
+	// test other
+	expO := testStruct{Name: "Travis"}
+	actO, err := gzipHelper(t, expO)
+	assert.T(t, err == nil, fmt.Sprintf("Expected err to not be nil"))
+	assert.T(t, bytes.Compare([]byte(`{"name":"Travis"}`), actO) == 0, fmt.Sprintf("Expected: %s, got: %s", s, actO))
+}
+
+type testStruct struct {
+	Name string `json:"name"`
+}
+
+func gzipHelper(t *testing.T, data interface{}) ([]byte, error) {
+	r, err := http.NewRequest("GET", "http://google.com", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// test string
+	req := &Request{
+		Request: r,
+	}
+
+	err = req.SetBodyGzip(data)
+	if err != nil {
+		return nil, err
+	}
+
+	gr, err := gzip.NewReader(req.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadAll(gr)
 }

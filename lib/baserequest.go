@@ -36,17 +36,21 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 	}
 
 	if data != nil {
-		switch v := data.(type) {
-		case string:
-			req.SetBodyString(v)
-		case io.Reader:
-			req.SetBody(v)
-		case []byte:
-			req.SetBodyBytes(v)
-		default:
-			err = req.SetBodyJson(v)
-			if err != nil {
-				return body, err
+		if c.Gzip {
+			req.SetBodyGzip(data)
+		} else {
+			switch v := data.(type) {
+			case string:
+				req.SetBodyString(v)
+			case io.Reader:
+				req.SetBody(v)
+			case []byte:
+				req.SetBodyBytes(v)
+			default:
+				err = req.SetBodyJson(v)
+				if err != nil {
+					return body, err
+				}
 			}
 		}
 	}
@@ -100,7 +104,7 @@ func (e ESError) Error() string {
 	return fmt.Sprintf("%v: %v [%v]", e.When, e.What, e.Code)
 }
 
-// Exists allows the caller to check for the existance of a document using HEAD
+// Exists allows the caller to check for the existence of a document using HEAD
 // This appears to be broken in the current version of elasticsearch 0.19.10, currently
 // returning nothing
 func (c *Conn) Exists(index string, _type string, id string, args map[string]interface{}) (BaseResponse, error) {
