@@ -69,7 +69,6 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 3)
 	})
 
-
 	//	A faceted search for what "type" of events there are
 	//	- since we are not specifying an elasticsearch type it searches all ()
 	//
@@ -132,7 +131,6 @@ func TestSearch(t *testing.T) {
 		So(len(h.List("teams.terms")), ShouldEqual, 4)
 	})
 
-
 	Convey("Facet search with wildcard", t, func() {
 
 		qry := Search("oilers").Pretty().Facet(
@@ -155,7 +153,7 @@ func TestSearch(t *testing.T) {
 			Facet().Fields("teams").Size("20"),
 		).Query(
 			Query().Range(
-				Range().Field("dob").From("19600101").To("19621231"),
+				Filter().Range("dob", "19600101", nil, "19621231", nil, ""),
 			).Search("*w*"),
 		)
 		out, err := qry.Result(c)
@@ -217,7 +215,7 @@ func TestSearch(t *testing.T) {
 		out, err := Search("oilers").Size("25").Query(
 			Query().Fields("name", "*d*", "", ""),
 		).Filter(
-			Filter().Terms("teams", "STL"),
+			Filter().Terms("teams", TEMDefault, "STL"),
 		).Result(c)
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
@@ -229,7 +227,7 @@ func TestSearch(t *testing.T) {
 
 		out, err := Search("oilers").Size("25").Query(
 			Query().Range(
-				Range().Field("dob").From("19600101").To("19621231"),
+				Filter().Range("dob", "19600101", nil, "19621231", nil, ""),
 			).Search("*w*"),
 		).Result(c)
 		So(err, ShouldBeNil)
@@ -287,5 +285,23 @@ func TestSearch(t *testing.T) {
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
 		h1 := gou.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Wayne Gretzky")
+	})
+
+	Convey("Search query with filtered source fields", t, func() {
+
+		qry := Search("oilers").SourceFields("name", "goals").Pretty().Query(
+			Query().All(),
+		)
+		out, err := qry.Result(c)
+
+		So(err, ShouldBeNil)
+		So(out, ShouldNotBeNil)
+		So(out.Hits.Len(), ShouldEqual, 10)
+		So(out.Hits.Total, ShouldEqual, 14)
+
+		b, err := out.Hits.Hits[0].Source.MarshalJSON()
+		h1 := gou.NewJsonHelper(b)
+		So(h1.Keys(), ShouldContain, "name")
+		So(h1.Keys(), ShouldContain, "goals")
 	})
 }
