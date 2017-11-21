@@ -33,6 +33,10 @@ const (
 	DefaultDecayDuration = 0
 )
 
+var (
+	httpClient *http.Client = &http.Client{Transport: http.DefaultTransport}
+)
+
 type Conn struct {
 	// Maintain these for backwards compatibility
 	Protocol       string
@@ -103,6 +107,11 @@ func (c *Conn) SetHosts(newhosts []string) {
 	// Reinitialise the host pool Pretty naive as this will nuke the current
 	// hostpool, and therefore reset any scoring
 	c.initializeHostPool()
+}
+
+// Sets the timeout for each individual request.
+func SetTimeout(timeout time.Duration) {
+	httpClient.Timeout = timeout
 }
 
 // Set up the host pool to be used
