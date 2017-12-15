@@ -55,6 +55,12 @@ func (c *Conn) DoCommand(method string, url string, args map[string]interface{},
 		}
 	}
 
+	// hack: set content-type to json unconditionally.
+	//       (at lqm we only ever post json,
+	//        recent elasticsearch complains if no type is set,
+	//        and there is no proper api for setting the type.)
+	req.Header.Set("Content-Type", "application/json")
+
 	// uncomment this to print out the request that hits the wire
 	//   (requires net/http/httputil)
 	//reqbuf, err := httputil.DumpRequest(req.Request, true)
