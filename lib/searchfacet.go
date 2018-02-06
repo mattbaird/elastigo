@@ -13,13 +13,8 @@ package elastigo
 
 import (
 	"encoding/json"
-
-	u "github.com/araddon/gou"
 )
 
-var (
-	_ = u.DEBUG
-)
 
 /*
 "facets": {
