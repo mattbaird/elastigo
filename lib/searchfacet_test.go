@@ -12,9 +12,10 @@
 package elastigo
 
 import (
-	"github.com/araddon/gou"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	"github.com/sexyhamster/elastigo/helper"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestFacetRegex(t *testing.T) {
@@ -33,7 +34,7 @@ func TestFacetRegex(t *testing.T) {
 		So(out, ShouldNotBeNil)
 
 		// Debug(string(out.Facets))
-		fh := gou.NewJsonHelper([]byte(out.Facets))
+		fh := helper.NewJsonHelper([]byte(out.Facets))
 		facets := fh.Helpers("/name/terms")
 		So(err, ShouldBeNil)
 		So(facets, ShouldNotBeNil)

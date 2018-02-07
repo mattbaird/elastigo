@@ -12,9 +12,10 @@
 package elastigo
 
 import (
-	"github.com/araddon/gou"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	"github.com/sexyhamster/elastigo/helper"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSearch(t *testing.T) {
@@ -99,7 +100,7 @@ func TestSearch(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 
-		h := gou.NewJsonHelper(out.Facets)
+		h := helper.NewJsonHelper(out.Facets)
 		So(h.Int("teams.total"), ShouldEqual, 37)
 		So(h.Int("teams.missing"), ShouldEqual, 0)
 		So(len(h.List("teams.terms")), ShouldEqual, 4)
@@ -110,7 +111,7 @@ func TestSearch(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 
-		h = gou.NewJsonHelper(out.Facets)
+		h = helper.NewJsonHelper(out.Facets)
 		So(h.Int("teams.total"), ShouldEqual, 37)
 		So(len(h.List("teams.terms")), ShouldEqual, 11)
 
@@ -126,7 +127,7 @@ func TestSearch(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 
-		h := gou.NewJsonHelper(out.Facets)
+		h := helper.NewJsonHelper(out.Facets)
 		So(h.Int("teams.total"), ShouldEqual, 37)
 		So(len(h.List("teams.terms")), ShouldEqual, 4)
 	})
@@ -142,7 +143,7 @@ func TestSearch(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 
-		h := gou.NewJsonHelper(out.Facets)
+		h := helper.NewJsonHelper(out.Facets)
 		So(h.Int("teams.total"), ShouldEqual, 20)
 		So(len(h.List("teams.terms")), ShouldEqual, 7)
 	})
@@ -160,7 +161,7 @@ func TestSearch(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(out, ShouldNotBeNil)
 
-		h := gou.NewJsonHelper(out.Facets)
+		h := helper.NewJsonHelper(out.Facets)
 		So(h.Int("teams.total"), ShouldEqual, 12)
 		So(len(h.List("teams.terms")), ShouldEqual, 5)
 	})
@@ -249,7 +250,7 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 14)
 
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
-		h1 := gou.NewJsonHelper(b)
+		h1 := helper.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Grant Fuhr")
 	})
 
@@ -266,7 +267,7 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 14)
 
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
-		h1 := gou.NewJsonHelper(b)
+		h1 := helper.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Pat Hughes")
 	})
 
@@ -283,7 +284,7 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 8)
 
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
-		h1 := gou.NewJsonHelper(b)
+		h1 := helper.NewJsonHelper(b)
 		So(h1.String("name"), ShouldEqual, "Wayne Gretzky")
 	})
 
@@ -300,7 +301,7 @@ func TestSearch(t *testing.T) {
 		So(out.Hits.Total, ShouldEqual, 14)
 
 		b, err := out.Hits.Hits[0].Source.MarshalJSON()
-		h1 := gou.NewJsonHelper(b)
+		h1 := helper.NewJsonHelper(b)
 		So(h1.Keys(), ShouldContain, "name")
 		So(h1.Keys(), ShouldContain, "goals")
 	})

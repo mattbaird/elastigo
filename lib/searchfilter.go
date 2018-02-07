@@ -14,11 +14,6 @@ package elastigo
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/araddon/gou"
-)
-
-var (
-	_ = gou.DEBUG
 )
 
 // BoolClause represents aa bool (and/or) clause for use with FilterWrap
