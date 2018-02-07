@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net/url"
@@ -24,7 +23,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/araddon/gou"
 	"github.com/bmizerany/assert"
 )
 
@@ -52,13 +50,6 @@ func (b *sharedBuffer) Length() int {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	return len(b.Buffer)
-}
-
-func init() {
-	flag.Parse()
-	if testing.Verbose() {
-		gou.SetupLogging("debug")
-	}
 }
 
 // take two ints, compare, need to be within 5%
@@ -324,8 +315,8 @@ func XXXTestBulkErrors(t *testing.T) {
 		errorCt++
 		break
 	}
-	if errBuf.Buf.Len() > 0 {
-		gou.Debug(errBuf.Err)
+	if errBuf.Buf.Len() > 0 && testing.Verbose() {
+		t.Log(errBuf.Err)
 	}
 	assert.T(t, errorCt > 0, fmt.Sprintf("ErrorCt should be > 0 %d", errorCt))
 	indexer.Stop()

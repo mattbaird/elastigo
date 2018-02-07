@@ -14,13 +14,8 @@ package elastigo
 import (
 	"encoding/json"
 	"fmt"
-	u "github.com/araddon/gou"
 	"strconv"
 	"strings"
-)
-
-var (
-	_ = u.DEBUG
 )
 
 // Search is the entry point to the SearchDsl, it is a chainable set of utilities
@@ -61,13 +56,9 @@ func (s *SearchDsl) Result(conn *Conn) (*SearchResult, error) {
 	body, err := s.Bytes(conn)
 	retval.RawJSON = body
 	if err != nil {
-		u.Errorf("%v", err)
 		return nil, err
 	}
 	jsonErr := json.Unmarshal(body, &retval)
-	if jsonErr != nil {
-		u.Errorf("%v \n\t%s", jsonErr, string(body))
-	}
 	return &retval, jsonErr
 }
 
