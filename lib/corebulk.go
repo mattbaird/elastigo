@@ -308,6 +308,16 @@ func (b *BulkIndexer) Update(index string, _type string, id, parent, ttl string,
 	return nil
 }
 
+func (b *BulkIndexer) Create(index string, _type string, id, parent, ttl string, date *time.Time, data interface{}) error {
+	//{ "create" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
+	by, err := WriteBulkBytes("create", index, _type, id, parent, ttl, date, data)
+	if err != nil {
+		return err
+	}
+	b.bulkChannel <- by
+	return nil
+}
+
 func (b *BulkIndexer) Delete(index, _type, id string) {
 	queryLine := fmt.Sprintf("{\"delete\":{\"_index\":%q,\"_type\":%q,\"_id\":%q}}\n", index, _type, id)
 	b.bulkChannel <- []byte(queryLine)
